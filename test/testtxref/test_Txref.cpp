@@ -250,6 +250,7 @@ TEST_F(TxrefTest, txref_decode_weird_formatting) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
+    EXPECT_EQ(loc.txref, "tx1-rqqq-qqqq-qmhu-qk");
 
     txref = "tx1-rqqq qqqq qmhu qk";
     loc = txref::bitcoinTxrefDecode(txref);
@@ -257,6 +258,7 @@ TEST_F(TxrefTest, txref_decode_weird_formatting) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
+    EXPECT_EQ(loc.txref, "tx1-rqqq-qqqq-qmhu-qk");
 
     txref = "tx1rqqq,qqqq.qmhu.qk";
     loc = txref::bitcoinTxrefDecode(txref);
@@ -264,5 +266,14 @@ TEST_F(TxrefTest, txref_decode_weird_formatting) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
+    EXPECT_EQ(loc.txref, "tx1-rqqq-qqqq-qmhu-qk");
+
+    txref = "tx@test1-xk$$63-uq@@vx---fqx8-xq%$r8";
+    loc = txref::bitcoinTxrefDecode(txref);
+    EXPECT_EQ(loc.hrp, "txtest");
+    EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST);
+    EXPECT_EQ(loc.blockHeight, 467883);
+    EXPECT_EQ(loc.transactionPosition, 2355);
+    EXPECT_EQ(loc.txref, "txtest1-xk63-uqvx-fqx8-xqr8");
 
 }

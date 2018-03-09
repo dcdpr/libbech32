@@ -18,10 +18,12 @@ namespace txref {
         char magicCode;
         int blockHeight;
         int transactionPosition;
+        std::string txref;
     };
 
-    // encodes the position of a confirmed bitcoin transaction and returns a
-    // bech32 encoded "transaction position reference" (txref)
+    // encodes the position of a confirmed bitcoin transaction on the
+    // mainnet network and returns a bech32 encoded "transaction
+    // position reference" (txref)
     std::string bitcoinTxrefEncode(
             const std::string & hrp,
             char magicCode,
@@ -29,6 +31,9 @@ namespace txref {
             int transactionPosition
     );
 
+    // encodes the position of a confirmed bitcoin transaction on the
+    // testnet network and returns a bech32 encoded "transaction
+    // position reference" (txref)
     std::string bitcoinTxrefEncodeTestnet(
             const std::string & hrp,
             char magicCode,

@@ -41,11 +41,12 @@ public:
             int port);
 
     // forwards to existing bitcoinapi functions
-    virtual getrawtransaction_t getrawtransaction(const std::string& txid, int verbose);
-    virtual blockinfo_t getblock(const std::string& blockhash);
+    virtual getrawtransaction_t getrawtransaction(const std::string& txid, int verbose) const;
+    virtual blockinfo_t getblock(const std::string& blockhash) const;
+    virtual std::string getblockhash(int blocknumber) const;
 
     // implement missing bitcoinapi functions
-    virtual blockchaininfo_t getblockchaininfo();
+    virtual blockchaininfo_t getblockchaininfo() const;
 
 };
 

@@ -44,15 +44,19 @@ BitcoinRPCFacade::BitcoinRPCFacade(
     throw std::runtime_error(ss.str());
 }
 
-getrawtransaction_t BitcoinRPCFacade::getrawtransaction(const std::string &txid, int verbose) {
+getrawtransaction_t BitcoinRPCFacade::getrawtransaction(const std::string &txid, int verbose) const {
     return bitcoinAPI->getrawtransaction(txid, verbose);
 }
 
-blockinfo_t BitcoinRPCFacade::getblock(const std::string &blockhash) {
+blockinfo_t BitcoinRPCFacade::getblock(const std::string &blockhash) const {
     return bitcoinAPI->getblock(blockhash);
 }
 
-blockchaininfo_t BitcoinRPCFacade::getblockchaininfo() {
+std::string BitcoinRPCFacade::getblockhash(int blocknumber) const {
+    return bitcoinAPI->getblockhash(blocknumber);
+}
+
+blockchaininfo_t BitcoinRPCFacade::getblockchaininfo() const {
     std::string command = "getblockchaininfo";
     Value params, result;
     blockchaininfo_t ret;

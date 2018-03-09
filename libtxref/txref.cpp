@@ -182,6 +182,7 @@ namespace txref {
         }
 
         LocationData data;
+        data.txref = addDashes(txrefClean, bs.hrp.length());
         data.hrp = bs.hrp;
         data.magicCode = bs.dp[0];
         extractBlockHeight(data.blockHeight, bs);
