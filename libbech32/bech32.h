@@ -7,6 +7,9 @@
 
 namespace bech32 {
 
+    // The Bech32 separator character
+    static const char separator = '1';
+
     // Represents the payload within a bech32 string.
     // hrp: the human-readable part
     //  dp: the data part

@@ -86,6 +86,17 @@ namespace {
         }
     }
 
+    // some txref strings may have had the HRP stripped off. Attempt to prepend one if needed.
+    std::string addHrpIfNeeded(const std::string & txref) {
+        if(txref.length() == 14 && txref.at(0) == 'r') {
+            return std::string(txref::BECH32_HRP_MAIN) + bech32::separator + txref;
+        }
+        if(txref.length() == 16 && txref.at(0) == 'x') {
+            return std::string(txref::BECH32_HRP_TEST) + bech32::separator + txref;
+        }
+        return txref;
+    }
+
 }
 
 namespace txref {
@@ -174,6 +185,7 @@ namespace txref {
     LocationData bitcoinTxrefDecode(const std::string & txref) {
 
         std::string txrefClean = bech32::stripUnknownChars(txref);
+        txrefClean = addHrpIfNeeded(txrefClean);
         bech32::HrpAndDp bs = bech32::decode(txrefClean);
 
         auto dataSize = bs.dp.size();

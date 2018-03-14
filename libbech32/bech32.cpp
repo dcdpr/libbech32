@@ -4,9 +4,6 @@
 
 namespace {
 
-    /** The Bech32 separator character */
-    const char separator = '1';
-
     /** The Bech32 character set for encoding. The index in this string gives the char
      * each value is mapped to, i.e., 0 -> q, 10 -> 2, etc. This comes from the table
      * in BIP-0173 */
@@ -58,7 +55,7 @@ namespace {
 
     // bech32 string must contain the separator character
     void rejectBStringWithNoSeparator(const std::string &bstring) {
-        if(!std::any_of(bstring.begin(), bstring.end(), [](char ch) { return ch == separator; })) {
+        if(!std::any_of(bstring.begin(), bstring.end(), [](char ch) { return ch == bech32::separator; })) {
             throw std::runtime_error("dp is missing separator character");
         }
     }
@@ -74,7 +71,7 @@ namespace {
 
     // return the position of the separator character
     uint64_t findSeparatorPosition(const std::string &bstring) {
-        return bstring.find_last_of(separator);
+        return bstring.find_last_of(bech32::separator);
     }
 
 

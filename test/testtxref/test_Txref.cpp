@@ -277,3 +277,36 @@ TEST_F(TxrefTest, txref_decode_weird_formatting) {
     EXPECT_EQ(loc.txref, "txtest1-xk63-uqvx-fqx8-xqr8");
 
 }
+
+TEST_F(TxrefTest, txref_add_hrps) {
+    std::string txref;
+
+    txref = "rqqqqqqqqmhuqk";
+    EXPECT_EQ(addHrpIfNeeded(txref), "tx1rqqqqqqqqmhuqk");
+
+    txref = "xk63uqvxfqx8xqr8";
+    EXPECT_EQ(addHrpIfNeeded(txref), "txtest1xk63uqvxfqx8xqr8");
+}
+
+// check that we can deal with missing HRPs at the start of the txref
+TEST_F(TxrefTest, txref_decode_no_HRPs) {
+    std::string txref;
+    txref::LocationData loc;
+
+    txref = "rqqq-qqqq-qmhu-qk";
+    loc = txref::bitcoinTxrefDecode(txref);
+    EXPECT_EQ(loc.hrp, "tx");
+    EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
+    EXPECT_EQ(loc.blockHeight, 0);
+    EXPECT_EQ(loc.transactionPosition, 0);
+    EXPECT_EQ(loc.txref, "tx1-rqqq-qqqq-qmhu-qk");
+
+    txref = "xk63-uqvx-fqx8-xqr8";
+    loc = txref::bitcoinTxrefDecode(txref);
+    EXPECT_EQ(loc.hrp, "txtest");
+    EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST);
+    EXPECT_EQ(loc.blockHeight, 467883);
+    EXPECT_EQ(loc.transactionPosition, 2355);
+    EXPECT_EQ(loc.txref, "txtest1-xk63-uqvx-fqx8-xqr8");
+
+}
