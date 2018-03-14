@@ -5,6 +5,11 @@
 #include <libtxref/txref.h>
 #include <bitcoinapi/bitcoinapi.h>
 #include <anyoption/anyoption.h>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+
+namespace pt = boost::property_tree;
+
 
 struct Config {
     std::string rpcuser;
@@ -23,6 +28,18 @@ struct Transaction {
     std::string query;
 };
 
+void printAsJson(const Transaction &transaction) {
+    pt::ptree root;
+
+    root.put("txid", transaction.txid);
+    root.put("txref", transaction.txref);
+    root.put("network", transaction.network);
+    root.put("block-height", transaction.height);
+    root.put("transaction-position", transaction.position);
+    root.put("query-string", transaction.query);
+
+    pt::write_json(std::cout, root);
+}
 
 std::string find_homedir() {
     std::string ret;
@@ -221,7 +238,7 @@ void decodeTxref(const BitcoinRPCFacade & btc, Config & config, struct Transacti
     // output
     transaction.query = config.query;
     transaction.txid = txid;
-    transaction.txref = config.query;
+    transaction.txref = locationData.txref;
     transaction.height = locationData.blockHeight;
     transaction.position = locationData.transactionPosition;
     transaction.network = blockChainInfo.chain;
@@ -244,14 +261,12 @@ int main(int argc, char *argv[]) {
 
         if(config.query.length() == 64) {
             encodeTxid(btc, config, transaction);
-            std::cout << "txid: " << config.query << "\n"
-                      << "txref: " << transaction.txref << std::endl;
         }
         else {
             decodeTxref(btc, config, transaction);
-            std::cout << "txref: " << config.query << "\n"
-                      << "txid: " << transaction.txid << std::endl;
         }
+
+        printAsJson(transaction);
 
     }
     catch(BitcoinException &e)
@@ -272,3 +287,4 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
