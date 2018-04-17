@@ -18,6 +18,7 @@ namespace txref {
         char magicCode;
         int blockHeight;
         int transactionPosition;
+        int uxtoIndex;
         std::string txref;
     };
 
