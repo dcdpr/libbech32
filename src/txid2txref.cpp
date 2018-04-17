@@ -138,13 +138,13 @@ int getConfig(int argc, char **argv, struct Config &config) {
     }
 
     // finally, the last argument will be the query string -- either the txid or the txref
-    if(opt->getArgc() < 2) {
+    if(opt->getArgc() < 1) {
         std::cerr << "txid/txref not found. Check command line usage." << std::endl;
         opt->printUsage();
         delete opt;
         return -1;
     }
-    config.query = opt->getArgv(1);
+    config.query = opt->getArgv(0);
 
     return 1;
 }

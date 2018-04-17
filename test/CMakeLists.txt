@@ -1,5 +1,9 @@
 include(CTest)
 include(../cmake/DownloadProject/DownloadProject.cmake)
+include(../cmake/FindJSONCPP.cmake)
+include(../cmake/FindBitcoinApiCpp.cmake)
+
+find_package(curl)
 
 # Turn off some warnings to silence issues coming from googletest code
 set(DCD_CXX_FLAGS "${DCD_CXX_FLAGS} -Wno-global-constructors")
@@ -25,7 +29,8 @@ file(GLOB SRCS *.cpp */test_*.cpp)
 
 add_executable(txref_test ${SRCS})
 
-target_link_libraries(txref_test ${project_library_target_name} ${REQUIRED_LIBRARIES} gtest gmock)
+target_link_libraries(txref_test ${project_library_target_name}
+        ${REQUIRED_LIBRARIES} ${JSONCPP_LIBRARIES} ${BITCOINAPICPP_LIBRARIES} ${CURL_LIBRARIES} gtest gmock)
 
 add_test(NAME all_tests
         COMMAND txref_test)
