@@ -1,28 +1,40 @@
 # btcr-DID-method
 
-To support the development of our DID method, we first needed to create a
-command-line application that would generate a txref from a txid.
+To support the development of our DID method, we created two
+command-line applications. The first application, `txid2txref` can
+convert bitcoin transaction ids, or
+[txids](https://bitcoin.org/en/glossary/txid), to
+[txrefs](https://github.com/veleslavs/bips/blob/c83837536d6629f754ce5a88bbe245e0a615e76e/bip-XXXX-Bech32_Encoded_Transaction_Position_References.mediawiki),
+and vice-versa. It uses bitcoind to verify the transactions. The second
+application, `createBtcrDid`, will create a [decentralized identifier
+(DID)](https://w3c-ccg.github.io/did-spec/) on the bitcoin
+blockchain. It also uses bitcoind to submit the transaction needed to
+create the DID.
 
-## txid2txref
 
-The txid2txref application is based on the txid2bech32 utility created by XXX
-during the 2017 BTCR Virtual Hackathon.
+# txid2txref
 
-txid2txref is run as `txid2txref [txid]` and given a valid bitcoin
-transaction id (aka `txid`) will output a txref along with some other
-info. txid2txref will communicate with an instance of bitcoind via RPC
-to retrieve information about that transaction so it can create the `txref`.
+The txid2txref application is based on the [txid2bech32
+app](https://github.com/WebOfTrustInfo/btcr-hackathon) created during
+the 2017 BTCR Virtual Hackathon.
 
-## Building txid2txref
+txid2txref is run as `txid2txref [txid]` and when given a valid `txid`,
+will output a `txref` along with some other info. txid2txref will
+communicate with an instance of bitcoind via RPC to retrieve information
+about that transaction so it can create the `txref`. txid2txref can also
+be run as `txid2txref [txref]` and will output info about the bitcoin
+transaction referred to.
+
+## Building txid2txref and createBtcrDid
 
 This README assumes that you have bitcoind running somewhere, locally
 or remotely. bitcoind needs to be a full node--either on mainnet or
 testnet--and needs to have `—txindex` and RPC turned on.
 
-We have developed and tested txid2txref on MacOS, Debian and Ubuntu-based
-systems. The following instructions should work with either Debian jessie
-or stretch. Building and running txid2txref on different systems should
-be pretty similar.
+We have developed and tested txid2txref and createBtcrDid on MacOS,
+Debian and Ubuntu-based systems. The following instructions should work
+with either Debian jessie or stretch. Building and running on different
+systems should be pretty similar.
 
 ### Install some pre-requirements
 
@@ -116,33 +128,251 @@ cmake ..
 make
 ```
 
-If all goes well, you should be able to run txid2txref. You can either
-supply RPC credentials on the command line, or txid2txref will extract
-them from the .bitcoin/bitcoin.conf file in your home directory:
+If all goes well, you should be able to run txid2txref and
+createBtcrDid. 
 
 ```
 $ ./src/txid2txref --help
 Usage: txid2txref [options] <txid>
 
- -h  --help                 Print this help
- --rpchost [rpchost or IP]  RPC host (default: 127.0.0.1)
- --rpcuser [user]           RPC user
- --rpcpassword [pass]       RPC password
- --rpcport [port]           RPC port (default: try both 8332 and 18332)
- --config [config_path]     Full pathname to bitcoin.conf (default: <homedir>/.bitcoin/bitcoin.conf)
+ -h  --help                 Print this help 
+ --rpchost [rpchost or IP]  RPC host (default: 127.0.0.1) 
+ --rpcuser [user]           RPC user 
+ --rpcpassword [pass]       RPC password 
+ --rpcport [port]           RPC port (default: try both 8332 and 18332) 
+ --config [config_path]     Full pathname to bitcoin.conf (default: <homedir>/.bitcoin/bitcoin.conf) 
+ --utxoIndex [index #]      Index # for UXTO within the transaction (default: 0) 
+ --extended                 Force output of an extended txref (txref-ext) 
 
-$ # specify all credentials
-$ ./src/txid2txref --rpcuser bitcoinrpc --rpcpassword super-secret-passwd --rpchost 127.0.0.1 --rpcport 18333 f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107
-txid: f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107
-txref: txtest1-xyv2-xzyq-qqm5-tyke
+> ./createBtcrDid --help
+Usage: createBtcrDid [options] <inputXXX> <changeAddress> <network> <WIF> <fee> <ddoRef>
 
-$ # no credentials...will look in <homedir>/.bitcoin/bitcoin.conf
-$ ./src/txid2txref f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107
-txid: f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107
-txref: txtest1-xyv2-xzyq-qqm5-tyke
+ -h  --help                 Print this help 
+ --rpchost [rpchost or IP]  RPC host (default: 127.0.0.1) 
+ --rpcuser [user]           RPC user 
+ --rpcpassword [pass]       RPC password 
+ --rpcport [port]           RPC port (default: try both 8332 and 18332) 
+ --config [config_path]     Full pathname to bitcoin.conf (default: <homedir>/.bitcoin/bitcoin.conf) 
+ --utxoIndex [index]        Index # of which UTXO to use from the input transaction (default: 0) 
 
-$ # use different config file
-$ ./src/txid2txref --config /tmp/bitcoin.conf f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107
-txid: f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107
-txref: txtest1-xyv2-xzyq-qqm5-tyke
+<inputXXX>      input: (bitcoin address, txid, txref, or txref-ext) needs at least slightly more unspent BTCs than your offered fee
+<outputAddress> output bitcoin address: will receive transaction change and be the basis for your DID
+<network>       the bitcoin network you want to use, 'main' or 'test'
+<WIF>           WIF representation of your private key
+<fee>           fee you are willing to pay (suggestion: >0.001 BTC)
+<ddoRef>        reference to a DDO you want as part of your DID (optional)
+
 ```
+
+# Running txid2txref
+
+Many of the runtime options for txid2txref are for connecting to
+bitcoind over RPC. There are four `--rpc*` options that you can use for
+connecting to a local or remote bitcoind:
+
+```
+$ ./src/txid2txref --rpcuser bitcoinrpc --rpcpassword super-secret-passwd --rpchost 127.0.0.1 --rpcport 18332 <txid>
+{...}
+```
+
+If you have bitcoind running locally, you probably have a bitcoin.conf
+file with all the RPC info in there. If so, you can use it instead of
+setting all of the `--rpc*` options:
+
+```
+$ # by default it will look in <homedir>/.bitcoin/bitcoin.conf
+$ ./src/txid2txref <txid>
+{...}
+
+$ # or you can use a different location
+$ ./src/txid2txref --config /tmp/bitcoin.conf <txid>
+{...}
+```
+
+When given a txid, txid2txref will connect to bitcoind to verify it is a
+valid txid and, if found, gather some info about it. Then it will output
+some JSON with details about that transaction, and the txref.
+
+```
+$ ./src/txid2txref f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7521234
+Error: transaction f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7521234 not found.
+
+$ ./src/txid2txref f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107
+{
+  "txid": "f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107",
+  "txref": "txtest1-xyv2-xzyq-qqpq-q6k0a23",
+  "network": "test",
+  "block-height": "1152194",
+  "transaction-position": "1",
+  "utxo-index": "1",
+  "query-string": "f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107"
+}
+```
+
+txid2txref can also output an extended txref if given a utxoIndex > 0, or by using the flag
+`--extended`.
+
+```
+$ ./src/txid2txref f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107 | jq '{txref}'
+{
+  "txref": "txtest1-xyv2-xzyq-qqm5-tyke"
+}
+
+$ ./src/txid2txref --extended f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107 | jq '{txref}'
+{
+  "txref": "txtest1-xyv2-xzyq-qqqq-qc5x2nf"
+}
+
+$ ./src/txid2txref --utxoIndex 1 f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107 | jq '{txref}'
+{
+  "txref": "txtest1-xyv2-xzyq-qqpq-q6k0a23"
+}
+```
+
+Alternately, instead of a txid, txid2txref can be given a txref to
+decode and look up the transaction info in bitcoind:
+
+```
+$ ./src/txid2txref txtest1-xyv2-xzyq-qqpq-q6k0a23
+{
+    "txid":
+    "f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107",
+    "txref": "txtest1-xyv2-xzyq-qqpq-q6k0a23",
+    "network": "test",
+    "block-height": "1152194",
+    "transaction-position": "1",
+    "utxo-index": "1",
+    "query-string": "txtest1-xyv2-xzyq-qqpq-q6k0a23"
+}
+```
+
+
+# Running createBtcrDid
+
+Many of the runtime options for createBtcrDid are for connecting to
+bitcoind over RPC. There are four `--rpc*` options that you can use for
+connecting to a local or remote bitcoind:
+
+```
+$ ./src/createBtcrDid --rpcuser bitcoinrpc --rpcpassword super-secret-passwd --rpchost 127.0.0.1 --rpcport 18332 ...
+```
+
+If you have bitcoind running locally, you probably have a bitcoin.conf
+file with all the RPC info in there. If so, you can use it instead of
+setting all of the `--rpc*` options:
+
+```
+$ # by default it will look in <homedir>/.bitcoin/bitcoin.conf
+$ ./src/createBtcrDid ...
+{...}
+
+$ # or you can use a different location
+$ ./src/createBtcrDid --config /tmp/bitcoin.conf ...
+{...}
+```
+
+createBtcrDid has many required positional parameters:
+
+#### inputXXX      
+This is the input transaction--where you need to have at least slightly
+more unspent BTCs than your offered fee (see below). You can refer to
+this transaction in many ways: a bitcoin address (plus utxoIndex, given
+with `--utxoIndex` parameter); a txid (plus utxoIndex); a txref (plus
+utxoIndex), or a txref-ext.
+
+#### outputAddress 
+This is the output bitcoin address. It will receive transaction change and be the basis for your DID.
+
+#### network
+the bitcoin network you want to use, 'main' or 'test'
+
+#### WIF
+WIF representation of your private key
+
+#### fee
+fee you are willing to pay (suggestion: >0.001 BTC)
+
+#### ddoRef
+reference to a DDO you want as part of your DID. Usually a URL to a
+JSON-LD document. (optional)
+
+## Example of how to use createBtcrDid
+
+Some prerequisites:
+- you need a running instance of bitcoind, with the option "txindex=1"
+enabled so you have full transaction history. 
+- you need to have some BTC, either on the main or
+test blockchain (whatever your bitcoind is running)
+- you need the txid of a transaction with your BTC, and the index of the
+UTXO you want to use (if it is other than 0)
+- if you want your DID to have a reference to an external document with
+more info (a DDO) then make sure you have a URL for where it can be
+retrieved from.
+
+Make sure you know the txid and how much you have to spend. You can use
+bitcoin-cli to check:
+
+```
+$ bitcoin-cli listunspent | jq -r '.[] | { txid: .txid, address: .address, vout: .vout, amount: .amount }'
+{
+  "txid": "79d864cc59b0c3ac240fc78e5a79edb13182b88c9ed1c60526eda6657a5d5e9e",
+  "address": "mvwGweRzRDwydpJfW1uqWJN4iZvNBZ9zZ4",
+  "vout": 0,
+  "amount": 0.02
+}
+```
+
+If you want to start using txrefs right away, you can use txid2txref to
+convert your txid:
+
+```
+$ ./src/txid2txref --extended 79d864cc59b0c3ac240fc78e5a79edb13182b88c9ed1c60526eda6657a5d5e9e | jq '{txref}'
+{
+  "txref": "txtest1-xvn9-0zuq-qqqq-qqydtkx"
+}
+```
+
+You need to decide how much you want to spend to create your DID--this
+is the transaction fee. You probably want this as low as possible. For
+the testnet, you can probably get by with a fee of 0.0005 BTC for now.
+
+Now you need a new address for your transaction change to go to. This
+will also be the basis for your DID. You can make one with bitcoin-cli:
+
+```
+$ bitcoin-cli getrawchangeaddress
+myxJdFGMAnX4SiBg2hTKsZRr8ReE5irjS5
+```
+
+Finally, you need the private key for the address of your original
+transaction. You can get it from bitcoin-cli:
+
+```
+$ bitcoin-cli dumpprivkey mvwGweRzRDwydpJfW1uqWJN4iZvNBZ9zZ4
+randomrandomrandomrandomrandomrandomrandomrandomrand
+```
+
+Putting this all together, now you are ready to run createBtcrDid:
+
+```
+./createBtcrDid \
+79d864cc59b0c3ac240fc78e5a79edb13182b88c9ed1c60526eda6657a5d5e9e \
+myxJdFGMAnX4SiBg2hTKsZRr8ReE5irjS5 \
+test \
+cRDwySC8tagin5w6S1uNq3TCdQfgpXd8Xz3JhcguNGZ1LhatRkdZ \
+0.0005 \
+https://raw.githubusercontent.com/danpape/self/master/ddo-ext.jsonld
+
+Transaction submitted. Result txid: cd94e5a4a1aa1b19988faed93d31d50195b75390130304358369a63e8caec5ef
+
+```
+
+Using a block explorer, you can check that it looks good. For instance,
+you can look up this example transaction on
+[blockcypher.com](https://live.blockcypher.com/btc-testnet/tx/cd94e5a4a1aa1b19988faed93d31d50195b75390130304358369a63e8caec5ef/)
+and can see that 0.0005 BTC was spent, from
+mvwGweRzRDwydpJfW1uqWJN4iZvNBZ9zZ4 to
+myxJdFGMAnX4SiBg2hTKsZRr8ReE5irjS5. There is also an extra UTXO there,
+with 0.0 BTC which contains the DDO linked from github.
+
+
