@@ -1,11 +1,10 @@
 #include <gtest/gtest.h>
 #include <json/json.h>
 
-#include "test_satoshis.h"
 #include "satoshis.h"
 
 
-TEST_F(SatoshisTest, test_b2s) {
+TEST(SatoshisTest, test_b2s) {
     double b = 1;
     EXPECT_EQ(btc2satoshi(b), SATOSHIS_PER_BTC);
 
@@ -23,7 +22,7 @@ TEST_F(SatoshisTest, test_b2s) {
 }
 
 
-TEST_F(SatoshisTest, test_s2b) {
+TEST(SatoshisTest, test_s2b) {
     int64_t s = 1;
     EXPECT_DOUBLE_EQ(satoshi2btc(s), 0.00000001);
 

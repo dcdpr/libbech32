@@ -20,6 +20,7 @@ add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
 enable_testing()
 
 include_directories(
+        ${CMAKE_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/src
         ${PROJECT_SOURCE_DIR}/libbech32
         ${PROJECT_SOURCE_DIR}/libtxref

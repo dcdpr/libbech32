@@ -1,8 +1,7 @@
 #include <gtest/gtest.h>
 #include <json/json.h>
 
-#include "test_ChainSoQuery.h"
-#include "ChainSoQuery.cpp"
+#include "chainSoQuery.cpp"
 #include "CurlWrapper.cpp"
 
 class FakeChainSoQuery : public ChainSoQuery {
@@ -43,7 +42,7 @@ protected:
 };
 
 
-TEST_F(ChainSoQueryTest, get_index_zero) {
+TEST(ChainSoQueryTest, get_index_zero) {
 
     FakeChainSoQuery q;
     UnspentData d;
@@ -53,7 +52,7 @@ TEST_F(ChainSoQueryTest, get_index_zero) {
     EXPECT_EQ(d.amountSatoshis, 16250000);
 }
 
-TEST_F(ChainSoQueryTest, get_index_one) {
+TEST(ChainSoQueryTest, get_index_one) {
 
     FakeChainSoQuery q;
     UnspentData d;
@@ -64,25 +63,22 @@ TEST_F(ChainSoQueryTest, get_index_one) {
 
 }
 
-TEST_F(ChainSoQueryTest, fail_to_get_index_two) {
+TEST(ChainSoQueryTest, fail_to_get_index_two) {
 
     FakeChainSoQuery q;
     UnspentData d;
-    d = q.getUnspentOutputs("mr85paFJtFCJyHfyHPeaftU4ytNvNGRSwy", 2, "test");
 
-    EXPECT_EQ(d.index, -1);
-    EXPECT_EQ(d.txid, "");
-    EXPECT_EQ(d.amountSatoshis, 0);
-
+    EXPECT_THROW(d = q.getUnspentOutputs("mr85paFJtFCJyHfyHPeaftU4ytNvNGRSwy", 2, "test"), std::runtime_error);
 }
 
-TEST_F(ChainSoQueryTest, get_index_zero_integration) {
-
-    ChainSoQuery q;
-    UnspentData d;
-    d = q.getUnspentOutputs("mr85paFJtFCJyHfyHPeaftU4ytNvNGRSwy", 0, "test");
-
-    EXPECT_EQ(d.txid, "2ee994e55b8c71a6f4025a04ebec08aeaffc42c914a9a3646cb3e35489d0e705");
-    EXPECT_EQ(d.amountSatoshis, 16250000);
-}
+// TODO this test will fail until I create a new test address with unspent outputs
+//TEST(ChainSoQueryTest, get_index_zero_integration) {
+//
+//    chainSoQuery q;
+//    UnspentData d;
+//    d = q.getUnspentOutputs("mr85paFJtFCJyHfyHPeaftU4ytNvNGRSwy", 0, "test");
+//
+//    EXPECT_EQ(d.txid, "2ee994e55b8c71a6f4025a04ebec08aeaffc42c914a9a3646cb3e35489d0e705");
+//    EXPECT_EQ(d.amountSatoshis, 16250000);
+//}
 

@@ -62,6 +62,8 @@ public:
     // implement missing bitcoinapi functions
     virtual blockchaininfo_t getblockchaininfo() const;
 
+protected:
+    BitcoinRPCFacade() {}
 };
 
 

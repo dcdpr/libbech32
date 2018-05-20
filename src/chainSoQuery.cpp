@@ -1,16 +1,11 @@
 #include <json/json.h>
-#include "ChainSoQuery.h"
+#include "chainSoQuery.h"
 #include "CurlWrapper.h"
+#include "satoshis.h"
 
 namespace {
 
     const std::string CHAIN_SO_URL = "https://chain.so/api/v2";
-
-    const int SATOSHIS_PER_BTC = 100000000;
-
-    int64_t JSONtoAmountInSatoshis(double value) {
-        return (int64_t)(value * SATOSHIS_PER_BTC + (value < 0.0 ? -.5 : .5));
-    }
 
 }
 
@@ -44,12 +39,12 @@ UnspentData ChainSoQuery::populateFromJson(
 
     Json::Value tx = obj["data"]["txs"][transactionIndex];
     if(tx.type() == Json::nullValue)
-        return unspentData;
+        throw std::runtime_error("transactionIndex too large");
 
     unspentData.txid = tx["txid"].asString();
     unspentData.address = address;
     unspentData.scriptPubKeyHex = tx["script_hex"].asString();
-    unspentData.amountSatoshis = JSONtoAmountInSatoshis(std::atof(tx["value"].asString().data()));
+    unspentData.amountSatoshis = btc2satoshi(std::atof(tx["value"].asString().data()));
     unspentData.index = tx["output_no"].asInt();
 
     return unspentData;

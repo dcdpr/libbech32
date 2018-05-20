@@ -2,7 +2,7 @@
 #define TXREF_CHAINSOQUERY_H
 
 
-#include "ChainQuery.h"
+#include "chainQuery.h"
 
 class ChainSoQuery : public ChainQuery {
 

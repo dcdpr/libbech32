@@ -8,7 +8,7 @@ struct UnspentData {
     std::string txid;
     std::string scriptPubKeyHex;
     int64_t amountSatoshis = 0;
-    int index = -1;
+    unsigned int index = 0;
 };
 
 

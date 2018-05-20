@@ -1,4 +1,4 @@
-#include "BitcoinRPCFacade.h"
+#include "bitcoinRPCFacade.h"
 
 #include <bitcoinapi/bitcoinapi.h>
 
