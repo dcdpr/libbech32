@@ -1,11 +1,11 @@
 include(../cmake/FindBitcoinApiCpp.cmake)
 include(../cmake/FindJSONCPP.cmake)
 
-find_package(curl)
+find_package(CURL)
 
 file(GLOB SRCS *.cpp)
 
-include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR} ${BITCOINAPICPP_INCLUDE_DIRS} ${JSONCPP_INCLUDE_DIRS})
 
 add_executable(txid2txref txid2txref.cpp t2tSupport.cpp t2tSupport.h bitcoinRPCFacade.cpp bitcoinRPCFacade.h txid2txref.h)
 target_link_libraries(txid2txref libtxref libbech32 anyoption ${JSONCPP_LIBRARIES} ${BITCOINAPICPP_LIBRARIES})

@@ -8,13 +8,11 @@
 #  also defined, but not for general use are
 #  JSONCPP_LIBRARIES, where to find the jsoncpp library.
 
-FIND_PATH(JSONCPP_INCLUDE_DIRS json.h
-/usr/include
-/usr/local/include
-${CMAKE_SOURCE_DIR}/win32-deps/include
-PATH_SUFFIXES jsoncpp/json json jsoncpp
+FIND_PATH(
+    JSONCPP_INCLUDE_DIRS
+    NAMES json/json.h
+    PATH_SUFFIXES jsoncpp
 )
-
 
 FIND_LIBRARY(JSONCPP_LIBRARIES NAMES jsoncpp HINTS /usr/lib /usr/local/lib 	${CMAKE_SOURCE_DIR}/win32-deps/lib)
 

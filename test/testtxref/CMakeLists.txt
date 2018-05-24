@@ -1,4 +1,9 @@
+include(../../cmake/FindBitcoinApiCpp.cmake)
+include(../../cmake/FindJSONCPP.cmake)
+
 file(GLOB SRCS *.cpp)
+
+include_directories(${CMAKE_SOURCE_DIR} ${BITCOINAPICPP_INCLUDE_DIRS} ${JSONCPP_INCLUDE_DIRS})
 
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${DCD_CXX_FLAGS})
 
