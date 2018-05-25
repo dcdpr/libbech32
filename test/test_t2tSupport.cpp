@@ -7,8 +7,8 @@
 #include "bitcoinRPCFacade.h"
 #include "bitcoinRPCFacade.cpp"
 
-// TODO, this test isn't very good since either we make it an integration test (with bitcoind)
-// or we have to mock just about everything t2t::decodeTxref() and t2t::encodeTxref() does
+// TODO, this unit test isn't very good since either we make it an integration test (with bitcoind)
+// or we have to mock just about everything t2t::decodeTxref() and t2t::encodeTxref() does. Need to revisit.
 
 class FakeBitcoinRPCFacade : public BitcoinRPCFacade {
 public:

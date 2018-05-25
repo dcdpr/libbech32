@@ -41,7 +41,7 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config) {
     opt->setFileDelimiterChar('=');
 
     opt->addUsage( "" );
-    opt->addUsage( "Usage: txid2txref [options] <txid>" );
+    opt->addUsage( "Usage: txid2txref [options] <txid|txref|txref-ext>" );
     opt->addUsage( "" );
     opt->addUsage( " -h  --help                 Print this help " );
     opt->addUsage( " --rpchost [rpchost or IP]  RPC host (default: 127.0.0.1) " );
@@ -52,6 +52,7 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config) {
     opt->addUsage( " --utxoIndex [index #]      Index # for UXTO within the transaction (default: 0) " );
     opt->addUsage( " --extended                 Force output of an extended txref (txref-ext) " );
     opt->addUsage( "" );
+    opt->addUsage( "<txid|txref|txref-ext>      input: can be a txid to encode, or a txref or txref-ext to decode" );
 
     opt->setFlag("help", 'h');
     opt->setCommandOption("rpchost");

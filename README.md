@@ -108,7 +108,7 @@ make
 sudo make install
 ```
 
-### Build txid2txref
+### Build txid2txref and createBtcrDid
 
 If you don't already have it, download [btcr-DID-method from Github](https://github.com/dcdpr/btcr-DID-method/). Clone it or grab a zip file, as you prefer.
 
@@ -133,38 +133,34 @@ createBtcrDid.
 
 ```
 $ ./src/txid2txref --help
-Usage: txid2txref [options] <txid>
-
- -h  --help                 Print this help 
- --rpchost [rpchost or IP]  RPC host (default: 127.0.0.1) 
- --rpcuser [user]           RPC user 
- --rpcpassword [pass]       RPC password 
- --rpcport [port]           RPC port (default: try both 8332 and 18332) 
- --config [config_path]     Full pathname to bitcoin.conf (default: <homedir>/.bitcoin/bitcoin.conf) 
- --utxoIndex [index #]      Index # for UXTO within the transaction (default: 0) 
- --extended                 Force output of an extended txref (txref-ext) 
+Usage: txid2txref [options] <txid|txref|txref-ext>
+[...]
 
 > ./createBtcrDid --help
 Usage: createBtcrDid [options] <inputXXX> <changeAddress> <network> <WIF> <fee> <ddoRef>
-
- -h  --help                 Print this help 
- --rpchost [rpchost or IP]  RPC host (default: 127.0.0.1) 
- --rpcuser [user]           RPC user 
- --rpcpassword [pass]       RPC password 
- --rpcport [port]           RPC port (default: try both 8332 and 18332) 
- --config [config_path]     Full pathname to bitcoin.conf (default: <homedir>/.bitcoin/bitcoin.conf) 
- --utxoIndex [index]        Index # of which UTXO to use from the input transaction (default: 0) 
-
-<inputXXX>      input: (bitcoin address, txid, txref, or txref-ext) needs at least slightly more unspent BTCs than your offered fee
-<outputAddress> output bitcoin address: will receive transaction change and be the basis for your DID
-<network>       the bitcoin network you want to use, 'main' or 'test'
-<WIF>           WIF representation of your private key
-<fee>           fee you are willing to pay (suggestion: >0.001 BTC)
-<ddoRef>        reference to a DDO you want as part of your DID (optional)
-
+[...]
 ```
 
 # Running txid2txref
+
+You can ask txid2txref for help and it will show all the runtime options
+available:
+
+```
+$ ./src/txid2txref --help
+Usage: txid2txref [options] <txid>
+
+ -h  --help                 Print this help
+ --rpchost [rpchost or IP]  RPC host (default: 127.0.0.1)
+ --rpcuser [user]           RPC user
+ --rpcpassword [pass]       RPC password
+ --rpcport [port]           RPC port (default: try both 8332 and 18332)
+ --config [config_path]     Full pathname to bitcoin.conf (default: <homedir>/.bitcoin/bitcoin.conf)
+ --utxoIndex [index #]      Index # for UXTO within the transaction (default: 0)
+ --extended                 Force output of a txref-ext
+
+<txid|txref|txref-ext>      input: can be a txid to encode, or a txref or txref-ext to decode
+```
 
 Many of the runtime options for txid2txref are for connecting to
 bitcoind over RPC. There are four `--rpc*` options that you can use for
@@ -248,6 +244,29 @@ $ ./src/txid2txref txtest1-xyv2-xzyq-qqpq-q6k0a23
 
 
 # Running createBtcrDid
+
+You can ask createBtcrDid for help, and it will show all the runtime
+options available:
+
+```
+> ./createBtcrDid --help
+Usage: createBtcrDid [options] <inputXXX> <changeAddress> <network> <WIF> <fee> <ddoRef>
+
+ -h  --help                 Print this help 
+ --rpchost [rpchost or IP]  RPC host (default: 127.0.0.1) 
+ --rpcuser [user]           RPC user 
+ --rpcpassword [pass]       RPC password 
+ --rpcport [port]           RPC port (default: try both 8332 and 18332) 
+ --config [config_path]     Full pathname to bitcoin.conf (default: <homedir>/.bitcoin/bitcoin.conf) 
+ --utxoIndex [index]        Index # of which UTXO to use from the input transaction (default: 0) 
+
+<inputXXX>      input: (bitcoin address, txid, txref, or txref-ext) needs at least slightly more unspent BTCs than your offered fee
+<outputAddress> output bitcoin address: will receive transaction change and be the basis for your DID
+<network>       the bitcoin network you want to use, 'main' or 'test'
+<WIF>           WIF representation of your private key
+<fee>           fee you are willing to pay (suggestion: >0.001 BTC)
+<ddoRef>        reference to a DDO you want as part of your DID (optional)
+```
 
 Many of the runtime options for createBtcrDid are for connecting to
 bitcoind over RPC. There are four `--rpc*` options that you can use for
@@ -359,7 +378,7 @@ Putting this all together, now you are ready to run createBtcrDid:
 79d864cc59b0c3ac240fc78e5a79edb13182b88c9ed1c60526eda6657a5d5e9e \
 myxJdFGMAnX4SiBg2hTKsZRr8ReE5irjS5 \
 test \
-cRDwySC8tagin5w6S1uNq3TCdQfgpXd8Xz3JhcguNGZ1LhatRkdZ \
+randomrandomrandomrandomrandomrandomrandomrandomrand \
 0.0005 \
 https://raw.githubusercontent.com/danpape/self/master/ddo-ext.jsonld
 
@@ -371,8 +390,8 @@ Using a block explorer, you can check that it looks good. For instance,
 you can look up this example transaction on
 [blockcypher.com](https://live.blockcypher.com/btc-testnet/tx/cd94e5a4a1aa1b19988faed93d31d50195b75390130304358369a63e8caec5ef/)
 and can see that 0.0005 BTC was spent, from
-mvwGweRzRDwydpJfW1uqWJN4iZvNBZ9zZ4 to
-myxJdFGMAnX4SiBg2hTKsZRr8ReE5irjS5. There is also an extra UTXO there,
+`mvwGweRzRDwydpJfW1uqWJN4iZvNBZ9zZ4` to
+`myxJdFGMAnX4SiBg2hTKsZRr8ReE5irjS5`. There is also an extra UTXO there,
 with 0.0 BTC which contains the DDO linked from github.
 
 
