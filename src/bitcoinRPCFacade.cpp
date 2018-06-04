@@ -1,4 +1,4 @@
-#include "BitcoinRPCFacade.h"
+#include "bitcoinRPCFacade.h"
 
 #include <bitcoinapi/bitcoinapi.h>
 
@@ -75,4 +75,44 @@ blockchaininfo_t BitcoinRPCFacade::getblockchaininfo() const {
 
     return ret;
 }
+
+utxoinfo_t BitcoinRPCFacade::gettxout(const std::string &txid, int n) const {
+    return bitcoinAPI->gettxout(txid, n);
+}
+
+std::string BitcoinRPCFacade::createrawtransaction(
+        const std::vector<txout_t> &inputs,
+        const std::map<std::string, double> &amounts) const {
+    return bitcoinAPI->createrawtransaction(inputs, amounts);
+}
+
+std::string BitcoinRPCFacade::createrawtransaction(
+        const std::vector<txout_t> &inputs,
+        const std::map<std::string, std::string> &amounts) const {
+    return bitcoinAPI->createrawtransaction(inputs, amounts);
+}
+
+std::string
+BitcoinRPCFacade::signrawtransaction(const std::string &rawTx, const std::vector<signrawtxin_t> & inputs) const {
+    signrawtransaction_t signedTx = bitcoinAPI->signrawtransaction(rawTx, inputs);
+    if(signedTx.complete) {
+        return signedTx.hex;
+    }
+    return ""; // TODO throw?
+}
+
+std::string
+BitcoinRPCFacade::signrawtransaction(const std::string &rawTx, const std::vector<signrawtxin_t> & inputs,
+                                     const std::vector<std::string> &privkeys, const std::string &sighashtype) const {
+    signrawtransaction_t signedTx = bitcoinAPI->signrawtransaction(rawTx, inputs, privkeys, sighashtype);
+    if(signedTx.complete) {
+        return signedTx.hex;
+    }
+    return ""; // TODO throw?
+}
+
+std::string BitcoinRPCFacade::sendrawtransaction(const std::string &hexString, bool highFee) const {
+    return bitcoinAPI->sendrawtransaction(hexString, highFee);
+}
+
 

@@ -613,6 +613,8 @@ AnyOption::processCommandArgs()
 
 	if( max_legal_args == 0 )
 		max_legal_args = argc;
+	if( new_argc != 0 ) // this function has been called before, but we want to process again
+		new_argc = 0;
 	new_argv = (int*) malloc( (max_legal_args+1) * sizeof(int) );
 	for( int i = 1 ; i < argc ; i++ ){/* ignore first argv */
 		if(  argv[i][0] == long_opt_prefix[0] &&
