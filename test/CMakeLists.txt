@@ -17,6 +17,9 @@ download_project(
 
 add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
 
+option(RC_ENABLE_GTEST "Build Google Test integration" ON)
+add_subdirectory("rapidcheck")
+
 enable_testing()
 
 include_directories(
@@ -33,7 +36,7 @@ file(GLOB SRCS *.cpp */test_*.cpp)
 add_executable(txref_test ${SRCS})
 
 target_link_libraries(txref_test ${project_library_target_name}
-        ${REQUIRED_LIBRARIES} ${JSONCPP_LIBRARIES} ${BITCOINAPICPP_LIBRARIES} ${CURL_LIBRARIES} gtest gmock)
+        ${REQUIRED_LIBRARIES} ${JSONCPP_LIBRARIES} ${BITCOINAPICPP_LIBRARIES} ${CURL_LIBRARIES} gtest gmock rapidcheck_gtest)
 
 add_test(NAME all_tests
         COMMAND txref_test)

@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
+#include <rapidcheck/gtest.h>
 
-#include "test_Txref.h"
 #include "txref.cpp"
 
 // check that we accept block heights within the correct range for both main and testnet
-TEST_F(TxrefTest, accept_good_block_heights) {
+TEST(TxrefTest, accept_good_block_heights) {
     EXPECT_NO_THROW(checkBlockHeightRange(0));
     EXPECT_NO_THROW(checkBlockHeightRange(1));
     EXPECT_NO_THROW(checkBlockHeightRange(MAX_BLOCK_HEIGHT));
@@ -14,8 +14,19 @@ TEST_F(TxrefTest, accept_good_block_heights) {
     EXPECT_NO_THROW(checkBlockHeightRangeTestnet(MAX_BLOCK_HEIGHT_TESTNET));
 }
 
+RC_GTEST_PROP(TxrefTestRC, goodBlockHeightsAreAccepted, ()
+) {
+    // generate valid block heights
+    auto height = *rc::gen::inRange(0, MAX_BLOCK_HEIGHT);
+    checkBlockHeightRange(height);
+
+    height = *rc::gen::inRange(0, MAX_BLOCK_HEIGHT_TESTNET);
+    checkBlockHeightRangeTestnet(height);
+}
+
+
 // check that we reject block heights outside of the range for both main and testnet
-TEST_F(TxrefTest, reject_bad_block_heights) {
+TEST(TxrefTest, reject_bad_block_heights) {
     EXPECT_THROW(checkBlockHeightRange(-1), std::runtime_error);
     EXPECT_THROW(checkBlockHeightRange(MAX_BLOCK_HEIGHT + 1), std::runtime_error);
 
@@ -23,8 +34,25 @@ TEST_F(TxrefTest, reject_bad_block_heights) {
     EXPECT_THROW(checkBlockHeightRangeTestnet(MAX_BLOCK_HEIGHT_TESTNET + 1), std::runtime_error);
 }
 
+RC_GTEST_PROP(TxrefTestRC, badBlockHeightsAreRejected, ()
+) {
+        // generate out of range block heights
+    auto height = *rc::gen::inRange(-MAX_BLOCK_HEIGHT, -1);
+    RC_ASSERT_THROWS_AS(checkBlockHeightRange(height), std::runtime_error);
+
+    height = *rc::gen::inRange(MAX_BLOCK_HEIGHT+1, 2*MAX_BLOCK_HEIGHT);
+    RC_ASSERT_THROWS_AS(checkBlockHeightRange(height), std::runtime_error);
+
+    height = *rc::gen::inRange(-MAX_BLOCK_HEIGHT_TESTNET, -1);
+    RC_ASSERT_THROWS_AS(checkBlockHeightRangeTestnet(height), std::runtime_error);
+
+    height = *rc::gen::inRange(MAX_BLOCK_HEIGHT_TESTNET+1, 2*MAX_BLOCK_HEIGHT_TESTNET);
+    RC_ASSERT_THROWS_AS(checkBlockHeightRangeTestnet(height), std::runtime_error);
+}
+
+
 // check that we accept transaction positions within the correct range for both main and testnet
-TEST_F(TxrefTest, accept_good_transaction_position) {
+TEST(TxrefTest, accept_good_transaction_position) {
     EXPECT_NO_THROW(checkTransactionPositionRange(0));
     EXPECT_NO_THROW(checkTransactionPositionRange(1));
     EXPECT_NO_THROW(checkTransactionPositionRange(MAX_TRANSACTION_POSITION));
@@ -34,8 +62,19 @@ TEST_F(TxrefTest, accept_good_transaction_position) {
     EXPECT_NO_THROW(checkTransactionPositionRangeTestnet(MAX_TRANSACTION_POSITION_TESTNET));
 }
 
+RC_GTEST_PROP(TxrefTestRC, goodTransactionPositionsAreAccepted, ()
+) {
+    // generate valid transaction positions
+    auto pos = *rc::gen::inRange(0, MAX_TRANSACTION_POSITION);
+    checkTransactionPositionRange(pos);
+
+    pos = *rc::gen::inRange(0, MAX_TRANSACTION_POSITION_TESTNET);
+    checkTransactionPositionRangeTestnet(pos);
+}
+
+
 // check that we reject transaction positions outside of the range for both main and testnet
-TEST_F(TxrefTest, reject_bad_transaction_position) {
+TEST(TxrefTest, reject_bad_transaction_position) {
 
     EXPECT_THROW(checkTransactionPositionRange(-1), std::runtime_error);
     EXPECT_THROW(checkTransactionPositionRange(MAX_TRANSACTION_POSITION + 1), std::runtime_error);
@@ -44,21 +83,54 @@ TEST_F(TxrefTest, reject_bad_transaction_position) {
     EXPECT_THROW(checkTransactionPositionRangeTestnet(MAX_TRANSACTION_POSITION_TESTNET + 1), std::runtime_error);
 }
 
+RC_GTEST_PROP(TxrefTestRC, badTransactionPositionsAreRejected, ()
+) {
+    // generate out of range transaction positions
+    auto pos = *rc::gen::inRange(-MAX_TRANSACTION_POSITION, -1);
+    RC_ASSERT_THROWS_AS(checkTransactionPositionRange(pos), std::runtime_error);
+
+    pos = *rc::gen::inRange(MAX_TRANSACTION_POSITION+1, 2*MAX_TRANSACTION_POSITION);
+    RC_ASSERT_THROWS_AS(checkTransactionPositionRange(pos), std::runtime_error);
+
+    pos = *rc::gen::inRange(-MAX_TRANSACTION_POSITION_TESTNET, -1);
+    RC_ASSERT_THROWS_AS(checkTransactionPositionRangeTestnet(pos), std::runtime_error);
+
+    pos = *rc::gen::inRange(MAX_TRANSACTION_POSITION_TESTNET+1, 2*MAX_TRANSACTION_POSITION_TESTNET);
+    RC_ASSERT_THROWS_AS(checkTransactionPositionRangeTestnet(pos), std::runtime_error);
+}
+
 // check that we accept magic codes within the correct range
-TEST_F(TxrefTest, accept_good_magic_code) {
+TEST(TxrefTest, accept_good_magic_code) {
     EXPECT_NO_THROW(checkMagicCodeRange(0));
     EXPECT_NO_THROW(checkMagicCodeRange(1));
     EXPECT_NO_THROW(checkMagicCodeRange(MAX_MAGIC_CODE));
 }
 
+RC_GTEST_PROP(TxrefTestRC, goodMagicCodesAreAccepted, ()
+) {
+    // generate valid magic codes
+    auto code = *rc::gen::inRange(0, MAX_MAGIC_CODE);
+    checkMagicCodeRange(code);
+}
+
 // check that we accept magic codes outside of the range
-TEST_F(TxrefTest, reject_bad_magic_code) {
+TEST(TxrefTest, reject_bad_magic_code) {
     EXPECT_THROW(checkMagicCodeRange(-1), std::runtime_error);
     EXPECT_THROW(checkMagicCodeRange(MAX_MAGIC_CODE + 1), std::runtime_error);
 }
 
-// check that we correctly encode txrefs
-TEST_F(TxrefTest, txref_encode_mainnet) {
+RC_GTEST_PROP(TxrefTestRC, badMagicCodesAreRejected, ()
+) {
+    // generate out of range magic codes
+    auto code = *rc::gen::inRange(-MAX_MAGIC_CODE, -1);
+    RC_ASSERT_THROWS_AS(checkMagicCodeRange(code), std::runtime_error);
+
+    code = *rc::gen::inRange(MAX_MAGIC_CODE + 1, 2 * MAX_MAGIC_CODE);
+    RC_ASSERT_THROWS_AS(checkMagicCodeRange(code), std::runtime_error);
+}
+
+// check that we correctly encode some sample txrefs
+TEST(TxrefTest, txref_encode_mainnet) {
     EXPECT_EQ(txrefEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0, 0),
               "tx1-rqqq-qqqq-qmhu-qk");
     EXPECT_EQ(txrefEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0, 0x1FFF),
@@ -71,8 +143,8 @@ TEST_F(TxrefTest, txref_encode_mainnet) {
               "tx1-rjk0-u5ng-4jsf-mc");
 }
 
-// check that we correctly encode txrefs for testnet
-TEST_F(TxrefTest, txref_encode_testnet) {
+// check that we correctly encode some sample txrefs for testnet
+TEST(TxrefTest, txref_encode_testnet) {
     EXPECT_EQ(txrefEncodeTestnet(txref::BECH32_HRP_TEST, txref::MAGIC_BTC_TEST, 0, 0),
               "txtest1-xqqq-qqqq-qqkn-3gh9");
     EXPECT_EQ(txrefEncodeTestnet(txref::BECH32_HRP_TEST, txref::MAGIC_BTC_TEST, 0x3FFFFFF, 0x3FFFF),
@@ -82,7 +154,7 @@ TEST_F(TxrefTest, txref_encode_testnet) {
 }
 
 // check that we can extract the block height from txrefs for both main and testnet
-TEST_F(TxrefTest, extract_block_height) {
+TEST(TxrefTest, extract_block_height) {
     std::string txref;
     int blockHeight;
     bech32::HrpAndDp bs;
@@ -129,12 +201,11 @@ TEST_F(TxrefTest, extract_block_height) {
 }
 
 // check that we can extract the block height from extended txrefs for both main and testnet
-TEST_F(TxrefTest, extract_extended_block_height) {
+TEST(TxrefTest, extract_extended_block_height) {
     std::string txref;
     int blockHeight;
     bech32::HrpAndDp bs;
-
-
+    
     txref = "tx1rqqqqqqqqqquau7hl";
     bs = bech32::decode(txref);
     extractBlockHeight(blockHeight, bs);
@@ -178,7 +249,7 @@ TEST_F(TxrefTest, extract_extended_block_height) {
 }
 
 // check that we can extract the transaction position from txrefs for both main and testnet
-TEST_F(TxrefTest, extract_transaction_position) {
+TEST(TxrefTest, extract_transaction_position) {
     std::string txref;
     int transactionPosition;
     bech32::HrpAndDp bs;
@@ -225,7 +296,7 @@ TEST_F(TxrefTest, extract_transaction_position) {
 }
 
 // check that we can add missing standard HRPs if needed
-TEST_F(TxrefTest, txref_add_hrps) {
+TEST(TxrefTest, txref_add_hrps) {
     std::string txref;
 
     txref = "rqqqqqqqqmhuqk";
@@ -242,7 +313,7 @@ TEST_F(TxrefTest, txref_add_hrps) {
 }
 
 // check that we correctly encode extended txrefs
-TEST_F(TxrefTest, txref_extended_encode_mainnet) {
+TEST(TxrefTest, txref_extended_encode_mainnet) {
 
     EXPECT_EQ(txrefExtEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0, 0, 0),
               "tx1-rqqq-qqqq-qqqu-au7hl");
@@ -283,7 +354,7 @@ TEST_F(TxrefTest, txref_extended_encode_mainnet) {
 }
 
 // check that we correctly encode extended txrefs
-TEST_F(TxrefTest, txref_extended_encode_testnet) {
+TEST(TxrefTest, txref_extended_encode_testnet) {
 
     EXPECT_EQ(txrefExtEncodeTestnet(txref::BECH32_HRP_TEST, txref::MAGIC_BTC_TEST, 0, 0, 0),
               "txtest1-xqqq-qqqq-qqqq-qj7dvzy");
@@ -315,4 +386,55 @@ TEST_F(TxrefTest, txref_extended_encode_testnet) {
               "txtest1-xjk0-uq5n-gqll-83mv9gz");
 }
 
+RC_GTEST_PROP(TxrefTestRC, checkThatEncodeAndDecodeProduceSameParameters, ()
+) {
+    auto height = *rc::gen::inRange(0, MAX_BLOCK_HEIGHT);
+    auto pos = *rc::gen::inRange(0, MAX_TRANSACTION_POSITION);
+
+    auto txref = txrefEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, height, pos);
+    auto loc = txref::decode(txref);
+
+    RC_ASSERT(loc.blockHeight == height);
+    RC_ASSERT(loc.transactionPosition == pos);
+}
+
+RC_GTEST_PROP(TxrefTestRC, checkThatEncodeAndDecodeTestnetProduceSameParameters, ()
+) {
+    auto height = *rc::gen::inRange(0, MAX_BLOCK_HEIGHT_TESTNET);
+    auto pos = *rc::gen::inRange(0, MAX_TRANSACTION_POSITION_TESTNET);
+
+    auto txref = txrefEncodeTestnet(txref::BECH32_HRP_TEST, txref::MAGIC_BTC_TEST, height, pos);
+    auto loc = txref::decode(txref);
+
+    RC_ASSERT(loc.blockHeight == height);
+    RC_ASSERT(loc.transactionPosition == pos);
+}
+
+RC_GTEST_PROP(TxrefTestRC, checkThatExtendedEncodeAndDecodeProduceSameParameters, ()
+) {
+    auto height = *rc::gen::inRange(0, MAX_BLOCK_HEIGHT);
+    auto pos = *rc::gen::inRange(0, MAX_TRANSACTION_POSITION);
+    auto index = *rc::gen::inRange(0, MAX_UTXO_INDEX);
+
+    auto txref = txrefExtEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, height, pos, index);
+    auto loc = txref::decode(txref);
+
+    RC_ASSERT(loc.blockHeight == height);
+    RC_ASSERT(loc.transactionPosition == pos);
+    RC_ASSERT(loc.uxtoIndex == index);
+}
+
+RC_GTEST_PROP(TxrefTestRC, checkThatExtendedEncodeAndDecodeTestnetProduceSameParameters, ()
+) {
+    auto height = *rc::gen::inRange(0, MAX_BLOCK_HEIGHT_TESTNET);
+    auto pos = *rc::gen::inRange(0, MAX_TRANSACTION_POSITION_TESTNET);
+    auto index = *rc::gen::inRange(0, MAX_UTXO_INDEX);
+
+    auto txref = txrefExtEncodeTestnet(txref::BECH32_HRP_TEST, txref::MAGIC_BTC_TEST, height, pos, index);
+    auto loc = txref::decode(txref);
+
+    RC_ASSERT(loc.blockHeight == height);
+    RC_ASSERT(loc.transactionPosition == pos);
+    RC_ASSERT(loc.uxtoIndex == index);
+}
 

@@ -8,6 +8,7 @@ namespace {
      * each value is mapped to, i.e., 0 -> q, 10 -> 2, etc. This comes from the table
      * in BIP-0173 */
     const char charset[] = "qpzry9x8gf2tvdw0s3jn54khce6mua7l";
+    const int CHARSET_SIZE = 32;
 
     /** The Bech32 character set for decoding. This comes from the table in BIP-0173
      *
@@ -29,34 +30,34 @@ namespace {
     void rejectBStringMixedCase(const std::string &bstring) {
         bool atLeastOneUpper = std::any_of(bstring.begin(), bstring.end(), &::isupper);
         bool atLeastOneLower = std::any_of(bstring.begin(), bstring.end(), &::islower);
-        if(atLeastOneUpper == atLeastOneLower) {
-            throw std::runtime_error("dp is mixed case");
+        if(atLeastOneUpper && atLeastOneLower) {
+            throw std::runtime_error("bech32 string is mixed case");
         }
     }
 
     // bech32 string values must be in range ASCII 33-126
     void rejectBStringValuesOutOfRange(const std::string &bstring) {
         if(std::any_of(bstring.begin(), bstring.end(), [](char ch){ return ch < 33 || ch > 126; } )) {
-            throw std::runtime_error("dp is out of range");
+            throw std::runtime_error("bech32 string has value out of range");
         }
     }
 
     // bech32 string can be at most 90 characters long
     void rejectBStringTooLong(const std::string &bstring) {
         if (bstring.size() > 90)
-            throw std::runtime_error("dp too long");
+            throw std::runtime_error("bech32 string too long");
     }
 
     // bech32 string must be at least 8 chars long: HRP (min 1 char) + '1' + 6-char checksum
     void rejectBStringTooShort(const std::string &bstring) {
         if (bstring.size() < 8)
-            throw std::runtime_error("dp too short");
+            throw std::runtime_error("bech32 string too short");
     }
 
     // bech32 string must contain the separator character
     void rejectBStringWithNoSeparator(const std::string &bstring) {
         if(!std::any_of(bstring.begin(), bstring.end(), [](char ch) { return ch == bech32::separator; })) {
-            throw std::runtime_error("dp is missing separator character");
+            throw std::runtime_error("bech32 string is missing separator character");
         }
     }
 
@@ -173,6 +174,20 @@ namespace {
             throw std::runtime_error("dp must be at least six characters");
     }
 
+    // data values must be in range ASCII 0-31 in order to index into the charset
+    void rejectDataValuesOutOfRange(const std::vector<unsigned char> &dp) {
+        if(std::any_of(dp.begin(), dp.end(), [](char ch){ return ch > 31; } )) {
+            throw std::runtime_error("data value is out of range");
+        }
+    }
+
+    // length of human part plus length of data part plus separator char plus 6 char checksum must be less than 90
+    void rejectBothPartsTooLong(const std::string &hrp, const std::vector<unsigned char> &dp) {
+        if(hrp.length() + dp.size() + 1 + 6 > 90) {
+            throw std::runtime_error("length of hrp + length of dp is too large");
+        }
+    }
+
     // return true if the arg c is within the allowed charset
     bool isAllowedChar(std::string::value_type c) {
         return std::find(std::begin(charset), std::end(charset), c) !=
@@ -200,6 +215,9 @@ namespace bech32 {
     std::string encode(const std::string &hrp, const std::vector<unsigned char> &dp) {
         rejectHRPTooShort(hrp);
         rejectHRPTooLong(hrp);
+        rejectBothPartsTooLong(hrp, dp);
+        rejectDataValuesOutOfRange(dp);
+
         std::string hrpCopy = hrp;
         convertToLowercase(hrpCopy);
         std::vector<unsigned char> checksum = createChecksum(hrpCopy, dp);
@@ -207,6 +225,8 @@ namespace bech32 {
         std::vector<unsigned char> combined = cat(dp, checksum);
         ret.reserve(ret.size() + combined.size());
         for (unsigned char c : combined) {
+            if(c > CHARSET_SIZE-1)
+                throw std::runtime_error("data part contains invalid character");
             ret += charset[c];
         }
         return ret;
