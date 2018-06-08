@@ -17,6 +17,9 @@ download_project(
 
 add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
 
+# Turn off some warnings to silence issues coming from rapidcheck code
+set(DCD_CXX_FLAGS "${DCD_CXX_FLAGS} -Wno-c++98-compat-pedantic")
+
 option(RC_ENABLE_GTEST "Build Google Test integration" ON)
 add_subdirectory("rapidcheck")
 

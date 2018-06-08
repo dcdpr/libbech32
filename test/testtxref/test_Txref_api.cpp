@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
 #include <rapidcheck/gtest.h>
+#pragma clang diagnostic pop
 
 #include "txref.h"
 

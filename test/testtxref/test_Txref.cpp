@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
 #include <rapidcheck/gtest.h>
+#pragma clang diagnostic pop
 
 #include "txref.cpp"
 
@@ -205,7 +208,7 @@ TEST(TxrefTest, extract_extended_block_height) {
     std::string txref;
     int blockHeight;
     bech32::HrpAndDp bs;
-    
+
     txref = "tx1rqqqqqqqqqquau7hl";
     bs = bech32::decode(txref);
     extractBlockHeight(blockHeight, bs);
