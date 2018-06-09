@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <rapidcheck/gtest.h>
 
 #include "txref.h"
 
@@ -512,5 +513,56 @@ TEST(TxrefApiTest, txref_extended_decode_BIP_examples) {
     EXPECT_EQ(loc.transactionPosition, 0x89D);
     EXPECT_EQ(loc.uxtoIndex, 13);
 
+}
 
+RC_GTEST_PROP(TxrefApiTestRC, checkThatEncodeAndDecodeProduceSameParameters, ()
+) {
+    auto height = *rc::gen::inRange(0, 0x1FFFFF); // MAX_BLOCK_HEIGHT
+    auto pos = *rc::gen::inRange(0, 0x1FFF); // MAX_TRANSACTION_POSITION
+
+    auto txref = txref::encode(height, pos);
+    auto loc = txref::decode(txref);
+
+    RC_ASSERT(loc.blockHeight == height);
+    RC_ASSERT(loc.transactionPosition == pos);
+}
+
+RC_GTEST_PROP(TxrefApiTestRC, checkThatEncodeAndDecodeTestnetProduceSameParameters, ()
+) {
+    auto height = *rc::gen::inRange(0, 0x3FFFFFF); // MAX_BLOCK_HEIGHT_TESTNET
+    auto pos = *rc::gen::inRange(0, 0x3FFFF); // MAX_TRANSACTION_POSITION_TESTNET
+
+    auto txref = txref::encodeTestnet(height, pos);
+    auto loc = txref::decode(txref);
+
+    RC_ASSERT(loc.blockHeight == height);
+    RC_ASSERT(loc.transactionPosition == pos);
+}
+
+RC_GTEST_PROP(TxrefApiTestRC, checkThatExtendedEncodeAndDecodeProduceSameParameters, ()
+) {
+    auto height = *rc::gen::inRange(0, 0x1FFFFF); // MAX_BLOCK_HEIGHT
+    auto pos = *rc::gen::inRange(0, 0x1FFF); // MAX_TRANSACTION_POSITION
+    auto index = *rc::gen::inRange(0, 0x1FFF); // MAX_UTXO_INDEX
+
+    auto txref = txref::encode(height, pos, index);
+    auto loc = txref::decode(txref);
+
+    RC_ASSERT(loc.blockHeight == height);
+    RC_ASSERT(loc.transactionPosition == pos);
+    RC_ASSERT(loc.uxtoIndex == index);
+}
+
+RC_GTEST_PROP(TxrefApiTestRC, checkThatExtendedEncodeAndDecodeTestnetProduceSameParameters, ()
+) {
+    auto height = *rc::gen::inRange(0, 0x3FFFFFF); // MAX_BLOCK_HEIGHT_TESTNET
+    auto pos = *rc::gen::inRange(0, 0x3FFFF); // MAX_TRANSACTION_POSITION_TESTNET
+    auto index = *rc::gen::inRange(0, 0x1FFF); // MAX_UTXO_INDEX
+
+    auto txref = txref::encodeTestnet(height, pos, index);
+    auto loc = txref::decode(txref);
+
+    RC_ASSERT(loc.blockHeight == height);
+    RC_ASSERT(loc.transactionPosition == pos);
+    RC_ASSERT(loc.uxtoIndex == index);
 }
