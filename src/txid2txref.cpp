@@ -21,7 +21,7 @@ void printAsJson(const t2t::Transaction &transaction) {
     root.put("network", transaction.network);
     root.put("block-height", transaction.blockHeight);
     root.put("transaction-position", transaction.position);
-    root.put("utxo-index", transaction.utxoIndex);
+    root.put("txo-index", transaction.txoIndex);
     root.put("query-string", transaction.query);
 
     pt::write_json(std::cout, root);
@@ -49,8 +49,7 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config) {
     opt->addUsage( " --rpcpassword [pass]       RPC password " );
     opt->addUsage( " --rpcport [port]           RPC port (default: try both 8332 and 18332) " );
     opt->addUsage( " --config [config_path]     Full pathname to bitcoin.conf (default: <homedir>/.bitcoin/bitcoin.conf) " );
-    opt->addUsage( " --utxoIndex [index #]      Index # for UXTO within the transaction (default: 0) " );
-    opt->addUsage( " --extended                 Force output of an extended txref (txref-ext) " );
+    opt->addUsage( " --txoIndex [index #]       Index # for TXO within the transaction (default: 0) " );
     opt->addUsage( "" );
     opt->addUsage( "<txid|txref|txref-ext>      input: can be a txid to encode, or a txref or txref-ext to decode" );
 
@@ -60,13 +59,13 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config) {
     opt->setOption("rpcpassword");
     opt->setOption("rpcport");
     opt->setCommandOption("config");
-    opt->setOption("utxoIndex");
-    opt->setFlag("extended");
+    opt->setOption("txoIndex");
 
-    // parse any command line arguments--this is to get the "config" option
+    // parse any command line arguments--this is a first pass, mainly to get a possible
+    // "config" option that tells if the bitcoin.conf file is in a non-default location
     opt->processCommandArgs( argc, argv );
 
-        // print usage if no options
+    // print usage if no options
     if( ! opt->hasOptions()) {
         opt->printUsage();
         delete opt;
@@ -128,14 +127,10 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config) {
         config.rpcport = std::atoi(opt->getValue("rpcport"));
     }
 
-    // see if extended txrefs are requested
-    if (opt->getValue("extended")) {
+    // see if a txoIndex was provided. If so, make sure to force generation of extended txref
+    if (opt->getValue("txoIndex") != nullptr) {
+        config.txoIndex = std::atoi(opt->getValue("txoIndex"));
         config.forceExtended = true;
-    }
-
-    // see if a uxtoIndex was provided
-    if (opt->getValue("utxoIndex") != nullptr) {
-        config.utxoIndex = std::atoi(opt->getValue("utxoIndex"));
     }
 
     // finally, the last argument will be the query string -- either the txid or the txref

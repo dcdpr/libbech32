@@ -7,7 +7,7 @@
 class FakeChainSoQuery : public ChainSoQuery {
 
 protected:
-    std::string retrieveJsonData(const std::string & url) const override {
+    std::string retrieveJsonData(const std::string & ) const override {
         std::string result = ""
                 "{\n"
                 "  \"status\" : \"success\",\n"

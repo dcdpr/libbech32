@@ -39,11 +39,14 @@ private:
 
 public:
 
+    // constructor will throw if an RPC connection can't be made to the bitcoind
     BitcoinRPCFacade(
             const std::string& user,
             const std::string& password,
             const std::string& host,
             int port);
+
+    virtual ~BitcoinRPCFacade();
 
     // forwards to existing bitcoinapi functions
     virtual getrawtransaction_t getrawtransaction(const std::string& txid, int verbose) const;
@@ -54,7 +57,6 @@ public:
     virtual std::string createrawtransaction(const std::vector<txout_t>& inputs, const std::map<std::string, double>& amounts) const;
     virtual std::string createrawtransaction(const std::vector<txout_t>& inputs, const std::map<std::string, std::string>& amounts) const;
 
-    virtual std::string signrawtransaction(const std::string& rawTx, const std::vector<signrawtxin_t> & inputs) const;
     virtual std::string signrawtransaction(const std::string& rawTx, const std::vector<signrawtxin_t> & inputs, const std::vector<std::string>& privkeys, const std::string& sighashtype) const;
 
     std::string sendrawtransaction(const std::string& hexString, bool highFee=false) const;

@@ -1,5 +1,5 @@
-#ifndef _ANYOPTION_H
-#define _ANYOPTION_H
+#ifndef ANYOPTION_H
+#define ANYOPTION_H
 
 #include <iostream>
 #include <fstream>
@@ -26,8 +26,6 @@
 #define DEFAULT_MAXHELP         10
 
 #define TRUE_FLAG "true"
-
-using namespace std;
 
 class AnyOption
 {
@@ -267,4 +265,4 @@ private: /* the hidden utils */
 
 };
 
-#endif /* ! _ANYOPTION_H */
+#endif /* ! ANYOPTION_H */

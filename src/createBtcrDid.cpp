@@ -21,11 +21,10 @@ namespace pt = boost::property_tree;
 struct TransactionData {
     std::string inputString;
     std::string outputAddress;
-    std::string network;
-    std::string wif;
+    std::string privateKey;
     std::string ddoRef;
     double fee = 0.0;
-    unsigned int utxoIndex = 0;
+    int txoIndex = 0;
 };
 
 
@@ -51,12 +50,11 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
     opt->addUsage( " --rpcpassword [pass]       RPC password " );
     opt->addUsage( " --rpcport [port]           RPC port (default: try both 8332 and 18332) " );
     opt->addUsage( " --config [config_path]     Full pathname to bitcoin.conf (default: <homedir>/.bitcoin/bitcoin.conf) " );
-    opt->addUsage( " --utxoIndex [index]        Index # of which UTXO to use from the input transaction (default: 0) " );
+    opt->addUsage( " --txoIndex [index]         Index # of which TXO to use from the input transaction (default: 0) " );
     opt->addUsage( "" );
     opt->addUsage( "<inputXXX>      input: (bitcoin address, txid, txref, or txref-ext) needs at least slightly more unspent BTCs than your offered fee" );
     opt->addUsage( "<outputAddress> output bitcoin address: will receive transaction change and be the basis for your DID" );
-    opt->addUsage( "<network>       the bitcoin network you want to use, 'main' or 'test'" );
-    opt->addUsage( "<WIF>           WIF representation of your private key" );
+    opt->addUsage( "<private key>   private key in base58 (wallet import format)" );
     opt->addUsage( "<fee>           fee you are willing to pay (suggestion: >0.001 BTC)" );
     opt->addUsage( "<ddoRef>        reference to a DDO you want as part of your DID (optional)" );
 
@@ -66,9 +64,10 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
     opt->setOption("rpcpassword");
     opt->setOption("rpcport");
     opt->setCommandOption("config");
-    opt->setOption("utxoIndex");
+    opt->setOption("txoIndex");
 
-    // parse any command line arguments--this is to get the "config" option
+    // parse any command line arguments--this is a first pass, mainly to get a possible
+    // "config" option that tells if the bitcoin.conf file is in a non-default location
     opt->processCommandArgs( argc, argv );
 
     // print usage if no options
@@ -133,13 +132,13 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
         config.rpcport = std::atoi(opt->getValue("rpcport"));
     }
 
-    // get utxoIndex if given
-    if (opt->getValue("utxoIndex") != nullptr) {
-        transactionData.utxoIndex = std::atoi(opt->getValue("utxoIndex"));
+    // get txoIndex if given
+    if (opt->getValue("txoIndex") != nullptr) {
+        transactionData.txoIndex = std::atoi(opt->getValue("txoIndex"));
     }
 
     // get the positional arguments
-    if(opt->getArgc() < 5) {
+    if(opt->getArgc() < 4) {
         std::cerr << "Error: all required arguments not found. Check command line usage." << std::endl;
         opt->printUsage();
         delete opt;
@@ -148,11 +147,10 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
     transactionData.inputString = opt->getArgv(0);
     config.query = opt->getArgv(0); // TODO do we need this in two places?
     transactionData.outputAddress = opt->getArgv(1);
-    transactionData.network = opt->getArgv(2);
-    transactionData.wif = opt->getArgv(3);
-    transactionData.fee = std::atof(opt->getArgv(4));
-    if(opt->getArgv(5) != nullptr)
-        transactionData.ddoRef = opt->getArgv(5);
+    transactionData.privateKey = opt->getArgv(2);
+    transactionData.fee = std::atof(opt->getArgv(3));
+    if(opt->getArgv(4) != nullptr)
+        transactionData.ddoRef = opt->getArgv(4);
 
     // TODO validate position arguments
 
@@ -174,7 +172,7 @@ int main(int argc, char *argv[]) {
 
         BitcoinRPCFacade btc(config.rpcuser, config.rpcpassword, config.rpchost, config.rpcport);
 
-        // TODO validate addresses
+        blockchaininfo_t blockChainInfo = btc.getblockchaininfo();
 
         // 0. Determine InputType
 
@@ -189,19 +187,19 @@ int main(int argc, char *argv[]) {
             ChainQuery *q = new ChainSoQuery();
             unspentData = q->getUnspentOutputs(
                     transactionData.inputString,
-                    transactionData.utxoIndex,
-                    transactionData.network);
+                    transactionData.txoIndex,
+                    blockChainInfo.chain);
         }
         else if(inputParam == InputParam::txref_param) {
             // decode txref
             t2t::Transaction transaction;
             t2t::decodeTxref(btc, config, transaction);
 
-            // use txid from decoded txref and cmd-line uxtoIndex to get uxtoInfo
-            utxoinfo_t utxoinfo = btc.gettxout(transaction.txid, transactionData.utxoIndex);
+            // use txid from decoded txref and cmd-line txoIndex to get utxoInfo
+            utxoinfo_t utxoinfo = btc.gettxout(transaction.txid, transactionData.txoIndex);
 
             unspentData.txid = transaction.txid;
-            unspentData.index = transactionData.utxoIndex;
+            unspentData.utxoIndex = transactionData.txoIndex;
             unspentData.amountSatoshis = btc2satoshi(utxoinfo.value);
             unspentData.scriptPubKeyHex = utxoinfo.scriptPubKey.hex;
         }
@@ -210,20 +208,20 @@ int main(int argc, char *argv[]) {
             t2t::Transaction transaction;
             t2t::decodeTxref(btc, config, transaction);
 
-            // use txid and uxtoIndex from decoded txrefext to get uxtoInfo
-            utxoinfo_t utxoinfo = btc.gettxout(transaction.txid, transaction.utxoIndex);
+            // use txid and txoIndex from decoded txrefext to get utxoInfo
+            utxoinfo_t utxoinfo = btc.gettxout(transaction.txid, transaction.txoIndex);
 
             unspentData.txid = transaction.txid;
-            unspentData.index = transaction.utxoIndex;
+            unspentData.utxoIndex = transaction.txoIndex;
             unspentData.amountSatoshis = btc2satoshi(utxoinfo.value);
             unspentData.scriptPubKeyHex = utxoinfo.scriptPubKey.hex;
         }
         else if(inputParam == InputParam::txid_param) {
-            // use cmd-line txid and cmd-line uxtoIndex to get uxtoInfo
-            utxoinfo_t utxoinfo = btc.gettxout(transactionData.inputString, transactionData.utxoIndex);
+            // use cmd-line txid and cmd-line txoIndex to get utxoInfo
+            utxoinfo_t utxoinfo = btc.gettxout(transactionData.inputString, transactionData.txoIndex);
 
             unspentData.txid = transactionData.inputString;
-            unspentData.index = transactionData.utxoIndex;
+            unspentData.utxoIndex = transactionData.txoIndex;
             unspentData.amountSatoshis = btc2satoshi(utxoinfo.value);
             unspentData.scriptPubKeyHex = utxoinfo.scriptPubKey.hex;
         }
@@ -236,10 +234,11 @@ int main(int argc, char *argv[]) {
 
         // add input txid and tx index
         std::vector<txout_t> inputs;
-        txout_t txout = {unspentData.txid, unspentData.index};
+        txout_t txout = {unspentData.txid, static_cast<unsigned int>(unspentData.utxoIndex)};
         inputs.push_back(txout);
 
         // add output address and the change amount
+        // TODO validate output address
         std::map<std::string, std::string> amounts;
 
         // first output is the output address for the change
@@ -254,20 +253,20 @@ int main(int argc, char *argv[]) {
         // sign with private key
         signrawtxin_t signrawtxin;
         signrawtxin.txid = unspentData.txid;
-        signrawtxin.n = unspentData.index;
+        signrawtxin.n = static_cast<unsigned int>(unspentData.utxoIndex);
         signrawtxin.scriptPubKey = unspentData.scriptPubKeyHex;
         signrawtxin.redeemScript = "";
 
         std::string signedRawTransaction =
-                btc.signrawtransaction(rawTransaction, {signrawtxin}, {transactionData.wif}, "ALL");
+                btc.signrawtransaction(rawTransaction, {signrawtxin}, {transactionData.privateKey}, "ALL");
 
         if(signedRawTransaction.empty()) {
-            std::cerr << "Error: transaction could not be signed. Check your WIF/private key." << std::endl;
+            std::cerr << "Error: transaction could not be signed. Check your private key." << std::endl;
             std::exit(-1);
         }
 
         // broadcast to network
-        std:string resultTxid = btc.sendrawtransaction(signedRawTransaction);
+        std::string resultTxid = btc.sendrawtransaction(signedRawTransaction);
 
         if(!resultTxid.empty())
             std::cout << "Transaction submitted. Result txid: " << resultTxid << std::endl;

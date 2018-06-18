@@ -6,7 +6,11 @@ include(../cmake/FindBitcoinApiCpp.cmake)
 find_package(CURL)
 
 # Turn off some warnings to silence issues coming from googletest code
-set(DCD_CXX_FLAGS "${DCD_CXX_FLAGS} -Wno-global-constructors")
+if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+  set(DCD_CXX_FLAGS "${DCD_CXX_FLAGS} -Wno-global-constructors")
+endif()
+
 
 download_project(
     PROJ googletest
@@ -18,7 +22,11 @@ download_project(
 add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
 
 # Turn off some warnings to silence issues coming from rapidcheck code
-set(DCD_CXX_FLAGS "${DCD_CXX_FLAGS} -Wno-c++98-compat-pedantic")
+if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+  set(DCD_CXX_FLAGS "${DCD_CXX_FLAGS} -Wno-c++98-compat-pedantic")
+endif()
+
 
 option(RC_ENABLE_GTEST "Build Google Test integration" ON)
 add_subdirectory("rapidcheck")
@@ -35,6 +43,8 @@ include_directories(
     )
 
 file(GLOB SRCS *.cpp */test_*.cpp)
+
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${DCD_CXX_FLAGS})
 
 add_executable(txref_test ${SRCS})
 

@@ -9,8 +9,8 @@
 namespace {
 
     size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
-        std::string data((const char*) ptr, (size_t) size * nmemb);
-        *((std::stringstream*) stream) << data << std::endl;
+        std::string data(static_cast<const char*>(ptr), size * nmemb);
+        *(static_cast<std::stringstream*>(stream)) << data << std::endl;
         return size * nmemb;
     }
 
@@ -23,6 +23,9 @@ CurlWrapper::CurlWrapper()
 CurlWrapper::~CurlWrapper() {
     curl_easy_cleanup(curl);
 }
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdisabled-macro-expansion"
 
 std::string CurlWrapper::download(const std::string &url) {
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
@@ -46,3 +49,5 @@ std::string CurlWrapper::download(const std::string &url) {
     }
     return out.str();
 }
+
+#pragma clang diagnostic pop

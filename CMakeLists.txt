@@ -8,9 +8,9 @@ set(CXX_STANDARD_REQUIRED YES)
 set(CXX_EXTENSIONS NO)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
-  set(DCD_CXX_FLAGS "-Wall -Wextra -Wpedantic")
+  set(DCD_CXX_FLAGS "-Wall -Wextra -Wpedantic -Wno-unknown-pragmas")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
-  set(DCD_CXX_FLAGS "-Weverything -Wno-c++98-compat")
+  set(DCD_CXX_FLAGS "-Weverything -Wno-c++98-compat -Wno-padded -Wno-missing-prototypes")
 endif()
 
 add_subdirectory(anyoption)

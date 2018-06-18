@@ -1,25 +1,35 @@
 #include <json/json.h>
+#include <sstream>
 #include "chainSoQuery.h"
 #include "CurlWrapper.h"
 #include "satoshis.h"
 
 namespace {
 
-    const std::string CHAIN_SO_URL = "https://chain.so/api/v2";
+    const char CHAIN_SO_URL[] = "https://chain.so/api/v2";
+    const char GET_TX_UNSPENT[] = "get_tx_unspent";
+    const char MAINNET_CODE[] = "BTC";
+    const char TESTNET_CODE[] = "BTCTEST";
 
+    std::string getUrl(const std::string &network, const std::string &address) {
+        std::string networkCode = network == "main" ? MAINNET_CODE : TESTNET_CODE;
+        std::string url = CHAIN_SO_URL;
+        url += "/";
+        url += GET_TX_UNSPENT;
+        url += "/";
+        url += networkCode;
+        url += "/";
+        url += address;
+        return url;
+    }
 }
 
 
 UnspentData ChainSoQuery::getUnspentOutputs(
-        const std::string & address, int transactionIndex, const std::string & network) const {
+        const std::string & address, int utxoIndex, const std::string & network) const {
 
-    std::string networkCode = network == "main" ? "BTC" : "BTCTEST";
-
-    std::string url = CHAIN_SO_URL + "/get_tx_unspent/" + networkCode + "/" + address;
-
-    std::string jsonData = retrieveJsonData(url);
-
-    return populateFromJson(address, transactionIndex, jsonData);
+    return populateFromJson(address, utxoIndex,
+                            retrieveJsonData(getUrl(network, address)));
 }
 
 std::string ChainSoQuery::retrieveJsonData(const std::string &url) const {
@@ -29,23 +39,27 @@ std::string ChainSoQuery::retrieveJsonData(const std::string &url) const {
 }
 
 UnspentData ChainSoQuery::populateFromJson(
-        const std::string & address, int transactionIndex, const std::string & jsonData) const {
+        const std::string & address, int utxoIndex, const std::string & jsonData) const {
 
     UnspentData unspentData = {};
 
-    Json::Reader reader;
     Json::Value obj;
-    reader.parse(jsonData, obj, false);
 
-    Json::Value tx = obj["data"]["txs"][transactionIndex];
-    if(tx.type() == Json::nullValue)
-        throw std::runtime_error("transactionIndex too large");
+    std::istringstream iss (jsonData);
+    iss >> obj;
+
+    Json::Value tx = obj["data"]["txs"][utxoIndex];
+    if(tx.type() == Json::nullValue) {
+        std::stringstream ss;
+        ss << "UTXO not found for utxoIndex: " << utxoIndex;
+        throw std::runtime_error(ss.str());
+    }
 
     unspentData.txid = tx["txid"].asString();
     unspentData.address = address;
     unspentData.scriptPubKeyHex = tx["script_hex"].asString();
     unspentData.amountSatoshis = btc2satoshi(std::atof(tx["value"].asString().data()));
-    unspentData.index = tx["output_no"].asInt();
+    unspentData.utxoIndex = tx["output_no"].asInt();
 
     return unspentData;
 }

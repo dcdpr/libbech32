@@ -1,8 +1,12 @@
 #include <gtest/gtest.h>
 #pragma clang diagnostic push
+#pragma GCC diagnostic push
 #pragma clang diagnostic ignored "-Weverything"
+#pragma GCC diagnostic ignored "-Wall"
+#pragma GCC diagnostic ignored "-Wextra"
 #include <rapidcheck/gtest.h>
 #pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
 #include "bech32.cpp"
 
@@ -146,7 +150,7 @@ RC_GTEST_PROP(Bech32TestRC, stringsWithMixedcaseAndNumbersAreRejected, ()
                             rc::gen::inRange('0', '9')));
 
     // skip generated strings less than two chars long, since they can't possibly have mixed case
-    RC_PRE(str.size() > 1);
+    RC_PRE(str.size() > 1u);
 
     // the above generation can sometimes randomly produce a string without mixed case...
     // here we reject those before testing. Seems weird since this is really using similar code
@@ -600,7 +604,7 @@ RC_GTEST_PROP(Bech32TestRC, encodeThenDecodeShouldProduceInitialData, ()
     RC_PRE(!str2.empty());
 
     // skip when combined lengths of both strings, plus 1 separator character, plus 6 character checksum is too long
-    RC_PRE(str1.length() + str2.length() + 1 + 6 <= 90);
+    RC_PRE(str1.length() + str2.length() + 1 + 6 <= 90u);
 
     // copy to data vector
     std::vector<unsigned char> data;
@@ -696,7 +700,7 @@ RC_GTEST_PROP(Bech32TestRC, checkThatHrpAndDataIsNotTooLong, ()
     RC_PRE(!str2.empty());
 
     // skip when combined lengths of both strings, plus 1 separator character, plus 6 character checksum is too long
-    RC_PRE(str1.length() + str2.length() + 1 + 6 <= 90);
+    RC_PRE(str1.length() + str2.length() + 1 + 6 <= 90u);
 
     // copy to data vector
     std::vector<unsigned char> data;
@@ -733,7 +737,7 @@ RC_GTEST_PROP(Bech32TestRC, checkThatHrpAndDataIsTooLong, ()
     RC_PRE(!str2.empty());
 
     // skip when combined lengths of both strings is not too long
-    RC_PRE(str1.length() + str2.length() + filler.length() + 6 > 90);
+    RC_PRE(str1.length() + str2.length() + filler.length() + 6 > 90u);
 
     // copy to data vector
     std::vector<unsigned char> data;

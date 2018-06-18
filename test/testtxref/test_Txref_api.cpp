@@ -1,8 +1,12 @@
 #include <gtest/gtest.h>
 #pragma clang diagnostic push
+#pragma GCC diagnostic push
 #pragma clang diagnostic ignored "-Weverything"
+#pragma GCC diagnostic ignored "-Wall"
+#pragma GCC diagnostic ignored "-Wextra"
 #include <rapidcheck/gtest.h>
 #pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
 #include "txref.h"
 
@@ -147,7 +151,7 @@ TEST(TxrefApiTest, txref_extended_decode) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
-    EXPECT_EQ(loc.uxtoIndex, 0);
+    EXPECT_EQ(loc.txoIndex, 0);
 
     txref = "tx1-rqqq-qqqq-yrq9-mqh4w";
     loc = txref::decode(txref);
@@ -155,7 +159,7 @@ TEST(TxrefApiTest, txref_extended_decode) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
-    EXPECT_EQ(loc.uxtoIndex, 100);
+    EXPECT_EQ(loc.txoIndex, 100);
 
     txref = "tx1-r7ll-lrqq-qqqm-m5vjv";
     loc = txref::decode(txref);
@@ -163,7 +167,7 @@ TEST(TxrefApiTest, txref_extended_decode) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0x1FFFFF);
     EXPECT_EQ(loc.transactionPosition, 0);
-    EXPECT_EQ(loc.uxtoIndex, 0);
+    EXPECT_EQ(loc.txoIndex, 0);
 
     txref = "tx1-rqqq-qqqq-ll8t-emcac";
     loc = txref::decode(txref);
@@ -171,7 +175,7 @@ TEST(TxrefApiTest, txref_extended_decode) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
-    EXPECT_EQ(loc.uxtoIndex, 0x1FFF);
+    EXPECT_EQ(loc.txoIndex, 0x1FFF);
 
     txref = "tx1-r7ll-llll-ll8y-5yj2q";
     loc = txref::decode(txref);
@@ -179,7 +183,7 @@ TEST(TxrefApiTest, txref_extended_decode) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0x1FFFFF);
     EXPECT_EQ(loc.transactionPosition, 0x1FFF);
-    EXPECT_EQ(loc.uxtoIndex, 0x1FFF);
+    EXPECT_EQ(loc.txoIndex, 0x1FFF);
 
 
     txref = "txtest1-xqqq-qqqq-qqqq-qj7dvzy";
@@ -188,7 +192,7 @@ TEST(TxrefApiTest, txref_extended_decode) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
-    EXPECT_EQ(loc.uxtoIndex, 0);
+    EXPECT_EQ(loc.txoIndex, 0);
 
     txref = "txtest1-xqqq-qqul-llyr-qajp7n7";
     loc = txref::decode(txref);
@@ -196,7 +200,7 @@ TEST(TxrefApiTest, txref_extended_decode) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0x3FFFF);
-    EXPECT_EQ(loc.uxtoIndex, 100);
+    EXPECT_EQ(loc.txoIndex, 100);
 
     txref = "txtest1-x7ll-llrq-qqgx-q0njv4n";
     loc = txref::decode(txref);
@@ -204,7 +208,7 @@ TEST(TxrefApiTest, txref_extended_decode) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST);
     EXPECT_EQ(loc.blockHeight, 0x3FFFFFF);
     EXPECT_EQ(loc.transactionPosition, 0);
-    EXPECT_EQ(loc.uxtoIndex, 200);
+    EXPECT_EQ(loc.txoIndex, 200);
 
     txref = "txtest1-xjk0-uq5n-gq2q-qjtrcwr";
     loc = txref::decode(txref);
@@ -212,7 +216,7 @@ TEST(TxrefApiTest, txref_extended_decode) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST);
     EXPECT_EQ(loc.blockHeight, 466793);
     EXPECT_EQ(loc.transactionPosition, 2205);
-    EXPECT_EQ(loc.uxtoIndex, 10);
+    EXPECT_EQ(loc.txoIndex, 10);
 
     txref = "txtest1-x7ll-llll-llll-8435rg5";
     loc = txref::decode(txref);
@@ -220,7 +224,7 @@ TEST(TxrefApiTest, txref_extended_decode) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST);
     EXPECT_EQ(loc.blockHeight, 0x3FFFFFF);
     EXPECT_EQ(loc.transactionPosition, 0x3FFFF);
-    EXPECT_EQ(loc.uxtoIndex, 0x1FFF);
+    EXPECT_EQ(loc.txoIndex, 0x1FFF);
 }
 
 //check that we correctly decode extended txrefs even with missing HRPs and weird formatting
@@ -234,7 +238,7 @@ TEST(TxrefApiTest, txref_extended_decode_weird) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
-    EXPECT_EQ(loc.uxtoIndex, 0);
+    EXPECT_EQ(loc.txoIndex, 0);
 
     txref = "rq##qq-q#qqq---yrq9-m-q-h-4-w-";
     loc = txref::decode(txref);
@@ -242,7 +246,7 @@ TEST(TxrefApiTest, txref_extended_decode_weird) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
-    EXPECT_EQ(loc.uxtoIndex, 100);
+    EXPECT_EQ(loc.txoIndex, 100);
 
     txref = "tx1-r7$$$$ll-l%%rqq-q  qqm m5vj v";
     loc = txref::decode(txref);
@@ -250,7 +254,7 @@ TEST(TxrefApiTest, txref_extended_decode_weird) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0x1FFFFF);
     EXPECT_EQ(loc.transactionPosition, 0);
-    EXPECT_EQ(loc.uxtoIndex, 0);
+    EXPECT_EQ(loc.txoIndex, 0);
 
     txref = "tx1-rqq  q-q   qqq-l@@@@l8t-e(mcac)";
     loc = txref::decode(txref);
@@ -258,7 +262,7 @@ TEST(TxrefApiTest, txref_extended_decode_weird) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
-    EXPECT_EQ(loc.uxtoIndex, 0x1FFF);
+    EXPECT_EQ(loc.txoIndex, 0x1FFF);
 
     txref = "r7ll-llll-l                   l8y-5yj2q";
     loc = txref::decode(txref);
@@ -266,7 +270,7 @@ TEST(TxrefApiTest, txref_extended_decode_weird) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0x1FFFFF);
     EXPECT_EQ(loc.transactionPosition, 0x1FFF);
-    EXPECT_EQ(loc.uxtoIndex, 0x1FFF);
+    EXPECT_EQ(loc.txoIndex, 0x1FFF);
 
 
     txref = "txtest1-xqqq-qqqq-qqqq-q!j!7!d!v!z!y";
@@ -275,7 +279,7 @@ TEST(TxrefApiTest, txref_extended_decode_weird) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
-    EXPECT_EQ(loc.uxtoIndex, 0);
+    EXPECT_EQ(loc.txoIndex, 0);
 
     txref = "xqqq-qqul-llyr-qaj    p7n7";
     loc = txref::decode(txref);
@@ -283,7 +287,7 @@ TEST(TxrefApiTest, txref_extended_decode_weird) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0x3FFFF);
-    EXPECT_EQ(loc.uxtoIndex, 100);
+    EXPECT_EQ(loc.txoIndex, 100);
 
     txref = "x7ll-llrq-q   qgx-q   0njv4n";
     loc = txref::decode(txref);
@@ -291,7 +295,7 @@ TEST(TxrefApiTest, txref_extended_decode_weird) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST);
     EXPECT_EQ(loc.blockHeight, 0x3FFFFFF);
     EXPECT_EQ(loc.transactionPosition, 0);
-    EXPECT_EQ(loc.uxtoIndex, 200);
+    EXPECT_EQ(loc.txoIndex, 200);
 
     txref = "txtest1-xj!@k0-uq5n-g!@q2q-qjtr!@  cwr";
     loc = txref::decode(txref);
@@ -299,7 +303,7 @@ TEST(TxrefApiTest, txref_extended_decode_weird) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST);
     EXPECT_EQ(loc.blockHeight, 466793);
     EXPECT_EQ(loc.transactionPosition, 2205);
-    EXPECT_EQ(loc.uxtoIndex, 10);
+    EXPECT_EQ(loc.txoIndex, 10);
 
     txref = "-x7ll-llll-llll-843(((()))))   5rg5";
     loc = txref::decode(txref);
@@ -307,7 +311,7 @@ TEST(TxrefApiTest, txref_extended_decode_weird) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST);
     EXPECT_EQ(loc.blockHeight, 0x3FFFFFF);
     EXPECT_EQ(loc.transactionPosition, 0x3FFFF);
-    EXPECT_EQ(loc.uxtoIndex, 0x1FFF);
+    EXPECT_EQ(loc.txoIndex, 0x1FFF);
 }
 
 // check that we correctly encode txrefs in main and testnet
@@ -376,7 +380,7 @@ TEST(TxrefApiTest, txref_extended_encode) {
               "txtest1-xjk0-uq5n-gqll-83mv9gz");
 }
 
-// check that we return regular txref for uxtoIndex=0, unless forceExtended is true
+// check that we return regular txref for txoIndex=0, unless forceExtended is true
 TEST(TxrefApiTest, txref_extended_encode_force_zero) {
 
     EXPECT_EQ(txref::encode(0, 0, 0),
@@ -458,63 +462,63 @@ TEST(TxrefApiTest, txref_extended_decode_BIP_examples) {
     loc = txref::decode(txref);
     EXPECT_EQ(loc.blockHeight, 0x71F69);
     EXPECT_EQ(loc.transactionPosition, 0x89D);
-    EXPECT_EQ(loc.uxtoIndex, 0);
+    EXPECT_EQ(loc.txoIndex, 0);
 
     txref = "tx1:rjk0-u5ng-dqqa-9wk8d";
     loc = txref::decode(txref);
     EXPECT_EQ(loc.blockHeight, 0x71F69);
     EXPECT_EQ(loc.transactionPosition, 0x89D);
-    EXPECT_EQ(loc.uxtoIndex, 13);
+    EXPECT_EQ(loc.txoIndex, 13);
 
 
     txref = "TX1RJK0U5NGQQQ8LSNK3";
     loc = txref::decode(txref);
     EXPECT_EQ(loc.blockHeight, 0x71F69);
     EXPECT_EQ(loc.transactionPosition, 0x89D);
-    EXPECT_EQ(loc.uxtoIndex, 0);
+    EXPECT_EQ(loc.txoIndex, 0);
 
     txref = "TX1RJK0U5NGDQQA9WK8D";
     loc = txref::decode(txref);
     EXPECT_EQ(loc.blockHeight, 0x71F69);
     EXPECT_EQ(loc.transactionPosition, 0x89D);
-    EXPECT_EQ(loc.uxtoIndex, 13);
+    EXPECT_EQ(loc.txoIndex, 13);
 
 
 //    txref = "TX1R1JK0--U5bNGQQQ8----LSNK3";
 //    loc = txref::decode(txref);
 //    EXPECT_EQ(loc.blockHeight, 0x71F69);
 //    EXPECT_EQ(loc.transactionPosition, 0x89D);
-//    EXPECT_EQ(loc.uxtoIndex, 0);
+//    EXPECT_EQ(loc.txoIndex, 0);
 //
 //    txref = "TX1R1JK0--U5bNGDQQa----9WK8D"; // fails because of extra '1' and mixed case? why is it listed in BIP?
 //    loc = txref::decode(txref);
 //    EXPECT_EQ(loc.blockHeight, 0x71F69);
 //    EXPECT_EQ(loc.transactionPosition, 0x89D);
-//    EXPECT_EQ(loc.uxtoIndex, 13);
+//    EXPECT_EQ(loc.txoIndex, 13);
 
     txref = "tx1 rjk0 u5ng qqq8lsnk3";
     loc = txref::decode(txref);
     EXPECT_EQ(loc.blockHeight, 0x71F69);
     EXPECT_EQ(loc.transactionPosition, 0x89D);
-    EXPECT_EQ(loc.uxtoIndex, 0);
+    EXPECT_EQ(loc.txoIndex, 0);
 
     txref = "tx1 rjk0 u5ng dqqa9wk8d";
     loc = txref::decode(txref);
     EXPECT_EQ(loc.blockHeight, 0x71F69);
     EXPECT_EQ(loc.transactionPosition, 0x89D);
-    EXPECT_EQ(loc.uxtoIndex, 13);
+    EXPECT_EQ(loc.txoIndex, 13);
 
     txref = "tx1!rjk0\\u5ng*qqq8^^lsnk3";
     loc = txref::decode(txref);
     EXPECT_EQ(loc.blockHeight, 0x71F69);
     EXPECT_EQ(loc.transactionPosition, 0x89D);
-    EXPECT_EQ(loc.uxtoIndex, 0);
+    EXPECT_EQ(loc.txoIndex, 0);
 
     txref = "tx1!rjk0\\u5ng*dqqa^^9wk8d";
     loc = txref::decode(txref);
     EXPECT_EQ(loc.blockHeight, 0x71F69);
     EXPECT_EQ(loc.transactionPosition, 0x89D);
-    EXPECT_EQ(loc.uxtoIndex, 13);
+    EXPECT_EQ(loc.txoIndex, 13);
 
 }
 
@@ -546,26 +550,27 @@ RC_GTEST_PROP(TxrefApiTestRC, checkThatExtendedEncodeAndDecodeProduceSameParamet
 ) {
     auto height = *rc::gen::inRange(0, 0x1FFFFF); // MAX_BLOCK_HEIGHT
     auto pos = *rc::gen::inRange(0, 0x1FFF); // MAX_TRANSACTION_POSITION
-    auto index = *rc::gen::inRange(0, 0x1FFF); // MAX_UTXO_INDEX
+    auto index = *rc::gen::inRange(0, 0x1FFF); // MAX_TXO_INDEX
 
     auto txref = txref::encode(height, pos, index);
     auto loc = txref::decode(txref);
 
     RC_ASSERT(loc.blockHeight == height);
     RC_ASSERT(loc.transactionPosition == pos);
-    RC_ASSERT(loc.uxtoIndex == index);
+    RC_ASSERT(loc.txoIndex == index);
 }
 
 RC_GTEST_PROP(TxrefApiTestRC, checkThatExtendedEncodeAndDecodeTestnetProduceSameParameters, ()
 ) {
     auto height = *rc::gen::inRange(0, 0x3FFFFFF); // MAX_BLOCK_HEIGHT_TESTNET
     auto pos = *rc::gen::inRange(0, 0x3FFFF); // MAX_TRANSACTION_POSITION_TESTNET
-    auto index = *rc::gen::inRange(0, 0x1FFF); // MAX_UTXO_INDEX
+    auto index = *rc::gen::inRange(0, 0x1FFF); // MAX_TXO_INDEX
 
     auto txref = txref::encodeTestnet(height, pos, index);
     auto loc = txref::decode(txref);
 
     RC_ASSERT(loc.blockHeight == height);
     RC_ASSERT(loc.transactionPosition == pos);
-    RC_ASSERT(loc.uxtoIndex == index);
+    RC_ASSERT(loc.txoIndex == index);
 }
+

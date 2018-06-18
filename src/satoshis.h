@@ -8,7 +8,7 @@
 const int SATOSHIS_PER_BTC = 100000000;
 
 inline int64_t btc2satoshi(double value) {
-    return (int64_t)(value * SATOSHIS_PER_BTC + (value < 0.0 ? -.5 : .5));
+    return static_cast<int64_t>(value * SATOSHIS_PER_BTC + (value < 0.0 ? -.5 : .5));
 }
 
 inline double satoshi2btc(int64_t value) {

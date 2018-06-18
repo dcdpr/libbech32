@@ -11,7 +11,7 @@ namespace {
         try {
             b->getinfo();
         }
-        catch (BitcoinException &e)
+        catch (BitcoinException &)
         {
             return false;
         }
@@ -43,6 +43,8 @@ BitcoinRPCFacade::BitcoinRPCFacade(
     }
     throw std::runtime_error(ss.str());
 }
+
+BitcoinRPCFacade::~BitcoinRPCFacade() = default;
 
 getrawtransaction_t BitcoinRPCFacade::getrawtransaction(const std::string &txid, int verbose) const {
     return bitcoinAPI->getrawtransaction(txid, verbose);
@@ -90,15 +92,6 @@ std::string BitcoinRPCFacade::createrawtransaction(
         const std::vector<txout_t> &inputs,
         const std::map<std::string, std::string> &amounts) const {
     return bitcoinAPI->createrawtransaction(inputs, amounts);
-}
-
-std::string
-BitcoinRPCFacade::signrawtransaction(const std::string &rawTx, const std::vector<signrawtxin_t> & inputs) const {
-    signrawtransaction_t signedTx = bitcoinAPI->signrawtransaction(rawTx, inputs);
-    if(signedTx.complete) {
-        return signedTx.hex;
-    }
-    return ""; // TODO throw?
 }
 
 std::string
