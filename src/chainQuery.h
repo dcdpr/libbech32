@@ -8,16 +8,16 @@ struct UnspentData {
     std::string txid;
     std::string scriptPubKeyHex;
     int64_t amountSatoshis = 0;
-    unsigned int index = 0;
+    int utxoIndex = 0;
 };
 
 
 class ChainQuery {
-
 public:
-    virtual UnspentData getUnspentOutputs(
-            const std::string & address, int transactionIndex, const std::string & network) const = 0;
+    virtual ~ChainQuery() = default;
 
+    virtual UnspentData getUnspentOutputs(
+            const std::string & address, int utxoIndex, const std::string & network) const = 0;
 };
 
 

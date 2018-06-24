@@ -5,8 +5,6 @@ file(GLOB SRCS *.cpp)
 
 include_directories(${CMAKE_SOURCE_DIR} ${BITCOINAPICPP_INCLUDE_DIRS} ${JSONCPP_INCLUDE_DIRS})
 
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${DCD_CXX_FLAGS})
-
 add_executable(testtxref ${SRCS})
 
 target_link_libraries(testtxref libtxref libbech32 gtest gmock rapidcheck_gtest)

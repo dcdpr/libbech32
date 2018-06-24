@@ -1,7 +1,3 @@
-//
-// Created by Pape, Daniel (DS) on 4/30/18.
-//
-
 #ifndef TXREF_TXID2TXREF_H
 #define TXREF_TXID2TXREF_H
 
@@ -11,10 +7,10 @@ namespace t2t {
         std::string rpcuser = "";
         std::string rpcpassword ="";
         std::string rpchost = "127.0.0.1";
-        int rpcport = 0;
         std::string query ="";
+        int rpcport = 0;
+        int txoIndex = 0;
         bool forceExtended = false;
-        unsigned int utxoIndex = 0;
     };
 
     struct Transaction {
@@ -23,7 +19,7 @@ namespace t2t {
         std::string network = "";
         int blockHeight = 0;
         int position = 0;
-        unsigned int utxoIndex = 0;
+        int txoIndex = 0;
         std::string query = "";
     };
 

@@ -44,16 +44,16 @@ namespace t2t {
             std::exit(-1);
         }
 
-        // TODO need to verify that the uxtoIndex provided on command line is valid
+        // TODO need to verify that the txoIndex provided on command line is valid
 
-        // call txref code with block height, transaction position, and utxoIndex (if provided) to get txref
+        // call txref code with block height, transaction position, and txoIndex (if provided) to get txref
         std::string txref;
         if (isTestnet) {
             txref = txref::encodeTestnet(
-                    blockHeight, static_cast<int>(blockIndex), config.utxoIndex, config.forceExtended);
+                    blockHeight, static_cast<int>(blockIndex), config.txoIndex, config.forceExtended);
         } else {
             txref = txref::encode(
-                    blockHeight, static_cast<int>(blockIndex), config.utxoIndex, config.forceExtended);
+                    blockHeight, static_cast<int>(blockIndex), config.txoIndex, config.forceExtended);
         }
 
         // output
@@ -63,7 +63,7 @@ namespace t2t {
         transaction.blockHeight = blockHeight;
         transaction.position = static_cast<int>(blockIndex);
         transaction.network = blockChainInfo.chain;
-        transaction.utxoIndex = config.utxoIndex;
+        transaction.txoIndex = config.txoIndex;
     }
 
     void decodeTxref(const BitcoinRPCFacade &btc, const Config &config, struct Transaction &transaction) {
@@ -71,9 +71,6 @@ namespace t2t {
         txref::LocationData locationData = txref::decode(config.query);
 
         blockchaininfo_t blockChainInfo = btc.getblockchaininfo();
-
-        // determine what network we are on
-        bool isTestnet = blockChainInfo.chain == "test";
 
         // get block hash for block at location "height"
         std::string blockHash = btc.getblockhash(locationData.blockHeight);
@@ -86,7 +83,7 @@ namespace t2t {
         try {
             txid = blockInfo.tx.at(locationData.transactionPosition);
         }
-        catch (std::out_of_range &e) {
+        catch (std::out_of_range &) {
             std::cerr << "Error: Could not find transaction " << config.query
                       << " within the block." << std::endl;
             std::exit(-1);
@@ -98,7 +95,7 @@ namespace t2t {
         transaction.txref = locationData.txref;
         transaction.blockHeight = locationData.blockHeight;
         transaction.position = locationData.transactionPosition;
-        transaction.utxoIndex = locationData.uxtoIndex;
+        transaction.txoIndex = locationData.txoIndex;
         transaction.network = blockChainInfo.chain;
     }
 

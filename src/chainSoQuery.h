@@ -7,16 +7,17 @@
 class ChainSoQuery : public ChainQuery {
 
 public:
+    ~ChainSoQuery() override = default;
 
-    virtual UnspentData getUnspentOutputs(
-            const std::string & address, int transactionIndex, const std::string & network) const override;
+    UnspentData getUnspentOutputs(
+            const std::string & address, int utxoIndex, const std::string & network) const override;
 
 protected:
 
     virtual std::string retrieveJsonData(const std::string & url) const;
 
     virtual UnspentData populateFromJson(
-            const std::string & address, int transactionIndex, const std::string & jsonData) const;
+            const std::string & address, int utxoIndex, const std::string & jsonData) const;
 };
 
 

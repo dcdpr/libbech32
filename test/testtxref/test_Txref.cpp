@@ -1,5 +1,12 @@
 #include <gtest/gtest.h>
+#pragma clang diagnostic push
+#pragma GCC diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
+#pragma GCC diagnostic ignored "-Wall"
+#pragma GCC diagnostic ignored "-Wextra"
 #include <rapidcheck/gtest.h>
+#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
 #include "txref.cpp"
 
@@ -205,7 +212,7 @@ TEST(TxrefTest, extract_extended_block_height) {
     std::string txref;
     int blockHeight;
     bech32::HrpAndDp bs;
-    
+
     txref = "tx1rqqqqqqqqqquau7hl";
     bs = bech32::decode(txref);
     extractBlockHeight(blockHeight, bs);
@@ -414,27 +421,27 @@ RC_GTEST_PROP(TxrefTestRC, checkThatExtendedEncodeAndDecodeProduceSameParameters
 ) {
     auto height = *rc::gen::inRange(0, MAX_BLOCK_HEIGHT);
     auto pos = *rc::gen::inRange(0, MAX_TRANSACTION_POSITION);
-    auto index = *rc::gen::inRange(0, MAX_UTXO_INDEX);
+    auto index = *rc::gen::inRange(0, MAX_TXO_INDEX);
 
     auto txref = txrefExtEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, height, pos, index);
     auto loc = txref::decode(txref);
 
     RC_ASSERT(loc.blockHeight == height);
     RC_ASSERT(loc.transactionPosition == pos);
-    RC_ASSERT(loc.uxtoIndex == index);
+    RC_ASSERT(loc.txoIndex == index);
 }
 
 RC_GTEST_PROP(TxrefTestRC, checkThatExtendedEncodeAndDecodeTestnetProduceSameParameters, ()
 ) {
     auto height = *rc::gen::inRange(0, MAX_BLOCK_HEIGHT_TESTNET);
     auto pos = *rc::gen::inRange(0, MAX_TRANSACTION_POSITION_TESTNET);
-    auto index = *rc::gen::inRange(0, MAX_UTXO_INDEX);
+    auto index = *rc::gen::inRange(0, MAX_TXO_INDEX);
 
     auto txref = txrefExtEncodeTestnet(txref::BECH32_HRP_TEST, txref::MAGIC_BTC_TEST, height, pos, index);
     auto loc = txref::decode(txref);
 
     RC_ASSERT(loc.blockHeight == height);
     RC_ASSERT(loc.transactionPosition == pos);
-    RC_ASSERT(loc.uxtoIndex == index);
+    RC_ASSERT(loc.txoIndex == index);
 }
 
