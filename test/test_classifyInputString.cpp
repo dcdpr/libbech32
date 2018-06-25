@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "classifyInputString.h"
+#include "classifyInputString.cpp"
 
 
 TEST(ClassifyInputStringTest, test_empty) {
@@ -18,6 +19,20 @@ TEST(ClassifyInputStringTest, test_address) {
     EXPECT_EQ(classifyInputString("mzgjzyj9i9JyU5zBQyNBZMkm2QNz2MQ3Se"), address_param);
     EXPECT_EQ(classifyInputString("mxgj4vFNNWPdRb45tHoJoVqfahYkc3QYZ4"), address_param);
     EXPECT_EQ(classifyInputString("mxgj4vFNNWPdRb45tHoJoVqfahYk8ec3QYZ4"), unknown_param);
+}
+
+TEST(ClassifyInputStringTest, test_bad_address) {
+    EXPECT_EQ(classifyInputString("17VZNX1SN5NtKa8UQFxwQbFeFc3iqRYhemse"), unknown_param);
+    EXPECT_EQ(classifyInputString("3EktnHQD7RiAE6uzMj2ZifT9YgRrkSgzQXdd"), unknown_param);
+    EXPECT_EQ(classifyInputString("2MzQwSSnBHWHqSAqtTVQ6v47XtaisrJa1Vcd"), unknown_param);
+    EXPECT_EQ(classifyInputString("mzgjzyj9i9JyU5zBQyNBZMkm2QNz2MQ3Sedd"), unknown_param);
+    EXPECT_EQ(classifyInputString("mxgj4vFNNWPdRb45tHoJoVqfahYkc3QYZ4dd"), unknown_param);
+    EXPECT_EQ(classifyInputString("mxgj4vFNNWPdRb45tHoJoVqfahYk8ec3QYZ4"), unknown_param);
+    EXPECT_EQ(classifyInputString("17VZNX1SN5NtKa8UQFxwQbFeF"), unknown_param);
+    EXPECT_EQ(classifyInputString("3EktnHQD7RiAE6uzMj2ZffT9Y"), unknown_param);
+    EXPECT_EQ(classifyInputString("2MzQwSSnBHWHqSAqtTVQ6v47X"), unknown_param);
+    EXPECT_EQ(classifyInputString("mzgjzyj9i9JyU5zBQyNBZMkm2"), unknown_param);
+    EXPECT_EQ(classifyInputString("mxgj4vFNNWPdRb45tHoJoVqfa"), unknown_param);
 }
 
 TEST(ClassifyInputStringTest, test_txid) {
