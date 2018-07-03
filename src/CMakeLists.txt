@@ -3,16 +3,31 @@ include(../cmake/FindJSONCPP.cmake)
 
 find_package(CURL)
 
-file(GLOB SRCS *.cpp)
 
-include_directories(${CMAKE_SOURCE_DIR} ${BITCOINAPICPP_INCLUDE_DIRS} ${JSONCPP_INCLUDE_DIRS})
+############################################################
+# Target: txid2txref
 
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${DCD_CXX_FLAGS})
+add_executable(txid2txref txid2txref.cpp t2tSupport.cpp bitcoinRPCFacade.cpp)
 
-add_executable(txid2txref txid2txref.cpp t2tSupport.cpp t2tSupport.h bitcoinRPCFacade.cpp bitcoinRPCFacade.h txid2txref.h)
-target_link_libraries(txid2txref libtxref libbech32 anyoption ${JSONCPP_LIBRARIES} ${BITCOINAPICPP_LIBRARIES})
+target_include_directories(txid2txref 
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${BITCOINAPICPP_INCLUDE_DIRS} ${JSONCPP_INCLUDE_DIRS})
 
-add_executable(createBtcrDid createBtcrDid.cpp t2tSupport.cpp t2tSupport.h bitcoinRPCFacade.cpp bitcoinRPCFacade.h chainQuery.h chainSoQuery.cpp chainSoQuery.h CurlWrapper.cpp CurlWrapper.h encodeOpReturnData.h satoshis.h classifyInputString.h classifyInputString.cpp)
-target_link_libraries(createBtcrDid libtxref libbech32 anyoption ${JSONCPP_LIBRARIES} ${BITCOINAPICPP_LIBRARIES} ${CURL_LIBRARIES})
+target_compile_features(txid2txref PRIVATE cxx_std_11)
+target_compile_options(txid2txref PRIVATE ${DCD_CXX_FLAGS})
+set_target_properties(txid2txref PROPERTIES CXX_EXTENSIONS OFF)
 
-install(TARGETS txid2txref createBtcrDid DESTINATION bin)
+target_link_libraries(txid2txref PUBLIC bech32 txref anyoption ${JSONCPP_LIBRARIES} ${BITCOINAPICPP_LIBRARIES})
+
+############################################################
+# Target: createBtcrDid
+
+add_executable(createBtcrDid createBtcrDid.cpp t2tSupport.cpp bitcoinRPCFacade.cpp chainSoQuery.cpp CurlWrapper.cpp classifyInputString.cpp)
+
+target_compile_features(createBtcrDid PRIVATE cxx_std_11)
+target_compile_options(createBtcrDid PRIVATE ${DCD_CXX_FLAGS})
+set_target_properties(createBtcrDid PROPERTIES CXX_EXTENSIONS OFF)
+
+target_link_libraries(createBtcrDid PUBLIC bech32 txref anyoption ${JSONCPP_LIBRARIES} ${BITCOINAPICPP_LIBRARIES} ${CURL_LIBRARIES})
+
+
+#install(TARGETS txid2txref createBtcrDid DESTINATION bin)
