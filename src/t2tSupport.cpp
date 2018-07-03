@@ -1,6 +1,6 @@
 #include <bitcoinapi/types.h>
 #include <iostream>
-#include "libtxref/txref.h"
+#include "txref.h"
 #include "txid2txref.h"
 #include "bitcoinRPCFacade.h"
 #include "t2tSupport.h"

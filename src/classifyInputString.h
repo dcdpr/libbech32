@@ -2,8 +2,8 @@
 #define TXREF_CLASSIFYINPUTSTRING_H
 
 
-#include <bech32.h>
-#include <txref.h>
+#include "bech32.h"
+#include "txref.h"
 
 
 enum InputParam { unknown_param, address_param, txid_param, txref_param, txrefext_param };
