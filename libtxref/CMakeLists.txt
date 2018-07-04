@@ -1,8 +1,16 @@
-file(GLOB SRCS *.cpp)
+############################################################
+# Target: txref
 
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${DCD_CXX_FLAGS})
+add_library(txref STATIC txref.cpp)
 
-add_library(libtxref STATIC ${SRCS})
+target_include_directories(txref
+    PUBLIC 
+        $<INSTALL_INTERFACE:include/libtxref>    
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include/libtxref>
+)
 
-# include directories exported by this library
-target_include_directories(libtxref PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_features(txref PRIVATE cxx_std_11)
+target_compile_options(txref PRIVATE ${DCD_CXX_FLAGS})
+set_target_properties(txref PROPERTIES CXX_EXTENSIONS OFF)
+
+target_link_libraries(txref PUBLIC bech32)

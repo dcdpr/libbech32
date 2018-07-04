@@ -1,8 +1,15 @@
-file(GLOB SRCS *.cpp)
+############################################################
+# Target: bech32
 
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${DCD_CXX_FLAGS})
+add_library(bech32 STATIC bech32.cpp)
 
-add_library(libbech32 STATIC ${SRCS})
+target_include_directories(bech32
+    PUBLIC 
+        $<INSTALL_INTERFACE:include/libbech32>    
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include/libbech32>
+)
 
-# include directories exported by this library
-target_include_directories(libbech32 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_features(bech32 PRIVATE cxx_std_11)
+target_compile_options(bech32 PRIVATE ${DCD_CXX_FLAGS})
+set_target_properties(bech32 PROPERTIES CXX_EXTENSIONS OFF)
+

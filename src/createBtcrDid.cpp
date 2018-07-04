@@ -7,15 +7,11 @@
 #include "encodeOpReturnData.h"
 #include "satoshis.h"
 #include "classifyInputString.h"
-#include "libtxref/txref.h"
+#include "txref.h"
 #include "txid2txref.h"
 #include "t2tSupport.h"
 #include <bitcoinapi/bitcoinapi.h>
-#include <anyoption/anyoption.h>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-
-namespace pt = boost::property_tree;
+#include "anyoption.h"
 
 
 struct TransactionData {
@@ -74,7 +70,7 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
     if( ! opt->hasOptions()) {
         opt->printUsage();
         delete opt;
-        return -1;
+        return 0;
     }
 
     // see if there is a bitcoin.conf file to parse. If not, continue.

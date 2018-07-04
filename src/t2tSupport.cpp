@@ -1,6 +1,6 @@
 #include <bitcoinapi/types.h>
 #include <iostream>
-#include "libtxref/txref.h"
+#include "txref.h"
 #include "txid2txref.h"
 #include "bitcoinRPCFacade.h"
 #include "t2tSupport.h"
@@ -44,7 +44,13 @@ namespace t2t {
             std::exit(-1);
         }
 
-        // TODO need to verify that the txoIndex provided on command line is valid
+        // verify that the txoIndex provided on command line is valid for this txid
+        auto numTxos = static_cast<int>(rawTransaction.vout.size());
+        if(config.txoIndex >= numTxos) {
+            std::cerr << "Error: txoIndex provided [" << config.txoIndex
+                      << "] is too large for transaction " << config.query << std::endl;
+            std::exit(-1);
+        }
 
         // call txref code with block height, transaction position, and txoIndex (if provided) to get txref
         std::string txref;
