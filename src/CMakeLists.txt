@@ -9,7 +9,7 @@ find_package(CURL)
 
 add_executable(txid2txref txid2txref.cpp t2tSupport.cpp bitcoinRPCFacade.cpp)
 
-target_include_directories(txid2txref 
+target_include_directories(txid2txref
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${BITCOINAPICPP_INCLUDE_DIRS} ${JSONCPP_INCLUDE_DIRS})
 
 target_compile_features(txid2txref PRIVATE cxx_std_11)
@@ -21,7 +21,7 @@ target_link_libraries(txid2txref PUBLIC bech32 txref anyoption ${JSONCPP_LIBRARI
 ############################################################
 # Target: createBtcrDid
 
-add_executable(createBtcrDid createBtcrDid.cpp t2tSupport.cpp bitcoinRPCFacade.cpp chainSoQuery.cpp CurlWrapper.cpp classifyInputString.cpp)
+add_executable(createBtcrDid createBtcrDid.cpp t2tSupport.cpp bitcoinRPCFacade.cpp chainSoQuery.cpp CurlWrapper.cpp classifyInputString.cpp encodeOpReturnData.cpp)
 
 target_compile_features(createBtcrDid PRIVATE cxx_std_11)
 target_compile_options(createBtcrDid PRIVATE ${DCD_CXX_FLAGS})
