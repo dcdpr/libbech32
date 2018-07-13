@@ -12,10 +12,6 @@
 #include "t2tSupport.h"
 #include <bitcoinapi/bitcoinapi.h>
 #include "anyoption.h"
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-
-namespace pt = boost::property_tree;
 
 
 struct TransactionData {
