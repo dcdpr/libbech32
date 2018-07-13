@@ -2,6 +2,7 @@
 #include <json/json.h>
 
 #include "encodeOpReturnData.h"
+#include "encodeOpReturnData.cpp"
 
 
 TEST(EncodeOpReturnDataTest, test_simple) {

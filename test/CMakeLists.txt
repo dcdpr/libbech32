@@ -31,15 +31,6 @@ option(RC_ENABLE_GTEST "Build Google Test integration" ON)
 add_subdirectory("rapidcheck")
 
 
-#include_directories(
-#        ${CMAKE_SOURCE_DIR}
-#        ${PROJECT_SOURCE_DIR}/src
-#        ${PROJECT_SOURCE_DIR}/libbech32
-#        ${PROJECT_SOURCE_DIR}/libtxref
-#        ${BITCOINAPICPP_INCLUDE_DIRS}
-#        ${JSONCPP_INCLUDE_DIRS}
-#    )
-
 
 ############################################################
 # Target: txref_test
@@ -51,14 +42,14 @@ target_compile_options(txref_test PRIVATE ${DCD_CXX_FLAGS})
 set_target_properties(txref_test PROPERTIES CXX_EXTENSIONS OFF)
 
 target_include_directories(txref_test
-    PUBLIC 
-        ${CMAKE_SOURCE_DIR} 
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/src
-        ${PROJECT_SOURCE_DIR}/libbech32 
+        ${PROJECT_SOURCE_DIR}/libbech32
         ${PROJECT_SOURCE_DIR}/libtxref)
 
 target_link_libraries(txref_test
-    PUBLIC 
+    PUBLIC
         txref bech32 ${JSONCPP_LIBRARIES} ${BITCOINAPICPP_LIBRARIES} ${CURL_LIBRARIES} gtest gmock rapidcheck_gtest)
 
 # CTest targets
