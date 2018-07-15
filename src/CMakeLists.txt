@@ -39,7 +39,11 @@ target_link_libraries(createBtcrDid PUBLIC bech32 txref anyoption ${JSONCPP_LIBR
 ############################################################
 # Target: didResolver
 
-add_executable(didResolver didResolver.cpp)
+add_executable(didResolver
+        didResolver.cpp
+        bitcoinRPCFacade.h bitcoinRPCFacade.cpp
+        classifyInputString.h classifyInputString.cpp
+        t2tSupport.h t2tSupport.cpp)
 
 target_compile_features(didResolver PRIVATE cxx_std_11)
 target_compile_options(didResolver PRIVATE ${DCD_CXX_FLAGS})
@@ -50,7 +54,11 @@ target_link_libraries(didResolver PUBLIC bech32 txref anyoption ${JSONCPP_LIBRAR
 ############################################################
 # Target: didVerifier
 
-add_executable(didVerifier didVerifier.cpp)
+add_executable(didVerifier
+        didVerifier.cpp
+        bitcoinRPCFacade.h bitcoinRPCFacade.cpp
+        classifyInputString.h classifyInputString.cpp
+        t2tSupport.h t2tSupport.cpp)
 
 target_compile_features(didVerifier PRIVATE cxx_std_11)
 target_compile_options(didVerifier PRIVATE ${DCD_CXX_FLAGS})

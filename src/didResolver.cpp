@@ -42,7 +42,7 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
     opt->setFileDelimiterChar('=');
 
     opt->addUsage( "" );
-    opt->addUsage( "Usage: createBtcrDid [options] <inputXXX> <changeAddress> <network> <WIF> <fee> <ddoRef>" );
+    opt->addUsage( "Usage: didResolver [options] <did>" );
     opt->addUsage( "" );
     opt->addUsage( " -h  --help                 Print this help " );
     opt->addUsage( " --rpchost [rpchost or IP]  RPC host (default: 127.0.0.1) " );
@@ -50,13 +50,8 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
     opt->addUsage( " --rpcpassword [pass]       RPC password " );
     opt->addUsage( " --rpcport [port]           RPC port (default: try both 8332 and 18332) " );
     opt->addUsage( " --config [config_path]     Full pathname to bitcoin.conf (default: <homedir>/.bitcoin/bitcoin.conf) " );
-    opt->addUsage( " --txoIndex [index]         Index # of which TXO to use from the input transaction (default: 0) " );
     opt->addUsage( "" );
-    opt->addUsage( "<inputXXX>      input: (bitcoin address, txid, txref, or txref-ext) needs at least slightly more unspent BTCs than your offered fee" );
-    opt->addUsage( "<outputAddress> output bitcoin address: will receive transaction change and be the basis for your DID" );
-    opt->addUsage( "<private key>   private key in base58 (wallet import format)" );
-    opt->addUsage( "<fee>           fee you are willing to pay (suggestion: >0.001 BTC)" );
-    opt->addUsage( "<ddoRef>        reference to a DDO you want as part of your DID (optional)" );
+    opt->addUsage( "<did>                       the BTCR DID to resolve. Could be txref or txref-ext based" );
 
     opt->setFlag("help", 'h');
     opt->setCommandOption("rpchost");
@@ -64,7 +59,6 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
     opt->setOption("rpcpassword");
     opt->setOption("rpcport");
     opt->setCommandOption("config");
-    opt->setOption("txoIndex");
 
     // parse any command line arguments--this is a first pass, mainly to get a possible
     // "config" option that tells if the bitcoin.conf file is in a non-default location
@@ -132,13 +126,8 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
         config.rpcport = std::atoi(opt->getValue("rpcport"));
     }
 
-    // get txoIndex if given
-    if (opt->getValue("txoIndex") != nullptr) {
-        transactionData.txoIndex = std::atoi(opt->getValue("txoIndex"));
-    }
-
     // get the positional arguments
-    if(opt->getArgc() < 4) {
+    if(opt->getArgc() < 1) {
         std::cerr << "Error: all required arguments not found. Check command line usage." << std::endl;
         opt->printUsage();
         delete opt;
@@ -146,11 +135,6 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
     }
     transactionData.inputString = opt->getArgv(0);
     config.query = opt->getArgv(0); // TODO do we need this in two places?
-    transactionData.outputAddress = opt->getArgv(1);
-    transactionData.privateKey = opt->getArgv(2);
-    transactionData.fee = std::atof(opt->getArgv(3));
-    if(opt->getArgv(4) != nullptr)
-        transactionData.ddoRef = opt->getArgv(4);
 
     // TODO validate position arguments
 
@@ -168,153 +152,87 @@ int main(int argc, char *argv[]) {
         std::exit(ret);
     }
 
-    // skeleton of a resolver:
-    //
-    // 1) confirm DID is a btcr DID. fail if not
-    // 2) extract txref from DID
-    // 3) decode txref to find block height, transaction position, and txo index
-    // 4) Is txo spent?
-    //    no: this is the latest version of the DID. From this we can construct the DID Document
-    //    yes: recursively follow transaction chain until txo  with an unspent output is found
-    // 5) Extract the hex-encoded public key that signed the transaction and update the DID document
-    //    with default authentication capability
-    // 6) Populate the first entry of the publicKey array in the DID document. This uses the
-    //    Koblitz Elliptic Curve Signature 2016 signature suite
-    // 7) Populate the first entry of the authentication array in the DID document, referencing
-    //    the key above. Note: It is a BTCR method convention that #keys-1 corresponds to the
-    //    transaction signing key.
-    // 8) If the transaction contains an OP_RETURN field, populate the serviceEndpoint in the
-    //    DID document. This is assumed to reference supplementary DID document data
-    //    -- Add an entry to the service section of the DID document, type is BTCREndpoint
-    //    -- serviceEndpoint is the value in the OP_RETURN field, e.g.
-    //       "https://github.com/myopreturnpointer"
-    //    -- timestamp is XXX?
-    // 9) Add SatoshiAuditTrail ?
-
-    // IF there was OP_RETURN data, proceed to next phase
-
-    // 10) Retrieve the jsonld document from serviceEndpoint.BTCREndpoint
-    //     -- how to handle errors? what if it is not there? what if it is not json-ld? how to tell?
-    // 11) Authenticate this JSON-LD fragment as valid
-    //     -- fragment must have signature matching Bitcoin transaction signing key
-    //     -- UNLESS the fragment is stored on an immutable data store, like IPFS... then what?
-    // 12) MergeW in known JSON-LD values (additional keys, authorizations, etc) as appropriate
-    //     into DID document. Additive only!
-    //     -- Any fields that are part of the DID specification (publicKey, authentication,
-    //        service) will be merged into the DID document by appending their entries to the
-    //        arrays of the appropriate field
-    //     -- If continuation overwrites the Bitcoin key value, ERROR
-    //     -- Unknown JSON-LD values (in type "DID Document") are appended to the constructed
-    //        DID Document
-    //     -- Non-DID JSON-LD data types that may also be at BTCEndpoint (such as Verifiable
-    //        Claims) are ignored by resolver
-    // 13) incorporate "patch" documents?
-    // 14) wrap output with "resolver envelope"?
-
     try {
 
         BitcoinRPCFacade btc(config.rpcuser, config.rpcpassword, config.rpchost, config.rpcport);
 
         blockchaininfo_t blockChainInfo = btc.getblockchaininfo();
 
-        // 0. Determine InputType
+        // skeleton of a resolver:
+        //
+        // 1) confirm DID is a btcr DID. fail if not
 
-        InputParam inputParam = classifyInputString(transactionData.inputString);
+        const std::string schemeAndMethod = "did:btcr:";
 
-        // 1. Get unspent amount available from inputString
+        std::string did = transactionData.inputString;
 
-        UnspentData unspentData;
-
-        if(inputParam == InputParam::address_param) {
-            // get unspent amount and txid from inputAddress
-            ChainQuery *q = new ChainSoQuery();
-            unspentData = q->getUnspentOutputs(
-                    transactionData.inputString,
-                    transactionData.txoIndex,
-                    blockChainInfo.chain);
-        }
-        else if(inputParam == InputParam::txref_param) {
-            // decode txref
-            t2t::Transaction transaction;
-            t2t::decodeTxref(btc, config, transaction);
-
-            // use txid from decoded txref and cmd-line txoIndex to get utxoInfo
-            utxoinfo_t utxoinfo = btc.gettxout(transaction.txid, transactionData.txoIndex);
-
-            unspentData.txid = transaction.txid;
-            unspentData.utxoIndex = transactionData.txoIndex;
-            unspentData.amountSatoshis = btc2satoshi(utxoinfo.value);
-            unspentData.scriptPubKeyHex = utxoinfo.scriptPubKey.hex;
-        }
-        else if(inputParam == InputParam::txrefext_param) {
-            // decode txrefext
-            t2t::Transaction transaction;
-            t2t::decodeTxref(btc, config, transaction);
-
-            // use txid and txoIndex from decoded txrefext to get utxoInfo
-            utxoinfo_t utxoinfo = btc.gettxout(transaction.txid, transaction.txoIndex);
-
-            unspentData.txid = transaction.txid;
-            unspentData.utxoIndex = transaction.txoIndex;
-            unspentData.amountSatoshis = btc2satoshi(utxoinfo.value);
-            unspentData.scriptPubKeyHex = utxoinfo.scriptPubKey.hex;
-        }
-        else if(inputParam == InputParam::txid_param) {
-            // use cmd-line txid and cmd-line txoIndex to get utxoInfo
-            utxoinfo_t utxoinfo = btc.gettxout(transactionData.inputString, transactionData.txoIndex);
-
-            unspentData.txid = transactionData.inputString;
-            unspentData.utxoIndex = transactionData.txoIndex;
-            unspentData.amountSatoshis = btc2satoshi(utxoinfo.value);
-            unspentData.scriptPubKeyHex = utxoinfo.scriptPubKey.hex;
+        if(did.find(schemeAndMethod) != 0) {
+            throw std::runtime_error("DID parameter not a valid BTCR DID. Should be of the form 'did:btcr:<txref>'");
         }
 
-        // 2. compute change needed to go to outputAddress
+        // 2) extract txref from DID
 
-        int64_t change = unspentData.amountSatoshis - btc2satoshi(transactionData.fee);
+        did.erase(0, schemeAndMethod.length());
 
-        // 3. create DID transaction and submit to network
+        InputParam inputParam = classifyInputString(did);
 
-        // add input txid and tx index
-        std::vector<txout_t> inputs;
-        txout_t txout = {unspentData.txid, static_cast<unsigned int>(unspentData.utxoIndex)};
-        inputs.push_back(txout);
-
-        // add output address and the change amount
-        // TODO validate output address
-        std::map<std::string, std::string> amounts;
-
-        // first output is the output address for the change
-        amounts.insert(std::make_pair(transactionData.outputAddress, std::to_string(satoshi2btc(change)) ));
-
-        // second output is the OP_RETURN
-        std::string encoded_op_return = encodeOpReturnData(transactionData.ddoRef);
-        amounts.insert(std::make_pair("data", encoded_op_return));
-
-        std::string rawTransaction = btc.createrawtransaction(inputs, amounts);
-
-        // sign with private key
-        signrawtxin_t signrawtxin;
-        signrawtxin.txid = unspentData.txid;
-        signrawtxin.n = static_cast<unsigned int>(unspentData.utxoIndex);
-        signrawtxin.scriptPubKey = unspentData.scriptPubKeyHex;
-        signrawtxin.redeemScript = "";
-
-        std::string signedRawTransaction =
-                btc.signrawtransaction(rawTransaction, {signrawtxin}, {transactionData.privateKey}, "ALL");
-
-        if(signedRawTransaction.empty()) {
-            std::cerr << "Error: transaction could not be signed. Check your private key." << std::endl;
-            std::exit(-1);
+        if(inputParam != txref_param && inputParam != txrefext_param) {
+            throw std::runtime_error("DID parameter doesn't contain a valid txref. Should be of the form 'did:btcr:<txref>'");
         }
 
-        // broadcast to network
-        std::string resultTxid = btc.sendrawtransaction(signedRawTransaction);
+        // 3) decode txref to find block height, transaction position, and txo index
 
-        if(!resultTxid.empty())
-            std::cout << "Transaction submitted. Result txid: " << resultTxid << std::endl;
-        else
-            std::cerr << "Error: the network did not accept our transaction" << std::endl;
+        config.query = did;
+        t2t::Transaction transaction;
+
+        t2t::decodeTxref(btc, config, transaction);
+
+        std::cout << "Valid txref found:\n";
+        std::cout << "  txref: " << transaction.txref << "\n";
+        std::cout << "  block height: " << transaction.blockHeight << "\n";
+        std::cout << "  transaction position: " << transaction.position << "\n";
+        std::cout << "  txoIndex: " << transaction.txoIndex << "\n";
+
+
+        // 4) Is txo spent?
+        //    no: this is the latest version of the DID. From this we can construct the DID Document
+        //    yes: recursively follow transaction chain until txo  with an unspent output is found
+        // 5) Extract the hex-encoded public key that signed the transaction and update the DID document
+        //    with default authentication capability
+        // 6) Populate the first entry of the publicKey array in the DID document. This uses the
+        //    Koblitz Elliptic Curve Signature 2016 signature suite
+        // 7) Populate the first entry of the authentication array in the DID document, referencing
+        //    the key above. Note: It is a BTCR method convention that #keys-1 corresponds to the
+        //    transaction signing key.
+        // 8) If the transaction contains an OP_RETURN field, populate the serviceEndpoint in the
+        //    DID document. This is assumed to reference supplementary DID document data
+        //    -- Add an entry to the service section of the DID document, type is BTCREndpoint
+        //    -- serviceEndpoint is the value in the OP_RETURN field, e.g.
+        //       "https://github.com/myopreturnpointer"
+        //    -- timestamp is XXX?
+        // 9) Add SatoshiAuditTrail ?
+
+        // IF there was OP_RETURN data, proceed to next phase
+
+        // 10) Retrieve the jsonld document from serviceEndpoint.BTCREndpoint
+        //     -- how to handle errors? what if it is not there? what if it is not json-ld? how to tell?
+        // 11) Authenticate this JSON-LD fragment as valid
+        //     -- fragment must have signature matching Bitcoin transaction signing key
+        //     -- UNLESS the fragment is stored on an immutable data store, like IPFS... then what?
+        // 12) Merge in known JSON-LD values (additional keys, authorizations, etc) as appropriate
+        //     into DID document. Additive only!
+        //     -- Any fields that are part of the DID specification (publicKey, authentication,
+        //        service) will be merged into the DID document by appending their entries to the
+        //        arrays of the appropriate field
+        //     -- If continuation overwrites the Bitcoin key value, ERROR
+        //     -- Unknown JSON-LD values (in type "DID Document") are appended to the constructed
+        //        DID Document
+        //     -- Non-DID JSON-LD data types that may also be at BTCEndpoint (such as Verifiable
+        //        Claims) are ignored by resolver
+        // 13) incorporate "patch" documents?
+        // 14) wrap output with "resolver envelope"?
+
+
     }
     catch(BitcoinException &e)
     {
