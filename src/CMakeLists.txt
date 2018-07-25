@@ -7,10 +7,10 @@ find_package(CURL)
 ############################################################
 # Target: txid2txref
 
-add_executable(txid2txref txid2txref.cpp t2tSupport.cpp bitcoinRPCFacade.cpp)
-
-target_include_directories(txid2txref
-    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${BITCOINAPICPP_INCLUDE_DIRS} ${JSONCPP_INCLUDE_DIRS})
+add_executable(txid2txref
+        txid2txref.h txid2txref.cpp
+        t2tSupport.h t2tSupport.cpp
+        bitcoinRPCFacade.h bitcoinRPCFacade.cpp)
 
 target_compile_features(txid2txref PRIVATE cxx_std_11)
 target_compile_options(txid2txref PRIVATE ${DCD_CXX_FLAGS})
@@ -21,7 +21,14 @@ target_link_libraries(txid2txref PUBLIC bech32 txref anyoption ${JSONCPP_LIBRARI
 ############################################################
 # Target: createBtcrDid
 
-add_executable(createBtcrDid createBtcrDid.cpp t2tSupport.cpp bitcoinRPCFacade.cpp chainSoQuery.cpp CurlWrapper.cpp classifyInputString.cpp encodeOpReturnData.cpp)
+add_executable(createBtcrDid
+        createBtcrDid.cpp
+        t2tSupport.h t2tSupport.cpp
+        bitcoinRPCFacade.h bitcoinRPCFacade.cpp
+        chainQuery.h chainSoQuery.h chainSoQuery.cpp
+        CurlWrapper.h CurlWrapper.cpp
+        classifyInputString.h classifyInputString.cpp
+        encodeOpReturnData.h encodeOpReturnData.cpp)
 
 target_compile_features(createBtcrDid PRIVATE cxx_std_11)
 target_compile_options(createBtcrDid PRIVATE ${DCD_CXX_FLAGS})
@@ -29,5 +36,35 @@ set_target_properties(createBtcrDid PROPERTIES CXX_EXTENSIONS OFF)
 
 target_link_libraries(createBtcrDid PUBLIC bech32 txref anyoption ${JSONCPP_LIBRARIES} ${BITCOINAPICPP_LIBRARIES} ${CURL_LIBRARIES})
 
+############################################################
+# Target: didResolver
 
-#install(TARGETS txid2txref createBtcrDid DESTINATION bin)
+add_executable(didResolver
+        didResolver.cpp
+        bitcoinRPCFacade.h bitcoinRPCFacade.cpp
+        classifyInputString.h classifyInputString.cpp
+        t2tSupport.h t2tSupport.cpp)
+
+target_compile_features(didResolver PRIVATE cxx_std_11)
+target_compile_options(didResolver PRIVATE ${DCD_CXX_FLAGS})
+set_target_properties(didResolver PROPERTIES CXX_EXTENSIONS OFF)
+
+target_link_libraries(didResolver PUBLIC bech32 txref anyoption ${JSONCPP_LIBRARIES} ${BITCOINAPICPP_LIBRARIES})
+
+############################################################
+# Target: didVerifier
+
+add_executable(didVerifier
+        didVerifier.cpp
+        bitcoinRPCFacade.h bitcoinRPCFacade.cpp
+        classifyInputString.h classifyInputString.cpp
+        t2tSupport.h t2tSupport.cpp)
+
+target_compile_features(didVerifier PRIVATE cxx_std_11)
+target_compile_options(didVerifier PRIVATE ${DCD_CXX_FLAGS})
+set_target_properties(didVerifier PROPERTIES CXX_EXTENSIONS OFF)
+
+target_link_libraries(didVerifier PUBLIC bech32 txref anyoption ${JSONCPP_LIBRARIES} ${BITCOINAPICPP_LIBRARIES})
+
+
+#install(TARGETS txid2txref createBtcrDid didResolver didVerifier DESTINATION bin)
