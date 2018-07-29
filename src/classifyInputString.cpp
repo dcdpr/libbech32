@@ -1,4 +1,5 @@
 #include "classifyInputString.h"
+#include <cassert>
 
 namespace {
 

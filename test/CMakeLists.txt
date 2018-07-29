@@ -1,6 +1,6 @@
 include(CTest)
 include(../cmake/DownloadProject/DownloadProject.cmake)
-include(../cmake/FindJSONCPP.cmake)
+#include(../cmake/FindJSONCPP.cmake)
 include(../cmake/FindBitcoinApiCpp.cmake)
 
 find_package(CURL)
@@ -50,7 +50,7 @@ target_include_directories(txref_test
 
 target_link_libraries(txref_test
     PUBLIC
-        txref bech32 ${JSONCPP_LIBRARIES} ${BITCOINAPICPP_LIBRARIES} ${CURL_LIBRARIES} gtest gmock rapidcheck_gtest)
+        txref bech32 jsoncpp ${BITCOINAPICPP_LIBRARIES} ${CURL_LIBRARIES} gtest gmock rapidcheck_gtest)
 
 # CTest targets
 

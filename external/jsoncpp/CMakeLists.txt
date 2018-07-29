@@ -23,3 +23,7 @@ target_include_directories(jsoncpp
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
+
+target_compile_features(jsoncpp PRIVATE cxx_std_11)
+target_compile_options(jsoncpp PRIVATE ${DCD_CXX_FLAGS})
+set_target_properties(jsoncpp PROPERTIES CXX_EXTENSIONS OFF)
