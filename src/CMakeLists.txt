@@ -1,5 +1,5 @@
 include(../cmake/FindBitcoinApiCpp.cmake)
-include(../cmake/FindJSONCPP.cmake)
+#include(../cmake/FindJSONCPP.cmake)
 
 find_package(CURL)
 
@@ -16,7 +16,7 @@ target_compile_features(txid2txref PRIVATE cxx_std_11)
 target_compile_options(txid2txref PRIVATE ${DCD_CXX_FLAGS})
 set_target_properties(txid2txref PROPERTIES CXX_EXTENSIONS OFF)
 
-target_link_libraries(txid2txref PUBLIC bech32 txref anyoption ${JSONCPP_LIBRARIES} ${BITCOINAPICPP_LIBRARIES})
+target_link_libraries(txid2txref PUBLIC bech32 txref anyoption jsoncpp ${BITCOINAPICPP_LIBRARIES})
 
 ############################################################
 # Target: createBtcrDid
@@ -34,7 +34,7 @@ target_compile_features(createBtcrDid PRIVATE cxx_std_11)
 target_compile_options(createBtcrDid PRIVATE ${DCD_CXX_FLAGS})
 set_target_properties(createBtcrDid PROPERTIES CXX_EXTENSIONS OFF)
 
-target_link_libraries(createBtcrDid PUBLIC bech32 txref anyoption ${JSONCPP_LIBRARIES} ${BITCOINAPICPP_LIBRARIES} ${CURL_LIBRARIES})
+target_link_libraries(createBtcrDid PUBLIC bech32 txref anyoption jsoncpp ${BITCOINAPICPP_LIBRARIES} ${CURL_LIBRARIES})
 
 ############################################################
 # Target: didResolver
@@ -49,7 +49,7 @@ target_compile_features(didResolver PRIVATE cxx_std_11)
 target_compile_options(didResolver PRIVATE ${DCD_CXX_FLAGS})
 set_target_properties(didResolver PROPERTIES CXX_EXTENSIONS OFF)
 
-target_link_libraries(didResolver PUBLIC bech32 txref anyoption ${JSONCPP_LIBRARIES} ${BITCOINAPICPP_LIBRARIES})
+target_link_libraries(didResolver PUBLIC bech32 txref anyoption jsoncpp ${BITCOINAPICPP_LIBRARIES})
 
 ############################################################
 # Target: didVerifier
@@ -64,7 +64,7 @@ target_compile_features(didVerifier PRIVATE cxx_std_11)
 target_compile_options(didVerifier PRIVATE ${DCD_CXX_FLAGS})
 set_target_properties(didVerifier PROPERTIES CXX_EXTENSIONS OFF)
 
-target_link_libraries(didVerifier PUBLIC bech32 txref anyoption ${JSONCPP_LIBRARIES} ${BITCOINAPICPP_LIBRARIES})
+target_link_libraries(didVerifier PUBLIC bech32 txref anyoption jsoncpp ${BITCOINAPICPP_LIBRARIES})
 
 
 #install(TARGETS txid2txref createBtcrDid didResolver didVerifier DESTINATION bin)
