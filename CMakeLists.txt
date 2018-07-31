@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.8)
 
 project(btcr_did VERSION 1.0.0
                  DESCRIPTION "Creating and interacting with BTCR DIDs"
