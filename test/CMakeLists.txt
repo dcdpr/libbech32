@@ -1,6 +1,5 @@
 include(CTest)
 include(../cmake/DownloadProject/DownloadProject.cmake)
-#include(../cmake/FindJSONCPP.cmake)
 include(../cmake/FindBitcoinApiCpp.cmake)
 
 find_package(CURL)

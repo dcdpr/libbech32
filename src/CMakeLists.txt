@@ -1,5 +1,4 @@
 include(../cmake/FindBitcoinApiCpp.cmake)
-#include(../cmake/FindJSONCPP.cmake)
 
 find_package(CURL)
 
