@@ -1,5 +1,4 @@
 include(../../cmake/FindBitcoinApiCpp.cmake)
-include(../../cmake/FindJSONCPP.cmake)
 
 add_executable(testtxref main.cpp test_Txref.cpp test_Txref_api.cpp)
 
@@ -11,8 +10,7 @@ target_include_directories(testtxref
     PUBLIC 
         ${CMAKE_SOURCE_DIR} 
         ${PROJECT_SOURCE_DIR}/libtxref
-        ${BITCOINAPICPP_INCLUDE_DIRS} 
-        ${JSONCPP_INCLUDE_DIRS})
+        ${BITCOINAPICPP_INCLUDE_DIRS})
 
 target_link_libraries(testtxref PUBLIC txref bech32 gtest gmock rapidcheck_gtest)
 

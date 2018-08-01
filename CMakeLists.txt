@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.8)
 
 project(btcr_did VERSION 1.0.0
                  DESCRIPTION "Creating and interacting with BTCR DIDs"
@@ -17,6 +17,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
 endif()
 
 add_subdirectory(external/anyoption)
+add_subdirectory(external/jsoncpp)
 add_subdirectory(libbech32)
 add_subdirectory(libtxref)
 add_subdirectory(src)
