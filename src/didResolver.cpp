@@ -36,6 +36,12 @@ std::string find_homedir() {
     return ret;
 }
 
+// global vars set by some "secret" testing command-line options
+namespace testing {
+    static bool exitAfterFollowTip = false;
+}
+
+
 int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, struct TransactionData &transactionData) {
 
     auto opt = new AnyOption();
@@ -59,6 +65,10 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
     opt->setOption("rpcpassword");
     opt->setOption("rpcport");
     opt->setCommandOption("config");
+
+    // "secret" testing flags
+    opt->setFlag("exitAfterFollowTip", 'f');
+
 
     // parse any command line arguments--this is a first pass, mainly to get a possible
     // "config" option that tells if the bitcoin.conf file is in a non-default location
@@ -126,6 +136,12 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
         config.rpcport = std::atoi(opt->getValue("rpcport"));
     }
 
+    // check for some "secret" arguments that are used to test some operations
+    if (opt->getFlag("exitAfterFollowTip") || opt->getFlag('f')) {
+        testing::exitAfterFollowTip = true;
+    }
+
+
     // get the positional arguments
     if(opt->getArgc() < 1) {
         std::cerr << "Error: all required arguments not found. Check command line usage." << std::endl;
@@ -133,8 +149,8 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
         delete opt;
         return -1;
     }
+
     transactionData.inputString = opt->getArgv(0);
-    config.query = opt->getArgv(0); // TODO do we need this in two places?
 
     // TODO validate position arguments
 
@@ -187,6 +203,11 @@ int main(int argc, char *argv[]) {
 
         t2t::decodeTxref(btc, config, transaction);
 
+        // need to copy over the command-line given txoIndex if we were only given txref_param for the DID
+        if(inputParam == txref_param && transactionData.txoIndex != 0) {
+            transaction.txoIndex = transactionData.txoIndex;
+        }
+
         std::cout << "Valid txref found:\n";
         std::cout << "  txref: " << transaction.txref << "\n";
         std::cout << "  txid: " << transaction.txid << "\n";
@@ -195,25 +216,29 @@ int main(int argc, char *argv[]) {
         std::cout << "  txoIndex: " << transaction.txoIndex << "\n";
 
 
-        // 4) Is txo spent or not?
+        // 4) Is txo at txoIndex unspent?
 
-        utxoinfo_t utxoinfo = btc.gettxout(transaction.txid, transactionData.txoIndex);
-
-        UnspentData unspentData;
-        unspentData.txid = transaction.txid;
-        unspentData.utxoIndex = transactionData.txoIndex;
-        unspentData.amountSatoshis = btc2satoshi(utxoinfo.value);
-        unspentData.scriptPubKeyHex = utxoinfo.scriptPubKey.hex;
-
-        // So, Is txo unspent?
-        // yes: this is the latest version of the DID. From this we can construct the DID Document
-        // no : recursively follow transaction chain until txo  with an unspent output is found
+        utxoinfo_t utxoinfo = btc.gettxout(transaction.txid, transaction.txoIndex);
 
         // TODO hmm, if btc.gettxout() returns anything, then it is unspent. If it returns nothing,
-        // that means it is spent, but we don't know where. How do we "walk the transaction chain"?
-        // Probably need to use something from libbitcoin-explorer, like fetch-history
+        // that means it is spent, or possibly an op_return output
 
-                
+        if(!utxoinfo.bestblock.empty() && utxoinfo.confirmations != 0) {
+            // yes: this is the latest version of the DID. From this we can construct the DID Document
+            std::cout << "Last txid with unspent output: " << transaction.txid << "\n";
+        }
+        else {
+            // no : recursively follow transaction chain until txo  with an unspent output is found
+            ChainQuery *q = new ChainSoQuery();
+            std::string lastTxid =
+                    q->getLastUpdatedTxid(transaction.txid, transaction.txoIndex, blockChainInfo.chain);
+            std::cout << "Last txid with unspent output: " << lastTxid << "\n";
+        }
+
+        if(testing::exitAfterFollowTip) {
+            exit(0);
+        }
+
         // 5) Extract the hex-encoded public key that signed the transaction and update the DID document
         //    with default authentication capability
         // 6) Populate the first entry of the publicKey array in the DID document. This uses the

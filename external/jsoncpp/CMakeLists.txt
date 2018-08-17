@@ -25,5 +25,4 @@ target_include_directories(jsoncpp
 )
 
 target_compile_features(jsoncpp PRIVATE cxx_std_11)
-target_compile_options(jsoncpp PRIVATE ${DCD_CXX_FLAGS})
 set_target_properties(jsoncpp PROPERTIES CXX_EXTENSIONS OFF)
