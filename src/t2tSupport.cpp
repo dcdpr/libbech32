@@ -87,7 +87,8 @@ namespace t2t {
         // get the txid from the transaction at "position"
         std::string txid;
         try {
-            txid = blockInfo.tx.at(locationData.transactionPosition);
+            txid = blockInfo.tx.at(
+                    static_cast<unsigned long>(locationData.transactionPosition));
         }
         catch (std::out_of_range &) {
             std::cerr << "Error: Could not find transaction " << config.query

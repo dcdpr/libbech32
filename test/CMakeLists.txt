@@ -34,27 +34,27 @@ add_subdirectory("rapidcheck")
 ############################################################
 # Target: txref_test
 
-add_executable(txref_test main.cpp test_ChainSoQuery.cpp test_classifyInputString.cpp test_encodeOpReturnData.cpp test_satoshis.cpp test_t2tSupport.cpp)
+add_executable(UnitTests_src main.cpp test_chainSoQuery.cpp test_classifyInputString.cpp test_encodeOpReturnData.cpp test_satoshis.cpp jsonTestData.h)
 
-target_compile_features(txref_test PRIVATE cxx_std_11)
-target_compile_options(txref_test PRIVATE ${DCD_CXX_FLAGS})
-set_target_properties(txref_test PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features(UnitTests_src PRIVATE cxx_std_11)
+target_compile_options(UnitTests_src PRIVATE ${DCD_CXX_FLAGS})
+set_target_properties(UnitTests_src PROPERTIES CXX_EXTENSIONS OFF)
 
-target_include_directories(txref_test
+target_include_directories(UnitTests_src
     PUBLIC
         ${CMAKE_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/src
         ${PROJECT_SOURCE_DIR}/libbech32
         ${PROJECT_SOURCE_DIR}/libtxref)
 
-target_link_libraries(txref_test
+target_link_libraries(UnitTests_src
     PUBLIC
         txref bech32 jsoncpp ${BITCOINAPICPP_LIBRARIES} ${CURL_LIBRARIES} gtest gmock rapidcheck_gtest)
 
 # CTest targets
 
-add_test(NAME all_tests
-        COMMAND txref_test)
+add_test(NAME UnitTests_src
+        COMMAND UnitTests_src)
 
 add_subdirectory(testbech32)
 add_subdirectory(testtxref)

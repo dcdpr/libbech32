@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include <json/json.h>
 
 #include "satoshis.h"
 

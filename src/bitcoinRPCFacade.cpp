@@ -9,7 +9,7 @@ namespace {
 
     bool isConnectionGood(BitcoinAPI *b) {
         try {
-            b->getinfo();
+            b->getblockcount();
         }
         catch (BitcoinException &)
         {

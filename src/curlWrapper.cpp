@@ -1,4 +1,4 @@
-#include "CurlWrapper.h"
+#include "curlWrapper.h"
 
 #include <curl/curl.h>
 #include <curl/easy.h>
@@ -10,7 +10,7 @@ namespace {
 
     size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
         std::string data(static_cast<const char*>(ptr), size * nmemb);
-        *(static_cast<std::stringstream*>(stream)) << data << std::endl;
+        *(static_cast<std::stringstream*>(stream)) << data;
         return size * nmemb;
     }
 

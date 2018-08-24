@@ -180,11 +180,11 @@ int main(int argc, char *argv[]) {
 
         if(inputParam == InputParam::address_param) {
             // get unspent amount and txid from inputAddress
-            ChainQuery *q = new ChainSoQuery();
-            unspentData = q->getUnspentOutputs(
-                    transactionData.inputString,
-                    transactionData.txoIndex,
-                    blockChainInfo.chain);
+
+            // TODO: disabling this for now since it isn't implemented correctly
+
+            std::cerr << "Error: creating a DID from a BTC address is not currently supported." << std::endl;
+            std::exit(-1);
         }
         else if(inputParam == InputParam::txref_param) {
             // decode txref
