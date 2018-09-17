@@ -2,10 +2,14 @@
 #define BTCR_DID_DID_H
 
 
-#include <string>
 #include "txref.h"
 #include "../bitcoinRPCFacade.h"
+#include <memory>
+#include <string>
 
+/**
+ * This class represents a DID (decentralized identifier)
+ */
 class Did {
 
 public:

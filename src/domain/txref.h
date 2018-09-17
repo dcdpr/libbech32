@@ -6,6 +6,7 @@
 #include "blockHeight.h"
 #include "transactionPosition.h"
 #include "../bitcoinRPCFacade.h"
+#include <memory>
 
 /**
  * This class represents a TXREF: a transaction reference ...

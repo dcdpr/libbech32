@@ -1,5 +1,6 @@
 #include "did.h"
 #include "../classifyInputString.h"
+#include <algorithm>
 
 namespace {
     const char schemeAndMethod[] = "did:btcr:";

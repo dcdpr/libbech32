@@ -1,4 +1,5 @@
-#include <memory> #include <stdexcept>
+#include <memory>
+#include <stdexcept>
 #include <bitcoinapi/types.h>
 #include <iostream>
 #include "txid.h"

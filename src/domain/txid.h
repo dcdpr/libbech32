@@ -2,10 +2,11 @@
 #define BTCR_DID_TXID_H
 
 
-#include <string>
-#include "../bitcoinRPCFacade.h"
 #include "blockHeight.h"
+#include "../bitcoinRPCFacade.h"
 #include "transactionPosition.h"
+#include <memory>
+#include <string>
 
 /**
  * This class represents a TXID (transaction ID)
