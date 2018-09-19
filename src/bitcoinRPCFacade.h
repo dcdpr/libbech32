@@ -31,6 +31,12 @@ struct blockchaininfo_t {
     //std::vector<...> bip9_softforks;
 };
 
+struct RpcConfig {
+    std::string rpcuser = "";
+    std::string rpcpassword ="";
+    std::string rpchost = "127.0.0.1";
+    int rpcport = 0;
+};
 
 class BitcoinRPCFacade {
 
@@ -40,11 +46,8 @@ private:
 public:
 
     // constructor will throw if an RPC connection can't be made to the bitcoind
-    BitcoinRPCFacade(
-            const std::string& user,
-            const std::string& password,
-            const std::string& host,
-            int port);
+    explicit BitcoinRPCFacade(
+            const RpcConfig & config);
 
     virtual ~BitcoinRPCFacade();
 

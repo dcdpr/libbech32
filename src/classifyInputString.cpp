@@ -1,4 +1,6 @@
 #include "classifyInputString.h"
+#include "bech32.h"
+#include "txrefCodec.h"
 #include <cassert>
 
 namespace {

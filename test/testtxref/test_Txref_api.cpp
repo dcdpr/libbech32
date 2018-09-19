@@ -8,7 +8,7 @@
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop
 
-#include "txref.h"
+#include "txrefCodec.h"
 
 // In this "API" test file, we should only be referring to symbols in the "txref" namespace.
 

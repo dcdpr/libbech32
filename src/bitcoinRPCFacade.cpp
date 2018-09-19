@@ -20,26 +20,23 @@ namespace {
 }
 
 BitcoinRPCFacade::BitcoinRPCFacade(
-        const std::string &user,
-        const std::string &password,
-        const std::string &host,
-        int port) {
+        const RpcConfig & config) {
 
     std::stringstream ss;
-    if(port != 0) {
-        bitcoinAPI = new BitcoinAPI(user, password, host, port);
+    if(config.rpcport != 0) {
+        bitcoinAPI = new BitcoinAPI(config.rpcuser, config.rpcpassword, config.rpchost, config.rpcport);
         if (isConnectionGood(bitcoinAPI))
             return;
-        ss << "Error: Can't connect to " << host  << " on port " << port;
+        ss << "Error: Can't connect to " << config.rpchost << " on port " << config.rpcport;
     }
     else {
-        bitcoinAPI = new BitcoinAPI(user, password, host, MAINNET_PORT);
+        bitcoinAPI = new BitcoinAPI(config.rpcuser, config.rpcpassword, config.rpchost, MAINNET_PORT);
         if (isConnectionGood(bitcoinAPI))
             return;
-        bitcoinAPI = new BitcoinAPI(user, password, host, TESTNET_PORT);
+        bitcoinAPI = new BitcoinAPI(config.rpcuser, config.rpcpassword, config.rpchost, TESTNET_PORT);
         if (isConnectionGood(bitcoinAPI))
             return;
-        ss << "Error: Can't connect to " << host  << " on either port (" << MAINNET_PORT << "," << TESTNET_PORT << ")";
+        ss << "Error: Can't connect to " << config.rpchost << " on either port (" << MAINNET_PORT << "," << TESTNET_PORT << ")";
     }
     throw std::runtime_error(ss.str());
 }

@@ -8,7 +8,7 @@
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop
 
-#include "txref.cpp"
+#include "txrefCodec.cpp"
 
 // check that we accept block heights within the correct range for both main and testnet
 TEST(TxrefTest, accept_good_block_heights) {

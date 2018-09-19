@@ -7,7 +7,6 @@
 #include "encodeOpReturnData.h"
 #include "satoshis.h"
 #include "classifyInputString.h"
-#include "txref.h"
 #include "txid2txref.h"
 #include "t2tSupport.h"
 #include <bitcoinapi/bitcoinapi.h>
@@ -36,7 +35,7 @@ std::string find_homedir() {
     return ret;
 }
 
-int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, struct TransactionData &transactionData) {
+int parseCommandLineArgs(int argc, char **argv, struct RpcConfig &config, struct TransactionData &transactionData) {
 
     auto opt = new AnyOption();
     opt->setFileDelimiterChar('=');
@@ -134,7 +133,6 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
         return -1;
     }
     transactionData.inputString = opt->getArgv(0);
-    config.query = opt->getArgv(0); // TODO do we need this in two places?
 
     // TODO validate position arguments
 
@@ -144,10 +142,10 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
 
 int main(int argc, char *argv[]) {
 
-    struct t2t::Config config;
+    struct RpcConfig rpcConfig;
     struct TransactionData transactionData;
 
-    int ret = parseCommandLineArgs(argc, argv, config, transactionData);
+    int ret = parseCommandLineArgs(argc, argv, rpcConfig, transactionData);
     if (ret < 1) {
         std::exit(ret);
     }
@@ -155,7 +153,7 @@ int main(int argc, char *argv[]) {
 
     try {
 
-        BitcoinRPCFacade btc(config.rpcuser, config.rpcpassword, config.rpchost, config.rpcport);
+        BitcoinRPCFacade btc(rpcConfig);
 
         blockchaininfo_t blockChainInfo = btc.getblockchaininfo();
 
