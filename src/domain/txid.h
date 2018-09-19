@@ -18,10 +18,10 @@ public:
     /**
      * Construct a Txid from the txid string. Use BitcoinRPCFacade to
      * validate its existence.
-     * @param txidStr the hexadecimal txid string
+     * @param inTxidStr the hexadecimal txid string
      * @param btc the BitcoinRPCFacade
      */
-    Txid(const std::string & txidStr, const BitcoinRPCFacade & btc);
+    Txid(const std::string & inTxidStr, const BitcoinRPCFacade & btc);
 
     /**
      * Get this Txid as a string
@@ -50,27 +50,27 @@ private:
      *
      * Validity means: must be 64 lowercase hexadecimal characters.
      *
-     * @param txidStr the txid string to check
+     * @param inTxidStr the txid string to check
      * @return true if valid
      */
-    bool isInputStringValid(const std::string & txidStr) const;
+    bool isInputStringValid(const std::string & inTxidStr) const;
 
     /**
      * Checks if the txid really exists in the bitcoin network
      *
-     * @param txidStr the txid string to check
+     * @param inTxidStr the txid string to check
      * @param btc the BitcoinRPCFacade
      * @return true if exists
      */
-    bool existsInNetwork(const std::string & txidStr, const BitcoinRPCFacade & btc) const;
+    bool existsInNetwork(const std::string & inTxidStr, const BitcoinRPCFacade & btc) const;
 
     /**
      * Get full transaction data from bitcoin network and initialize other class members
      *
-     * @param txidStr the txid string
+     * @param inTxidStr the txid string
      * @param btc the BitcoinRPCFacade
      */
-    void extractTransactionDetails(const std::string & txidStr, const BitcoinRPCFacade &btc);
+    void extractTransactionDetails(const std::string & inTxidStr, const BitcoinRPCFacade &btc);
 
 
     std::shared_ptr<BlockHeight> pBlockHeight;

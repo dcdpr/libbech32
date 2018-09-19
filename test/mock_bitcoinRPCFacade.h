@@ -25,6 +25,7 @@ public:
             std::string(const std::string& rawTx, const std::vector<signrawtxin_t> & inputs, const std::vector<std::string>& privkeys, const std::string& sighashtype));
     MOCK_CONST_METHOD0(getblockchaininfo,
             blockchaininfo_t());
+    virtual ~MockBitcoinRPCFacade();
 };
 
 

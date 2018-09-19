@@ -1,19 +1,19 @@
 #include <stdexcept>
 #include "transactionPosition.h"
 
-TransactionPosition::TransactionPosition(int index) {
-    if(index < 0)
+TransactionPosition::TransactionPosition(int inPosition) {
+    if(inPosition < 0)
         throw std::runtime_error("index can not be less than zero");
 
-    this->index = index;
+    position = inPosition;
 }
 
 int TransactionPosition::value() {
-    return index;
+    return position;
 }
 
 bool TransactionPosition::operator==(const TransactionPosition &rhs) const {
-    return index == rhs.index;
+    return position == rhs.position;
 }
 
 bool TransactionPosition::operator!=(const TransactionPosition &rhs) const {

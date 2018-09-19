@@ -1,19 +1,19 @@
 #include <stdexcept>
 #include "blockHeight.h"
 
-BlockHeight::BlockHeight(int index) {
-    if(index < 0)
+BlockHeight::BlockHeight(int inHeight) {
+    if(inHeight < 0)
         throw std::runtime_error("index can not be less than zero");
 
-    this->index = index;
+    height = inHeight;
 }
 
 int BlockHeight::value() {
-    return index;
+    return height;
 }
 
 bool BlockHeight::operator==(const BlockHeight &rhs) const {
-    return index == rhs.index;
+    return height == rhs.height;
 }
 
 bool BlockHeight::operator!=(const BlockHeight &rhs) const {

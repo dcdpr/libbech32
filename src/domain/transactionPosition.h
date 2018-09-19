@@ -8,9 +8,9 @@ class TransactionPosition {
 public:
     /**
      * Construct a TransactionPosition from the given index
-     * @param index the index of the particular transaction in a block
+     * @param inPosition the index of the particular transaction in a block
      */
-    explicit TransactionPosition(int index);
+    explicit TransactionPosition(int inPosition);
 
     /**
      * Get this TransactionPosition as an integer value
@@ -23,7 +23,7 @@ public:
     bool operator!=(const TransactionPosition &rhs) const;
 
 private:
-    int index;
+    int position;
 };
 
 

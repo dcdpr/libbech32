@@ -9,9 +9,9 @@ class Vout {
 public:
     /**
      * Construct a Vout from the given index
-     * @param index the index of the particular output in a transaction
+     * @param inIndex the index of the particular output in a transaction
      */
-    explicit Vout(int index);
+    explicit Vout(int inIndex);
 
     /**
      * Get this Vout as an integer value

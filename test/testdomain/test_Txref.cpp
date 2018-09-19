@@ -151,7 +151,7 @@ TEST(TxrefTest, constructingTxref_withGoodTxref_isSuccessful) {
 
     std::string txidStr = "8a76b282fa1e3585d5c4c0dd2774400aa0a075e2cd255f0f5324f2e837f282c5";
     int blockHeight = 1355604;
-    int transactionPos = 266;
+    std::vector<std::string>::size_type transactionPos = 266;
 
     // and a block height and collection of transaction ids
     blockinfo_t blockInfo;

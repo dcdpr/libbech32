@@ -9,9 +9,9 @@ class BlockHeight {
 public:
     /**
      * Construct a BlockHeight from the given index
-     * @param index the index of the particular block in the chain
+     * @param inHeight the index of the particular block in the chain
      */
-    explicit BlockHeight(int index);
+    explicit BlockHeight(int inHeight);
 
     /**
      * Get this BlockHeight as an integer value
@@ -24,7 +24,7 @@ public:
     bool operator!=(const BlockHeight &rhs) const;
 
 private:
-    int index;
+    int height;
 };
 
 
