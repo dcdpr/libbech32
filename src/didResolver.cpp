@@ -7,11 +7,11 @@
 #include "encodeOpReturnData.h"
 #include "satoshis.h"
 #include "classifyInputString.h"
-#include "txref.h"
 #include "txid2txref.h"
 #include "t2tSupport.h"
 #include <bitcoinapi/bitcoinapi.h>
 #include "anyoption.h"
+#include "domain/did.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
@@ -42,7 +42,9 @@ namespace testing {
 }
 
 
-int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, struct TransactionData &transactionData) {
+int parseCommandLineArgs(int argc, char **argv,
+                         struct RpcConfig &rpcConfig,
+                         struct TransactionData &transactionData) {
 
     auto opt = new AnyOption();
     opt->setFileDelimiterChar('=');
@@ -110,7 +112,7 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
 
     // see if there is an rpchost specified. If not, use default
     if (opt->getValue("rpchost") != nullptr) {
-        config.rpchost = opt->getValue("rpchost");
+        rpcConfig.rpchost = opt->getValue("rpchost");
     }
 
     // see if there is an rpcuser specified. If not, exit
@@ -120,7 +122,7 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
         delete opt;
         return -1;
     }
-    config.rpcuser = opt->getValue("rpcuser");
+    rpcConfig.rpcuser = opt->getValue("rpcuser");
 
     // see if there is an rpcpassword specified. If not, exit
     if (opt->getValue("rpcpassword") == nullptr) {
@@ -129,11 +131,11 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
         delete opt;
         return -1;
     }
-    config.rpcpassword = opt->getValue("rpcpassword");
+    rpcConfig.rpcpassword = opt->getValue("rpcpassword");
 
     // will try both well known ports (8332 and 18332) if one is not specified
     if (opt->getValue("rpcport") != nullptr) {
-        config.rpcport = std::atoi(opt->getValue("rpcport"));
+        rpcConfig.rpcport = std::atoi(opt->getValue("rpcport"));
     }
 
     // check for some "secret" arguments that are used to test some operations
@@ -160,84 +162,62 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
 
 int main(int argc, char *argv[]) {
 
-    struct t2t::Config config;
+    struct RpcConfig rpcConfig;
     struct TransactionData transactionData;
 
-    int ret = parseCommandLineArgs(argc, argv, config, transactionData);
+    int ret = parseCommandLineArgs(argc, argv, rpcConfig, transactionData);
     if (ret < 1) {
         std::exit(ret);
     }
 
     try {
 
-        BitcoinRPCFacade btc(config.rpcuser, config.rpcpassword, config.rpchost, config.rpcport);
+        BitcoinRPCFacade btc(rpcConfig);
 
-        blockchaininfo_t blockChainInfo = btc.getblockchaininfo();
+        // create Did
+        Did did(transactionData.inputString, btc);
 
-        // skeleton of a resolver:
-        //
-        // 1) confirm DID is a btcr DID. fail if not
-
-        const std::string schemeAndMethod = "did:btcr:";
-
-        std::string did = transactionData.inputString;
-
-        if(did.find(schemeAndMethod) != 0) {
-            throw std::runtime_error("DID parameter not a valid BTCR DID. Should be of the form 'did:btcr:<txref>'");
-        }
-
-        // 2) extract txref from DID
-
-        did.erase(0, schemeAndMethod.length());
-
-        InputParam inputParam = classifyInputString(did);
-
-        if(inputParam != txref_param && inputParam != txrefext_param) {
-            throw std::runtime_error("DID parameter doesn't contain a valid txref. Should be of the form 'did:btcr:<txref>'");
-        }
-
-        // 3) decode txref to find block height, transaction position, and txo index
-
-        config.query = did;
-        t2t::Transaction transaction;
-
-        t2t::decodeTxref(btc, config, transaction);
-
-        // need to copy over the command-line given txoIndex if we were only given txref_param for the DID
-        if(inputParam == txref_param && transactionData.txoIndex != 0) {
-            transaction.txoIndex = transactionData.txoIndex;
-        }
+        auto pTxref = did.getTxref();
 
         std::cout << "Valid txref found:\n";
-        std::cout << "  txref: " << transaction.txref << "\n";
-        std::cout << "  txid: " << transaction.txid << "\n";
-        std::cout << "  block height: " << transaction.blockHeight << "\n";
-        std::cout << "  transaction position: " << transaction.position << "\n";
-        std::cout << "  txoIndex: " << transaction.txoIndex << "\n";
+        std::cout << "  txref: " << pTxref->asString() << "\n";
+        std::cout << "  txid: " << pTxref->getTxid()->asString() << "\n";
+        std::cout << "  block height: " << pTxref->getTxid()->blockHeight()->value() << "\n";
+        std::cout << "  transaction position: " << pTxref->getTxid()->transactionPosition()->value() << "\n";
+        std::cout << "  txoIndex: " << pTxref->getVout()->value() << "\n";
 
 
         // 4) Is txo at txoIndex unspent?
 
-        utxoinfo_t utxoinfo = btc.gettxout(transaction.txid, transaction.txoIndex);
+        utxoinfo_t utxoinfo = btc.gettxout(pTxref->getTxid()->asString(), pTxref->getVout()->value());
 
         // TODO hmm, if btc.gettxout() returns anything, then it is unspent. If it returns nothing,
         // that means it is spent, or possibly an op_return output
 
+        std::string txidForDID;
+
         if(!utxoinfo.bestblock.empty() && utxoinfo.confirmations != 0) {
             // yes: this is the latest version of the DID. From this we can construct the DID Document
-            std::cout << "Last txid with unspent output: " << transaction.txid << "\n";
+            std::cout << "Last txid with unspent output: " << pTxref->getTxid()->asString() << "\n";
+            txidForDID = pTxref->getTxid()->asString();
         }
         else {
             // no : recursively follow transaction chain until txo  with an unspent output is found
             ChainQuery *q = new ChainSoQuery();
             std::string lastTxid =
-                    q->getLastUpdatedTxid(transaction.txid, transaction.txoIndex, blockChainInfo.chain);
+                    q->getLastUpdatedTxid(
+                            pTxref->getTxid()->asString(),
+                            pTxref->getVout()->value(),
+                            pTxref->getTxid()->isTestnet() ? "test" :"main");
             std::cout << "Last txid with unspent output: " << lastTxid << "\n";
+            txidForDID = lastTxid;
         }
 
         if(testing::exitAfterFollowTip) {
             exit(0);
         }
+
+
 
         // 5) Extract the hex-encoded public key that signed the transaction and update the DID document
         //    with default authentication capability

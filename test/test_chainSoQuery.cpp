@@ -13,7 +13,7 @@
 
 /**
  * An "injectable" version of ChainSoQuery. We can create instances of this class that will return
- * specific examples of JSON data so we can unti test the member functions of the ChainSoQuery
+ * specific examples of JSON data so we can unit test the member functions of the ChainSoQuery
  * class without having to hit the network.
  */
 class Injectable_ChainSoQuery : public ChainSoQuery {

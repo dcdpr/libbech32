@@ -58,4 +58,4 @@ add_test(NAME UnitTests_src
 
 add_subdirectory(testbech32)
 add_subdirectory(testtxref)
-
+add_subdirectory(testdomain)
