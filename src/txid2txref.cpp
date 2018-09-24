@@ -4,13 +4,18 @@
 #include "txid2txref.h"
 #include "t2tSupport.h"
 #include "bitcoinRPCFacade.h"
-#include "txref.h"
 #include <bitcoinapi/bitcoinapi.h>
 #include "anyoption.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
 namespace pt = boost::property_tree;
+
+struct CmdlineInput {
+    std::string query ="";
+    int txoIndex = 0;
+    bool forceExtended = false;
+};
 
 
 void printAsJson(const t2t::Transaction &transaction) {
@@ -35,7 +40,9 @@ std::string find_homedir() {
     return ret;
 }
 
-int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config) {
+int parseCommandLineArgs(int argc, char **argv,
+                         struct RpcConfig &rpcConfig,
+                         struct CmdlineInput &config) {
 
     auto opt = new AnyOption();
     opt->setFileDelimiterChar('=');
@@ -101,7 +108,7 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config) {
 
     // see if there is an rpchost specified. If not, use default
     if (opt->getValue("rpchost") != nullptr) {
-        config.rpchost = opt->getValue("rpchost");
+        rpcConfig.rpchost = opt->getValue("rpchost");
     }
 
     // see if there is an rpcuser specified. If not, exit
@@ -111,7 +118,7 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config) {
         delete opt;
         return -1;
     }
-    config.rpcuser = opt->getValue("rpcuser");
+    rpcConfig.rpcuser = opt->getValue("rpcuser");
 
     // see if there is an rpcpassword specified. If not, exit
     if (opt->getValue("rpcpassword") == nullptr) {
@@ -120,11 +127,11 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config) {
         delete opt;
         return -1;
     }
-    config.rpcpassword = opt->getValue("rpcpassword");
+    rpcConfig.rpcpassword = opt->getValue("rpcpassword");
 
     // will try both well known ports (8332 and 18332) if one is not specified
     if (opt->getValue("rpcport") != nullptr) {
-        config.rpcport = std::atoi(opt->getValue("rpcport"));
+        rpcConfig.rpcport = std::atoi(opt->getValue("rpcport"));
     }
 
     // see if a txoIndex was provided. If so, make sure to force generation of extended txref
@@ -147,24 +154,32 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config) {
 
 int main(int argc, char *argv[]) {
 
-    struct t2t::Config config;
+    struct RpcConfig rpcConfig;
+    struct CmdlineInput cmdlineInput;
 
-    int ret = parseCommandLineArgs(argc, argv, config);
+    int ret = parseCommandLineArgs(argc, argv, rpcConfig, cmdlineInput);
     if(ret < 1) {
         std::exit(ret);
     }
 
     try
     {
-        BitcoinRPCFacade btc(config.rpcuser, config.rpcpassword, config.rpchost, config.rpcport);
+        BitcoinRPCFacade btc(rpcConfig);
 
         t2t::Transaction transaction;
 
-        if(config.query.length() == 64) {
-            t2t::encodeTxid(btc, config, transaction);
+        // TODO temporary
+        t2t::ConfigTemp configTemp;
+        configTemp.query = cmdlineInput.query;
+        configTemp.txoIndex = cmdlineInput.txoIndex;
+        configTemp.forceExtended = cmdlineInput.forceExtended;
+
+
+        if(cmdlineInput.query.length() == 64) {
+            t2t::encodeTxid(btc, configTemp, transaction);
         }
         else {
-            t2t::decodeTxref(btc, config, transaction);
+            t2t::decodeTxref(btc, configTemp, transaction);
         }
 
         printAsJson(transaction);
@@ -173,7 +188,7 @@ int main(int argc, char *argv[]) {
     catch(BitcoinException &e)
     {
         if(e.getCode() == -5) {
-            std::cerr << "Error: transaction " << config.query << " not found." << std::endl;
+            std::cerr << "Error: transaction " << cmdlineInput.query << " not found." << std::endl;
             std::exit(-1);
         }
 

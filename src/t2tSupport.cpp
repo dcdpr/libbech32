@@ -1,13 +1,13 @@
 #include <bitcoinapi/types.h>
 #include <iostream>
-#include "txref.h"
+#include "txrefCodec.h"
 #include "txid2txref.h"
 #include "bitcoinRPCFacade.h"
 #include "t2tSupport.h"
 
 namespace t2t {
 
-    void encodeTxid(const BitcoinRPCFacade &btc, const Config &config, struct Transaction &transaction) {
+    void encodeTxid(const BitcoinRPCFacade &btc, const ConfigTemp &config, struct Transaction &transaction) {
 
         blockchaininfo_t blockChainInfo = btc.getblockchaininfo();
 
@@ -72,19 +72,19 @@ namespace t2t {
         transaction.txoIndex = config.txoIndex;
     }
 
-    void decodeTxref(const BitcoinRPCFacade &btc, const Config &config, struct Transaction &transaction) {
+    void decodeTxref(const BitcoinRPCFacade &btc, const ConfigTemp &config, struct Transaction &transaction) {
 
         txref::LocationData locationData = txref::decode(config.query);
 
         blockchaininfo_t blockChainInfo = btc.getblockchaininfo();
 
-        // get block hash for block at location "height"
+        // get block hash for block
         std::string blockHash = btc.getblockhash(locationData.blockHeight);
 
-        // use block hash to get the block
+        // use block hash to get the block info
         blockinfo_t blockInfo = btc.getblock(blockHash);
 
-        // get the txid from the transaction at "position"
+        // get the txid from the transaction
         std::string txid;
         try {
             txid = blockInfo.tx.at(

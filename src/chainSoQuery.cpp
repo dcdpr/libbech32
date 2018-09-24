@@ -239,10 +239,10 @@ int ChainSoQuery::determineNextUtxoIndex(const std::string &nextTxid, const std:
 /**
  * Given a JSON blob returned by querying if a TX is spent (see getLastUpdatedTxid()), extract
  * the next txid and possible output in the chain.
- * @param obj
- * @param txid
- * @param network
- * @return
+ * @param obj JSON returned from is_tx_spent()
+ * @param txid the txid being examined
+ * @param network Which bitcoin network ('main' or 'test')
+ * @return The txid for the unspent output
  */
 std::string
 ChainSoQuery::extractLastUpdatedTxid(const Json::Value &obj, const std::string &txid,

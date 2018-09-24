@@ -1,5 +1,5 @@
 
-#include "txref.h"
+#include "txrefCodec.h"
 #include "bech32.h"
 #include <vector>
 #include <stdexcept>

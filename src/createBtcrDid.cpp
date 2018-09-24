@@ -7,12 +7,17 @@
 #include "encodeOpReturnData.h"
 #include "satoshis.h"
 #include "classifyInputString.h"
-#include "txref.h"
 #include "txid2txref.h"
 #include "t2tSupport.h"
 #include <bitcoinapi/bitcoinapi.h>
 #include "anyoption.h"
 
+
+struct CmdlineInput {
+    std::string query ="";
+    int txoIndex = 0;
+    bool forceExtended = false;
+};
 
 struct TransactionData {
     std::string inputString;
@@ -32,7 +37,10 @@ std::string find_homedir() {
     return ret;
 }
 
-int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, struct TransactionData &transactionData) {
+int parseCommandLineArgs(int argc, char **argv,
+                         struct RpcConfig &rpcConfig,
+                         struct CmdlineInput &cmdlineInput,
+                         struct TransactionData &transactionData) {
 
     auto opt = new AnyOption();
     opt->setFileDelimiterChar('=');
@@ -102,7 +110,7 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
 
     // see if there is an rpchost specified. If not, use default
     if (opt->getValue("rpchost") != nullptr) {
-        config.rpchost = opt->getValue("rpchost");
+        rpcConfig.rpchost = opt->getValue("rpchost");
     }
 
     // see if there is an rpcuser specified. If not, exit
@@ -112,7 +120,7 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
         delete opt;
         return -1;
     }
-    config.rpcuser = opt->getValue("rpcuser");
+    rpcConfig.rpcuser = opt->getValue("rpcuser");
 
     // see if there is an rpcpassword specified. If not, exit
     if (opt->getValue("rpcpassword") == nullptr) {
@@ -121,11 +129,11 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
         delete opt;
         return -1;
     }
-    config.rpcpassword = opt->getValue("rpcpassword");
+    rpcConfig.rpcpassword = opt->getValue("rpcpassword");
 
     // will try both well known ports (8332 and 18332) if one is not specified
     if (opt->getValue("rpcport") != nullptr) {
-        config.rpcport = std::atoi(opt->getValue("rpcport"));
+        rpcConfig.rpcport = std::atoi(opt->getValue("rpcport"));
     }
 
     // get txoIndex if given
@@ -141,7 +149,7 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
         return -1;
     }
     transactionData.inputString = opt->getArgv(0);
-    config.query = opt->getArgv(0); // TODO do we need this in two places?
+    cmdlineInput.query = opt->getArgv(0); // TODO do we need this in two places?
     transactionData.outputAddress = opt->getArgv(1);
     transactionData.privateKey = opt->getArgv(2);
     transactionData.fee = std::atof(opt->getArgv(3));
@@ -156,17 +164,18 @@ int parseCommandLineArgs(int argc, char **argv, struct t2t::Config &config, stru
 
 int main(int argc, char *argv[]) {
 
-    struct t2t::Config config;
+    struct RpcConfig rpcConfig;
+    struct CmdlineInput cmdlineInput;
     struct TransactionData transactionData;
 
-    int ret = parseCommandLineArgs(argc, argv, config, transactionData);
+    int ret = parseCommandLineArgs(argc, argv, rpcConfig, cmdlineInput, transactionData);
     if (ret < 1) {
         std::exit(ret);
     }
 
     try {
 
-        BitcoinRPCFacade btc(config.rpcuser, config.rpcpassword, config.rpchost, config.rpcport);
+        BitcoinRPCFacade btc(rpcConfig);
 
         blockchaininfo_t blockChainInfo = btc.getblockchaininfo();
 
@@ -189,7 +198,13 @@ int main(int argc, char *argv[]) {
         else if(inputParam == InputParam::txref_param) {
             // decode txref
             t2t::Transaction transaction;
-            t2t::decodeTxref(btc, config, transaction);
+            // TODO temporary
+            t2t::ConfigTemp configTemp;
+            configTemp.query = cmdlineInput.query;
+            configTemp.txoIndex = cmdlineInput.txoIndex;
+            configTemp.forceExtended = cmdlineInput.forceExtended;
+
+            t2t::decodeTxref(btc, configTemp, transaction);
 
             // use txid from decoded txref and cmd-line txoIndex to get utxoInfo
             utxoinfo_t utxoinfo = btc.gettxout(transaction.txid, transactionData.txoIndex);
@@ -202,7 +217,13 @@ int main(int argc, char *argv[]) {
         else if(inputParam == InputParam::txrefext_param) {
             // decode txrefext
             t2t::Transaction transaction;
-            t2t::decodeTxref(btc, config, transaction);
+            // TODO temporary
+            t2t::ConfigTemp configTemp;
+            configTemp.query = cmdlineInput.query;
+            configTemp.txoIndex = cmdlineInput.txoIndex;
+            configTemp.forceExtended = cmdlineInput.forceExtended;
+
+            t2t::decodeTxref(btc, configTemp, transaction);
 
             // use txid and txoIndex from decoded txrefext to get utxoInfo
             utxoinfo_t utxoinfo = btc.gettxout(transaction.txid, transaction.txoIndex);
@@ -268,6 +289,9 @@ int main(int argc, char *argv[]) {
             std::cout << "Transaction submitted. Result txid: " << resultTxid << std::endl;
         else
             std::cerr << "Error: the network did not accept our transaction" << std::endl;
+
+        // TODO create a DID object and print out the DID string. Warn that it isn't valid until
+        // the transaction has enough confirmations
     }
     catch(BitcoinException &e)
     {

@@ -1,11 +1,11 @@
 ############################################################
 # Target: txref
 
-add_library(txref STATIC txref.cpp)
+add_library(txref STATIC txrefCodec.cpp)
 
 target_include_directories(txref
-    PUBLIC 
-        $<INSTALL_INTERFACE:include/libtxref>    
+    PUBLIC
+        $<INSTALL_INTERFACE:include/libtxref>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include/libtxref>
 )
 

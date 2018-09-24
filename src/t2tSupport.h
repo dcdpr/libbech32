@@ -6,9 +6,15 @@
 
 namespace t2t {
 
-    void encodeTxid(const BitcoinRPCFacade & btc, const Config & config, struct Transaction & transaction);
+    struct ConfigTemp {        // used for now so things compile as I'm working out the new domain objects
+        std::string query ="";
+        int txoIndex = 0;
+        bool forceExtended = false;
+    };
 
-    void decodeTxref(const BitcoinRPCFacade & btc, const Config & config, struct Transaction & transaction);
+    void encodeTxid(const BitcoinRPCFacade & btc, const ConfigTemp & config, struct Transaction & transaction);
+
+    void decodeTxref(const BitcoinRPCFacade & btc, const ConfigTemp & config, struct Transaction & transaction);
 
 }
 

@@ -3,16 +3,6 @@
 
 namespace t2t {
 
-    struct Config {
-        std::string rpcuser = "";
-        std::string rpcpassword ="";
-        std::string rpchost = "127.0.0.1";
-        std::string query ="";
-        int rpcport = 0;
-        int txoIndex = 0;
-        bool forceExtended = false;
-    };
-
     struct Transaction {
         std::string txid = "";
         std::string txref = "";
