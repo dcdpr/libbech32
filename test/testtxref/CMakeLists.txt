@@ -1,6 +1,6 @@
 include(../../cmake/FindBitcoinApiCpp.cmake)
 
-add_executable(UnitTests_txref main.cpp test_Txref.cpp test_Txref_api.cpp)
+add_executable(UnitTests_txref main.cpp test_TxrefCodec.cpp test_TxrefCodec_api.cpp)
 
 target_compile_features(UnitTests_txref PRIVATE cxx_std_11)
 target_compile_options(UnitTests_txref PRIVATE ${DCD_CXX_FLAGS})

@@ -25,7 +25,9 @@ namespace txref {
     // encodes the position of a confirmed bitcoin transaction on the
     // mainnet network and returns a bech32 encoded "transaction
     // position reference" (txref). If txoIndex is greater than 0, then
-    // an extended reference is returned (txref-ext)
+    // an extended reference is returned (txref-ext). If txoIndex is zero,
+    // but forceExtended=true, then an extended reference is returned
+    // (txref-ext).
     std::string encode(
             int blockHeight,
             int transactionPosition,
@@ -38,7 +40,9 @@ namespace txref {
     // encodes the position of a confirmed bitcoin transaction on the
     // testnet network and returns a bech32 encoded "transaction
     // position reference" (txref). If txoIndex is greater than 0, then
-    // an extended reference is returned (txref-ext)
+    // an extended reference is returned (txref-ext). If txoIndex is zero,
+    // but forceExtended=true, then an extended reference is returned
+    // (txref-ext).
     std::string encodeTestnet(
             int blockHeight,
             int transactionPosition,
@@ -54,17 +58,15 @@ namespace txref {
 
     namespace limits {
 
-        const int TXREF_STRING_MIN_LENGTH = 17;                    // ex: "tx1rqqqqqqqqmhuqk"
-        const int TXREF_STRING_NO_HRP_MIN_LENGTH = 14;             // ex: "rqqqqqqqqmhuqk"
+        const int TXREF_STRING_MIN_LENGTH = 18;                    // ex: "tx1rqqqqqqqqmhuqhp"
+        const int TXREF_STRING_NO_HRP_MIN_LENGTH = 15;             // ex: "rqqqqqqqqmhuqhp"
 
-        const int TXREF_EXT_STRING_MIN_LENGTH = 20;                // ex: "tx1rqqqqqqqqqquau7hl"
-        const int TXREF_EXT_STRING_NO_HRP_MIN_LENGTH = 17;         // ex: "rqqqqqqqqqquau7hl"
+        const int TXREF_EXT_STRING_MIN_LENGTH = 22;                // ex: "tx1rpqqqqqqqqqqq2geahz"
+        const int TXREF_EXT_STRING_NO_HRP_MIN_LENGTH = 19;         // ex: "rpqqqqqqqqqqq2geahz"
 
-        const int TXREF_STRING_MIN_LENGTH_TESTNET = 23;            // ex: "txtest1xqqqqqqqqqkn3gh9"
-        const int TXREF_STRING_NO_HRP_MIN_LENGTH_TESTNET = 16;     // ex: "xqqqqqqqqqkn3gh9"
+        const int TXREF_STRING_MIN_LENGTH_TESTNET = 22;            // ex: "txtest1rqqqqqqqqmhuqhp"
 
-        const int TXREF_EXT_STRING_MIN_LENGTH_TESTNET = 26;        // ex: "txtest1xqqqqqqqqqqqqj7dvzy"
-        const int TXREF_EXT_STRING_NO_HRP_MIN_LENGTH_TESTNET = 19; // ex: "xqqqqqqqqqqqqj7dvzy"
+        const int TXREF_EXT_STRING_MIN_LENGTH_TESTNET = 26;        // ex: "txtest1xpjk0uqayzu4xgrlpue"
 
     }
 }
