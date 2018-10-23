@@ -7,11 +7,17 @@
 
 namespace txref {
 
+    // bech32 "human readable part"s
     static const char BECH32_HRP_MAIN[] = "tx";
     static const char BECH32_HRP_TEST[] = "txtest";
 
+    // magic codes used for chain identification and namespacing
     static const char MAGIC_BTC_MAIN = 0x3;
     static const char MAGIC_BTC_TEST = 0x6;
+
+    // characters used when pretty-printing
+    static const char colon = ':';
+    static const char hyphen = '-';
 
     struct LocationData {
         std::string hrp;

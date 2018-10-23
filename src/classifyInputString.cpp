@@ -1,6 +1,6 @@
 #include "classifyInputString.h"
-#include "bech32.h"
-#include "txrefCodec.h"
+#include "libbech32.h"
+#include "libtxref.h"
 #include <cassert>
 
 namespace {
@@ -23,7 +23,9 @@ namespace {
         // (22 == 22), then we need to dig deeper and check the first few characters
         if(s.length() == TXREF_STRING_MIN_LENGTH_TESTNET &&
            s.length() == TXREF_EXT_STRING_MIN_LENGTH) {
-            if (s[0] == 't' && s[1] == 'x' && s[2] == '1')
+            if (s[0] == txref::BECH32_HRP_MAIN[0] && // 't'
+                s[1] == txref::BECH32_HRP_MAIN[1] && // 'x'
+                s[2] == bech32::separator)           // '1'
                 return txrefext_param;
             else
                 return txref_param;

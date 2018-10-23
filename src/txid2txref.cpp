@@ -44,7 +44,7 @@ int parseCommandLineArgs(int argc, char **argv,
                          struct RpcConfig &rpcConfig,
                          struct CmdlineInput &config) {
 
-    auto opt = new AnyOption();
+    auto opt = std::unique_ptr<AnyOption>(new AnyOption());
     opt->setFileDelimiterChar('=');
 
     opt->addUsage( "" );
@@ -75,7 +75,6 @@ int parseCommandLineArgs(int argc, char **argv,
     // print usage if no options
     if( ! opt->hasOptions()) {
         opt->printUsage();
-        delete opt;
         return 0;
     }
 
@@ -102,7 +101,6 @@ int parseCommandLineArgs(int argc, char **argv,
     // print usage if help was requested
     if (opt->getFlag("help") || opt->getFlag('h')) {
         opt->printUsage();
-        delete opt;
         return 0;
     }
 
@@ -115,7 +113,6 @@ int parseCommandLineArgs(int argc, char **argv,
     if (opt->getValue("rpcuser") == nullptr) {
         std::cerr << "'rpcuser' not found. Check bitcoin.conf or command line usage." << std::endl;
         opt->printUsage();
-        delete opt;
         return -1;
     }
     rpcConfig.rpcuser = opt->getValue("rpcuser");
@@ -124,7 +121,6 @@ int parseCommandLineArgs(int argc, char **argv,
     if (opt->getValue("rpcpassword") == nullptr) {
         std::cerr << "'rpcpassword' not found. Check bitcoin.conf or command line usage." << std::endl;
         opt->printUsage();
-        delete opt;
         return -1;
     }
     rpcConfig.rpcpassword = opt->getValue("rpcpassword");
@@ -144,7 +140,6 @@ int parseCommandLineArgs(int argc, char **argv,
     if(opt->getArgc() < 1) {
         std::cerr << "txid/txref not found. Check command line usage." << std::endl;
         opt->printUsage();
-        delete opt;
         return -1;
     }
     config.query = opt->getArgv(0);

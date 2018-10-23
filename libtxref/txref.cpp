@@ -1,6 +1,6 @@
 
-#include "txrefCodec.h"
-#include "bech32.h"
+#include "libtxref.h"
+#include "libbech32.h"
 #include <vector>
 #include <stdexcept>
 #include <sstream>
@@ -64,22 +64,62 @@ namespace {
             throw std::runtime_error("magic code is too large");
     }
 
-    // add dashes to the txref string to make it look nicer
-    std::string addDashes(const std::string & raw, std::string::size_type hrplen) {
+    // separate groups of chars in the txref string to make it look nicer
+    std::string addGroupSeparators(
+            const std::string & raw,
+            std::string::size_type hrplen,
+            std::string::difference_type separatorOffset = 4) {
+
         if(hrplen > bech32::limits::MAX_HRP_LENGTH)
             throw std::runtime_error("HRP must be less than 84 characters long");
 
+        auto rawLength = static_cast<std::string::difference_type>(raw.length());
         auto hrpLength = static_cast<std::string::difference_type>(hrplen);
 
-        std::string output(raw);
-        output.insert(output.begin()+hrpLength+1, '-');
-        output.insert(output.begin()+hrpLength+6, '-');
-        output.insert(output.begin()+hrpLength+11, '-');
-        output.insert(output.begin()+hrpLength+16, '-');
+        // number of separators that will be inserted
+        auto numSeparators = (rawLength - hrpLength - 1) / separatorOffset;
+
+        // output length
+        auto outputLength = rawLength + numSeparators;
+
+        // create output string, starting with all hyphens
+        std::string output(outputLength, txref::hyphen);
+
+        // copy over the raw string, skipping every offset # chars, after the HRP
+        std::string::difference_type rawPos = 0, outputPos = 0;
+        for(const auto &c : raw) {
+
+            output[outputPos++] = c;
+
+            ++rawPos;
+            if(rawPos > hrpLength && (rawPos - hrpLength) % separatorOffset == 0)
+                ++outputPos;
+        }
+
         return output;
     }
 
-    // extract the magic code from the decoded data part
+    // pretty print a txref returned by bech32::encode()
+    std::string prettyPrint(
+            const std::string & plain,
+            std::string::size_type hrplen) {
+
+        std::string result = plain;
+
+        // add colon after the HRP and bech32 separator character
+        auto hrpPlusSeparatorLength =
+                static_cast<std::string::difference_type>(hrplen + 1);
+        result.insert(result.cbegin()+hrpPlusSeparatorLength, txref::colon);
+
+        // now add hyphens every 4th character after that
+        auto hrpPlusSeparatorAndColonLength =
+                static_cast<std::string::difference_type>(hrplen + 2);
+        result = addGroupSeparators(result, hrpPlusSeparatorAndColonLength);
+
+        return result;
+    }
+
+            // extract the magic code from the decoded data part
     void extractMagicCode(uint8_t & magicCode, const bech32::HrpAndDp &hd) {
         magicCode = hd.dp[0];
     }
@@ -227,7 +267,7 @@ namespace {
         std::string result = bech32::encode(hrp, dp);
 
         // add the dashes
-        std::string output = addDashes(result, hrp.length());
+        std::string output = prettyPrint(result, hrp.length());
 
         return output;
     }
@@ -284,7 +324,7 @@ namespace {
         std::string result = bech32::encode(hrp, dp);
 
         // add the dashes
-        std::string output = addDashes(result, hrp.length());
+        std::string output = prettyPrint(result, hrp.length());
 
         return output;
     }
@@ -338,7 +378,7 @@ namespace txref {
         extractMagicCode(magicCode, bs);
 
         LocationData data;
-        data.txref = addDashes(txrefClean, bs.hrp.length());
+        data.txref = prettyPrint(txrefClean, bs.hrp.length());
         data.hrp = bs.hrp;
         data.magicCode = magicCode;
         extractBlockHeight(data.blockHeight, bs);

@@ -8,7 +8,7 @@
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop
 
-#include "txrefCodec.h"
+#include "libtxref.h"
 
 // In this "API" test file, we should only be referring to symbols in the "txref" namespace.
 
@@ -72,7 +72,7 @@ TEST(TxrefApiTest, txref_decode_weird_formatting) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
-    EXPECT_EQ(loc.txref, "tx1-rqqq-qqqq-qmhu-qhp");
+    EXPECT_EQ(loc.txref, "tx1:rqqq-qqqq-qmhu-qhp");
 
     txref = "tx1-rqqq qqqq qmhu qhp";
     loc = txref::decode(txref);
@@ -80,7 +80,7 @@ TEST(TxrefApiTest, txref_decode_weird_formatting) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
-    EXPECT_EQ(loc.txref, "tx1-rqqq-qqqq-qmhu-qhp");
+    EXPECT_EQ(loc.txref, "tx1:rqqq-qqqq-qmhu-qhp");
 
     txref = "tx1rqqq,qqqq.qmhu.qhp";
     loc = txref::decode(txref);
@@ -88,7 +88,7 @@ TEST(TxrefApiTest, txref_decode_weird_formatting) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
-    EXPECT_EQ(loc.txref, "tx1-rqqq-qqqq-qmhu-qhp");
+    EXPECT_EQ(loc.txref, "tx1:rqqq-qqqq-qmhu-qhp");
 
     txref = "tx@test1-xj$$k0-uq@@ay---zat0-d%$z 8";
     loc = txref::decode(txref);
@@ -96,7 +96,7 @@ TEST(TxrefApiTest, txref_decode_weird_formatting) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST);
     EXPECT_EQ(loc.blockHeight, 466793);
     EXPECT_EQ(loc.transactionPosition, 2205);
-    EXPECT_EQ(loc.txref, "txtest1-xjk0-uqay-zat0-dz8");
+    EXPECT_EQ(loc.txref, "txtest1:xjk0-uqay-zat0-dz8");
 
 }
 
@@ -112,7 +112,7 @@ TEST(TxrefApiTest, txref_decode_no_HRPs) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
-    EXPECT_EQ(loc.txref, "tx1-rqqq-qqqq-qmhu-qhp");
+    EXPECT_EQ(loc.txref, "tx1:rqqq-qqqq-qmhu-qhp");
 
     txref = "xjk0-uqay-zat0-dz8";
     loc = txref::decode(txref);
@@ -120,7 +120,7 @@ TEST(TxrefApiTest, txref_decode_no_HRPs) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST);
     EXPECT_EQ(loc.blockHeight, 466793);
     EXPECT_EQ(loc.transactionPosition, 2205);
-    EXPECT_EQ(loc.txref, "txtest1-xjk0-uqay-zat0-dz8");
+    EXPECT_EQ(loc.txref, "txtest1:xjk0-uqay-zat0-dz8");
 
 }
 
@@ -130,7 +130,7 @@ TEST(TxrefApiTest, txref_extended_decode) {
     std::string txref;
     txref::LocationData loc;
 
-    txref = "tx1-rpqq-qqqq-qqqq-q2geahz";
+    txref = "tx1:rpqq-qqqq-qqqq-q2geahz";
     loc = txref::decode(txref);
     EXPECT_EQ(loc.hrp, "tx");
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
@@ -138,7 +138,7 @@ TEST(TxrefApiTest, txref_extended_decode) {
     EXPECT_EQ(loc.transactionPosition, 0);
     EXPECT_EQ(loc.txoIndex, 0);
 
-    txref = "tx1-rp7l-lllq-qqqq-qpvhwkq";
+    txref = "tx1:rp7l-lllq-qqqq-qpvhwkq";
     loc = txref::decode(txref);
     EXPECT_EQ(loc.hrp, "tx");
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
@@ -146,7 +146,7 @@ TEST(TxrefApiTest, txref_extended_decode) {
     EXPECT_EQ(loc.transactionPosition, 0);
     EXPECT_EQ(loc.txoIndex, 0);
 
-    txref = "tx1-rpjk-0uqa-yzu4-x0w0kuq";
+    txref = "tx1:rpjk-0uqa-yzu4-x0w0kuq";
     loc = txref::decode(txref);
     EXPECT_EQ(loc.hrp, "tx");
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
@@ -154,7 +154,7 @@ TEST(TxrefApiTest, txref_extended_decode) {
     EXPECT_EQ(loc.transactionPosition, 2205);
     EXPECT_EQ(loc.txoIndex, 0x1ABC);
 
-    txref = "txtest1-xpjk-0uqa-yzu4-xgrlpue";
+    txref = "txtest1:xpjk-0uqa-yzu4-xgrlpue";
     loc = txref::decode(txref);
     EXPECT_EQ(loc.hrp, "txtest");
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST);
@@ -205,121 +205,121 @@ TEST(TxrefApiTest, txref_extended_decode_weird) {
 // check that we correctly encode txrefs in main and testnet
 TEST(TxrefApiTest, txref_encode) {
     EXPECT_EQ(txref::encode(0, 0),
-              "tx1-rqqq-qqqq-qmhu-qhp");
+              "tx1:rqqq-qqqq-qmhu-qhp");
     EXPECT_EQ(txref::encode(0, 0x7FFF),
-              "tx1-rqqq-qqll-l8xh-jkg");
+              "tx1:rqqq-qqll-l8xh-jkg");
     EXPECT_EQ(txref::encode(0xFFFFFF, 0),
-              "tx1-r7ll-llqq-qghq-qr8");
+              "tx1:r7ll-llqq-qghq-qr8");
     EXPECT_EQ(txref::encode(0xFFFFFF, 0x7FFF),
-              "tx1-r7ll-llll-l5xt-jzw");
+              "tx1:r7ll-llll-l5xt-jzw");
     EXPECT_EQ(txref::encode(466793, 2205),
-              "tx1-rjk0-uqay-zsrw-hqe");
+              "tx1:rjk0-uqay-zsrw-hqe");
     EXPECT_EQ(txref::encodeTestnet(0, 0),
-              "txtest1-xqqq-qqqq-qkla-64l");
+              "txtest1:xqqq-qqqq-qkla-64l");
     EXPECT_EQ(txref::encodeTestnet(0xFFFFFF, 0x7FFF),
-              "txtest1-x7ll-llll-lew2-gqs");
+              "txtest1:x7ll-llll-lew2-gqs");
     EXPECT_EQ(txref::encodeTestnet(467883, 2355),
-              "txtest1-xk63-uqnf-zasf-wgq");
+              "txtest1:xk63-uqnf-zasf-wgq");
 }
 
 // check that we correctly encode extended txrefs for main and testnet
 TEST(TxrefApiTest, txref_extended_encode) {
 
     EXPECT_EQ(txref::encode(0, 0, 100),
-              "tx1-rpqq-qqqq-qqyr-qnw954n");
+              "tx1:rpqq-qqqq-qqyr-qnw9-54n");
 
     EXPECT_EQ(txref::encode(0, 0, 0x1FFF),
-              "tx1-rpqq-qqqq-qqll-8av7ma9");
+              "tx1:rpqq-qqqq-qqll-8av7-ma9");
 
     EXPECT_EQ(txref::encode(0, 0x1FFF, 100),
-              "tx1-rpqq-qqql-l8yr-qx4tctr");
+              "tx1:rpqq-qqql-l8yr-qx4t-ctr");
 
     EXPECT_EQ(txref::encode(0x1FFFFF, 0, 200),
-              "tx1-rp7l-llrq-qqgx-qk4d6pv");
+              "tx1:rp7l-llrq-qqgx-qk4d-6pv");
 
     EXPECT_EQ(txref::encode(0x1FFFFF, 0x1FFF, 0x1FFF),
-              "tx1-rp7l-llrl-l8ll-80x4z3s");
+              "tx1:rp7l-llrl-l8ll-80x4-z3s");
 
     EXPECT_EQ(txref::encode(466793, 2205, 10),
-              "tx1-rpjk-0uqa-yz2q-q2rjue8");
+              "tx1:rpjk-0uqa-yz2q-q2rj-ue8");
 
     EXPECT_EQ(txref::encode(466793, 2205, 0x1FFF),
-              "tx1-rpjk-0uqa-yzll-8fnaplx");
+              "tx1:rpjk-0uqa-yzll-8fna-plx");
 
     EXPECT_EQ(txref::encodeTestnet(0, 0, 100),
-              "txtest1-xpqq-qqqq-qqyr-q5r4r42");
+              "txtest1:xpqq-qqqq-qqyr-q5r4-r42");
 
     EXPECT_EQ(txref::encodeTestnet(0, 0, 0x1FFF),
-              "txtest1-xpqq-qqqq-qqll-86pwvau");
+              "txtest1:xpqq-qqqq-qqll-86pw-vau");
 
     EXPECT_EQ(txref::encodeTestnet(0, 0x7FFF, 100),
-              "txtest1-xpqq-qqql-llyr-qwuw74x");
+              "txtest1:xpqq-qqql-llyr-qwuw-74x");
 
     EXPECT_EQ(txref::encodeTestnet(0xFFFFFF, 0, 200),
-              "txtest1-xp7l-lllq-qqgx-qadktjj");
+              "txtest1:xp7l-lllq-qqgx-qadk-tjj");
 
     EXPECT_EQ(txref::encodeTestnet(0xFFFFFF, 0x7FFF, 0x1FFF),
-              "txtest1-xp7l-llll-llll-8t6mzuj");
+              "txtest1:xp7l-llll-llll-8t6m-zuj");
 
     EXPECT_EQ(txref::encodeTestnet(466793, 2205, 10),
-              "txtest1-xpjk-0uqa-yz2q-qdwzte7");
+              "txtest1:xpjk-0uqa-yz2q-qdwz-te7");
 
     EXPECT_EQ(txref::encodeTestnet(466793, 2205, 0x1FFF),
-              "txtest1-xpjk-0uqa-yzll-8w7dkll");
+              "txtest1:xpjk-0uqa-yzll-8w7d-kll");
 }
 
 // check that we return regular txref for txoIndex=0, unless forceExtended is true
 TEST(TxrefApiTest, txref_extended_encode_force_zero) {
 
     EXPECT_EQ(txref::encode(0, 0, 0),
-              "tx1-rqqq-qqqq-qmhu-qhp");
+              "tx1:rqqq-qqqq-qmhu-qhp");
     EXPECT_EQ(txref::encode(0, 0, 0, true),
-              "tx1-rpqq-qqqq-qqqq-q2geahz");
+              "tx1:rpqq-qqqq-qqqq-q2ge-ahz");
 
     EXPECT_EQ(txref::encode(0, 0x1FFF, 0),
-              "tx1-rqqq-qqll-8vnm-xax");
+              "tx1:rqqq-qqll-8vnm-xax");
     EXPECT_EQ(txref::encode(0, 0x1FFF, 0, true),
-              "tx1-rpqq-qqql-l8qq-qlnh3fj");
+              "tx1:rpqq-qqql-l8qq-qlnh-3fj");
 
     EXPECT_EQ(txref::encode(0x1FFFFF, 0, 0),
-              "tx1-r7ll-lrqq-q32l-zcx");
+              "tx1:r7ll-lrqq-q32l-zcx");
     EXPECT_EQ(txref::encode(0x1FFFFF, 0, 0, true),
-              "tx1-rp7l-llrq-qqqq-qdeug98");
+              "tx1:rp7l-llrq-qqqq-qdeu-g98");
 
     EXPECT_EQ(txref::encode(0x1FFFFF, 0x1FFF, 0),
-              "tx1-r7ll-lrll-8xwc-yjp");
+              "tx1:r7ll-lrll-8xwc-yjp");
     EXPECT_EQ(txref::encode(0x1FFFFF, 0x1FFF, 0, true),
-              "tx1-rp7l-llrl-l8qq-qczjymh");
+              "tx1:rp7l-llrl-l8qq-qczj-ymh");
 
     EXPECT_EQ(txref::encode(466793, 2205, 0),
-              "tx1-rjk0-uqay-zsrw-hqe");
+              "tx1:rjk0-uqay-zsrw-hqe");
     EXPECT_EQ(txref::encode(466793, 2205, 0, true),
-              "tx1-rpjk-0uqa-yzqq-q7h684p");
+              "tx1:rpjk-0uqa-yzqq-q7h6-84p");
 
     EXPECT_EQ(txref::encodeTestnet(0, 0, 0),
-              "txtest1-xqqq-qqqq-qkla-64l");
+              "txtest1:xqqq-qqqq-qkla-64l");
     EXPECT_EQ(txref::encodeTestnet(0, 0, 0, true),
-              "txtest1-xpqq-qqqq-qqqq-qd9f2hm");
+              "txtest1:xpqq-qqqq-qqqq-qd9f-2hm");
 
     EXPECT_EQ(txref::encodeTestnet(0, 0x7FFF, 0),
-              "txtest1-xqqq-qqll-l2wk-g5k");
+              "txtest1:xqqq-qqll-l2wk-g5k");
     EXPECT_EQ(txref::encodeTestnet(0, 0x7FFF, 0, true),
-              "txtest1-xpqq-qqql-llqq-qh6jhhh");
+              "txtest1:xpqq-qqql-llqq-qh6j-hhh");
 
     EXPECT_EQ(txref::encodeTestnet(0xFFFFFF, 0, 0),
-              "txtest1-x7ll-llqq-q9lp-6pe");
+              "txtest1:x7ll-llqq-q9lp-6pe");
     EXPECT_EQ(txref::encodeTestnet(0xFFFFFF, 0, 0, true),
-              "txtest1-xp7l-lllq-qqqq-qxp8eke");
+              "txtest1:xp7l-lllq-qqqq-qxp8-eke");
 
     EXPECT_EQ(txref::encodeTestnet(0xFFFFFF, 0x7FFF, 0),
-              "txtest1-x7ll-llll-lew2-gqs");
+              "txtest1:x7ll-llll-lew2-gqs");
     EXPECT_EQ(txref::encodeTestnet(0xFFFFFF, 0x7FFF, 0, true),
-              "txtest1-xp7l-llll-llqq-qu7uyk4");
+              "txtest1:xp7l-llll-llqq-qu7u-yk4");
 
     EXPECT_EQ(txref::encodeTestnet(466793, 2205, 0),
-              "txtest1-xjk0-uqay-zat0-dz8");
+              "txtest1:xjk0-uqay-zat0-dz8");
     EXPECT_EQ(txref::encodeTestnet(466793, 2205, 0, true),
-              "txtest1-xpjk-0uqa-yzqq-qe62s4c");
+              "txtest1:xpjk-0uqa-yzqq-qe62-s4c");
 }
 
 //TEST(TxrefApiTest, txref_extended_encode_BIP_examples) {
@@ -328,14 +328,14 @@ TEST(TxrefApiTest, txref_extended_encode_force_zero) {
 //    // changes. Some may duplicate tests above, but they are all here in
 //    // one spot for reference.
 //
-//    EXPECT_EQ(txref::encode(0, 0, 0, true),               "tx1-rqqq-qqqq-qqqu-au7hl");
-//    EXPECT_EQ(txref::encode(0, 0, 100),                   "tx1-rqqq-qqqq-yrq9-mqh4w");
-//    EXPECT_EQ(txref::encode(0, 0, 0x1FFF),                "tx1-rqqq-qqqq-ll8t-emcac");
-//    EXPECT_EQ(txref::encode(0, 0x1FFF, 0, true),          "tx1-rqqq-qull-qqq5-ktx95");
-//    EXPECT_EQ(txref::encode(0, 0x1FFF, 100),              "tx1-rqqq-qull-yrqd-sh089");
-//    EXPECT_EQ(txref::encode(0x1FFFFF, 0, 0, true),        "tx1-r7ll-lrqq-qqqm-m5vjv");
-//    EXPECT_EQ(txref::encode(0x1FFFFF, 0x1FFF, 0, true),   "tx1-r7ll-llll-qqqn-sr5q8");
-//    EXPECT_EQ(txref::encode(0x1FFFFF, 0x1FFF, 100, true), "tx1-r7ll-llll-yrq2-klazk");
+//    EXPECT_EQ(txref::encode(0, 0, 0, true),               "tx1:rqqq-qqqq-qqqu-au7hl");
+//    EXPECT_EQ(txref::encode(0, 0, 100),                   "tx1:rqqq-qqqq-yrq9-mqh4w");
+//    EXPECT_EQ(txref::encode(0, 0, 0x1FFF),                "tx1:rqqq-qqqq-ll8t-emcac");
+//    EXPECT_EQ(txref::encode(0, 0x1FFF, 0, true),          "tx1:rqqq-qull-qqq5-ktx95");
+//    EXPECT_EQ(txref::encode(0, 0x1FFF, 100),              "tx1:rqqq-qull-yrqd-sh089");
+//    EXPECT_EQ(txref::encode(0x1FFFFF, 0, 0, true),        "tx1:r7ll-lrqq-qqqm-m5vjv");
+//    EXPECT_EQ(txref::encode(0x1FFFFF, 0x1FFF, 0, true),   "tx1:r7ll-llll-qqqn-sr5q8");
+//    EXPECT_EQ(txref::encode(0x1FFFFF, 0x1FFF, 100, true), "tx1:r7ll-llll-yrq2-klazk");
 //}
 
 //TEST(TxrefApiTest, txref_extended_decode_BIP_examples) {

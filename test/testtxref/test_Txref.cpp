@@ -8,7 +8,7 @@
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop
 
-#include "txrefCodec.cpp"
+#include "txref.cpp"
 
 // check that we accept block heights within the correct range
 TEST(TxrefTest, accept_good_block_heights) {
@@ -102,6 +102,54 @@ RC_GTEST_PROP(TxrefTestRC, badMagicCodesAreRejected, ()
     code = *rc::gen::inRange(MAX_MAGIC_CODE + 1, 2 * MAX_MAGIC_CODE);
     RC_ASSERT_THROWS_AS(checkMagicCodeRange(code), std::runtime_error);
 }
+
+TEST(TxrefTest, addDashes_everyOtherCharacter) {
+    auto result = addGroupSeparators("00", 0, 1);
+    EXPECT_EQ(result, "0-0");
+
+    result = addGroupSeparators("000", 0, 1);
+    EXPECT_EQ(result, "0-0-0");
+
+    result = addGroupSeparators("0000", 0, 1);
+    EXPECT_EQ(result, "0-0-0-0");
+
+    result = addGroupSeparators("00000", 0, 1);
+    EXPECT_EQ(result, "0-0-0-0-0");
+}
+
+TEST(TxrefTest, addDashes_everyFewCharacters) {
+    auto result = addGroupSeparators("0000000", 0, 1);
+    EXPECT_EQ(result, "0-0-0-0-0-0-0");
+
+    result = addGroupSeparators("0000000", 0, 2);
+    EXPECT_EQ(result, "00-00-00-0");
+
+    result = addGroupSeparators("0000000", 0, 3);
+    EXPECT_EQ(result, "000-000-0");
+
+    result = addGroupSeparators("0000000", 0, 4);
+    EXPECT_EQ(result, "0000-000");
+}
+
+TEST(TxrefTest, addDashes_withHRPs) {
+    auto result = addGroupSeparators("A0000000", 1, 1);
+    EXPECT_EQ(result, "A0-0-0-0-0-0-0");
+
+    result = addGroupSeparators("AB0000000", 2, 2);
+    EXPECT_EQ(result, "AB00-00-00-0");
+
+    result = addGroupSeparators("ABCD0000000", 4, 4);
+    EXPECT_EQ(result, "ABCD0000-000");
+
+}
+
+TEST(TxrefTest, prettyPrint) {
+    std::string hrp = txref::BECH32_HRP_MAIN;
+    std::string plain = "tx1rqqqqqqqqmhuqhp";
+    std::string pretty = prettyPrint(plain, hrp.length());
+    EXPECT_EQ(pretty, "tx1:rqqq-qqqq-qmhu-qhp");
+}
+
 
 // check that we can extract the magic code for a txref string
 TEST(TxrefTest, extract_magicCode) {
@@ -218,18 +266,18 @@ TEST(TxrefTest, txref_add_hrps) {
 // check that we correctly encode some sample txrefs
 TEST(TxrefTest, txref_encode_mainnet) {
     EXPECT_EQ(txrefEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0, 0),
-              "tx1-rqqq-qqqq-qmhu-qhp");
+              "tx1:rqqq-qqqq-qmhu-qhp");
     EXPECT_EQ(txrefEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0, 0x7FFF),
-              "tx1-rqqq-qqll-l8xh-jkg");
+              "tx1:rqqq-qqll-l8xh-jkg");
     EXPECT_EQ(txrefEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0xFFFFFF, 0),
-              "tx1-r7ll-llqq-qghq-qr8");
+              "tx1:r7ll-llqq-qghq-qr8");
     EXPECT_EQ(txrefEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0xFFFFFF, 0x7FFF),
-              "tx1-r7ll-llll-l5xt-jzw");
+              "tx1:r7ll-llll-l5xt-jzw");
     EXPECT_EQ(txrefEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 466793, 2205),
-              "tx1-rjk0-uqay-zsrw-hqe");
+              "tx1:rjk0-uqay-zsrw-hqe");
 
     EXPECT_EQ(txrefEncode(txref::BECH32_HRP_TEST, txref::MAGIC_BTC_TEST, 466793, 2205),
-              "txtest1-xjk0-uqay-zat0-dz8");
+              "txtest1:xjk0-uqay-zat0-dz8");
 }
 
 RC_GTEST_PROP(TxrefTestRC, checkThatEncodeAndDecodeProduceSameParameters, ()
@@ -243,6 +291,27 @@ RC_GTEST_PROP(TxrefTestRC, checkThatEncodeAndDecodeProduceSameParameters, ()
     RC_ASSERT(loc.blockHeight == height);
     RC_ASSERT(loc.transactionPosition == pos);
 }
+
+// check that we correctly encode some sample txrefs from BIP-136. These may duplicate
+// some tests above, but many of the examples in the BIP are present here for reference.
+TEST(TxrefTest, txref_encode_mainnet_bip_examples) {
+    EXPECT_EQ(txrefEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0, 0),
+              "tx1:rqqq-qqqq-qmhu-qhp");
+    EXPECT_EQ(txrefEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0, 0x7FFF),
+              "tx1:rqqq-qqll-l8xh-jkg");
+    EXPECT_EQ(txrefEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0xFFFFFF, 0),
+              "tx1:r7ll-llqq-qghq-qr8");
+    EXPECT_EQ(txrefEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0xFFFFFF, 0x7FFF),
+              "tx1:r7ll-llll-l5xt-jzw");
+
+    EXPECT_EQ(txrefEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0x71F69, 0x89D),
+              "tx1:rjk0-uqay-zsrw-hqe");
+
+    EXPECT_EQ(txrefEncode(txref::BECH32_HRP_MAIN, 0xB, 0xFFFFFF, 0x7FFF),
+              "tx1:t7ll-llll-ldup-3hh");
+
+}
+//TODO what about the decode examples?
 
 // //////////////// Extended Txrefs /////////////////////
 
@@ -405,36 +474,36 @@ TEST(TxrefTest, txref_add_hrps_extended) {
 // check that we correctly encode some sample extended txrefs
 TEST(TxrefTest, txref_encode_extended_mainnet) {
     EXPECT_EQ(txrefExtEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0, 0, 0),
-              "tx1-rpqq-qqqq-qqqq-q2geahz");
+              "tx1:rpqq-qqqq-qqqq-q2ge-ahz");
     EXPECT_EQ(txrefExtEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0, 0x7FFF, 0),
-              "tx1-rpqq-qqql-llqq-qshzqhw");
+              "tx1:rpqq-qqql-llqq-qshz-qhw");
     EXPECT_EQ(txrefExtEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0xFFFFFF, 0, 0),
-              "tx1-rp7l-lllq-qqqq-qpvhwkq");
+              "tx1:rp7l-lllq-qqqq-qpvh-wkq");
     EXPECT_EQ(txrefExtEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0xFFFFFF, 0x7FFF, 0),
-              "tx1-rp7l-llll-llqq-qmnvnkv");
+              "tx1:rp7l-llll-llqq-qmnv-nkv");
 
     EXPECT_EQ(txrefExtEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0, 0, 1),
-              "tx1-rpqq-qqqq-qqpq-qg2s2w6");
+              "tx1:rpqq-qqqq-qqpq-qg2s-2w6");
     EXPECT_EQ(txrefExtEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0, 0x7FFF, 1),
-              "tx1-rpqq-qqql-llpq-qj4thwk");
+              "tx1:rpqq-qqql-llpq-qj4t-hwk");
     EXPECT_EQ(txrefExtEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0xFFFFFF, 0, 1),
-              "tx1-rp7l-lllq-qqpq-qrw7e0c");
+              "tx1:rp7l-lllq-qqpq-qrw7-e0c");
     EXPECT_EQ(txrefExtEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0xFFFFFF, 0x7FFF, 1),
-              "tx1-rp7l-llll-llpq-qe39y05");
+              "tx1:rp7l-llll-llpq-qe39-y05");
 
     EXPECT_EQ(txrefExtEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0, 0, 0x1ABC),
-              "tx1-rpqq-qqqq-qqu4-xm3vv7r");
+              "tx1:rpqq-qqqq-qqu4-xm3v-v7r");
     EXPECT_EQ(txrefExtEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0, 0x7FFF, 0x1ABC),
-              "tx1-rpqq-qqql-llu4-xpwh370");
+              "tx1:rpqq-qqql-llu4-xpwh-370");
     EXPECT_EQ(txrefExtEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0xFFFFFF, 0, 0x1ABC),
-              "tx1-rp7l-lllq-qqu4-xs4zllp");
+              "tx1:rp7l-lllq-qqu4-xs4z-llp");
     EXPECT_EQ(txrefExtEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 0xFFFFFF, 0x7FFF, 0x1ABC),
-              "tx1-rp7l-llll-llu4-x22ezld");
+              "tx1:rp7l-llll-llu4-x22e-zld");
 
     EXPECT_EQ(txrefExtEncode(txref::BECH32_HRP_MAIN, txref::MAGIC_BTC_MAIN, 466793, 2205, 0x1ABC),
-              "tx1-rpjk-0uqa-yzu4-x0w0kuq");
+              "tx1:rpjk-0uqa-yzu4-x0w0-kuq");
     EXPECT_EQ(txrefExtEncode(txref::BECH32_HRP_TEST, txref::MAGIC_BTC_TEST, 466793, 2205, 0x1ABC),
-              "txtest1-xpjk-0uqa-yzu4-xgrlpue");
+              "txtest1:xpjk-0uqa-yzu4-xgrl-pue");
 }
 
 RC_GTEST_PROP(TxrefTestRC, checkThatEncodeAndDecodeProduceSameExtendedParameters, ()
