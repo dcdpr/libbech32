@@ -19,7 +19,7 @@ namespace {
 
     const int DATA_SIZE                = 9;
 
-    const int DATA_EXTENDED_SIZE       = 13;
+    const int DATA_EXTENDED_SIZE       = 12;
 
 
     bool isStandardSize(unsigned long dataSize) {
@@ -64,6 +64,12 @@ namespace {
             throw std::runtime_error("magic code is too large");
     }
 
+    // check that the magic code is for one of the extended txrefs
+    void checkExtendedMagicCode(int magicCode) {
+        if(magicCode != txref::MAGIC_BTC_MAIN_EXTENDED && magicCode != txref::MAGIC_BTC_TEST_EXTENDED)
+            throw std::runtime_error("magic code does not support extended txrefs");
+    }
+
     // separate groups of chars in the txref string to make it look nicer
     std::string addGroupSeparators(
             const std::string & raw,
@@ -73,20 +79,33 @@ namespace {
         if(hrplen > bech32::limits::MAX_HRP_LENGTH)
             throw std::runtime_error("HRP must be less than 84 characters long");
 
+        if(separatorOffset < 1)
+            throw std::runtime_error("separatorOffset must be > 0");
+
         auto rawLength = static_cast<std::string::difference_type>(raw.length());
         auto hrpLength = static_cast<std::string::difference_type>(hrplen);
+
+        if(rawLength < 2)
+            throw std::runtime_error("Can't add separator characters to strings with length < 2");
+
+        if(rawLength == hrpLength) // no separators needed
+            return raw;
+
+        if(rawLength < hrpLength)
+            throw std::runtime_error("HRP length can't be greater than input length");
 
         // number of separators that will be inserted
         auto numSeparators = (rawLength - hrpLength - 1) / separatorOffset;
 
         // output length
-        auto outputLength = rawLength + numSeparators;
+        auto outputLength = static_cast<std::string::size_type>(rawLength + numSeparators);
 
         // create output string, starting with all hyphens
         std::string output(outputLength, txref::hyphen);
 
         // copy over the raw string, skipping every offset # chars, after the HRP
-        std::string::difference_type rawPos = 0, outputPos = 0;
+        std::string::difference_type rawPos = 0;
+        std::string::size_type outputPos = 0;
         for(const auto &c : raw) {
 
             output[outputPos++] = c;
@@ -112,8 +131,7 @@ namespace {
         result.insert(result.cbegin()+hrpPlusSeparatorLength, txref::colon);
 
         // now add hyphens every 4th character after that
-        auto hrpPlusSeparatorAndColonLength =
-                static_cast<std::string::difference_type>(hrplen + 2);
+        auto hrpPlusSeparatorAndColonLength = hrplen + 2;
         result = addGroupSeparators(result, hrpPlusSeparatorAndColonLength);
 
         return result;
@@ -129,23 +147,10 @@ namespace {
         version = hd.dp[1] & 0x1u;
     }
 
-    // extract the extended version from the decoded data part
-    void extractExtendedVersion(uint8_t & extendedVersion, const bech32::HrpAndDp &hd) {
-        uint8_t version = 0;
-        extractVersion(version, hd);
-        if(version != 1)
-            throw std::runtime_error("version==0, so there can be no extended version");
-        extendedVersion = (hd.dp[1] >> 1u);
-        extendedVersion |= ((hd.dp[2] & 0x1u) << 4u);
-    }
-
     // extract the block height from the decoded data part
     void extractBlockHeight(int & blockHeight, const bech32::HrpAndDp &hd) {
         uint8_t version = 0;
-        uint8_t extendedVersion = 0;
         extractVersion(version, hd);
-        if(version == 1)
-            extractExtendedVersion(extendedVersion, hd);
 
         if(version == 0) {
             blockHeight = (hd.dp[1] >> 1u);
@@ -154,16 +159,9 @@ namespace {
             blockHeight |= (hd.dp[4] << 14u);
             blockHeight |= (hd.dp[5] << 19u);
         }
-        else if(version == 1 && extendedVersion == 0) {
-            blockHeight = (hd.dp[2] >> 1u);
-            blockHeight |= (hd.dp[3] << 4u);
-            blockHeight |= (hd.dp[4] << 9u);
-            blockHeight |= (hd.dp[5] << 14u);
-            blockHeight |= (hd.dp[6] << 19u);
-        }
         else {
             std::stringstream ss;
-            ss << "Unknown txref extended version detected: " << static_cast<int>(extendedVersion);
+            ss << "Unknown txref version detected: " << static_cast<int>(version);
             throw std::runtime_error(ss.str());
         }
     }
@@ -171,47 +169,39 @@ namespace {
     // extract the transaction position from the decoded data part
     void extractTransactionPosition(int & transactionPosition, const bech32::HrpAndDp &hd) {
         uint8_t version = 0;
-        uint8_t extendedVersion = 0;
         extractVersion(version, hd);
-        if(version == 1)
-            extractExtendedVersion(extendedVersion, hd);
 
         if(version == 0) {
             transactionPosition = hd.dp[6];
             transactionPosition |= (hd.dp[7] << 5u);
             transactionPosition |= (hd.dp[8] << 10u);
         }
-        else if(version == 1 && extendedVersion == 0) {
-            transactionPosition = hd.dp[7];
-            transactionPosition |= (hd.dp[8] << 5u);
-            transactionPosition |= (hd.dp[9] << 10u);
-        }
         else {
             std::stringstream ss;
-            ss << "Unknown txref extended version detected: " << static_cast<int>(extendedVersion);
+            ss << "Unknown txref version detected: " << static_cast<int>(version);
             throw std::runtime_error(ss.str());
         }
     }
 
     // extract the TXO index from the decoded data part
     void extractTxoIndex(int &txoIndex, const bech32::HrpAndDp &hd) {
+        if(hd.dp.size() < 12) {
+            // non-extended txrefs don't store the txoIndex, so just return 0
+            txoIndex = 0;
+            return;
+        }
+
         uint8_t version = 0;
-        uint8_t extendedVersion = 0;
         extractVersion(version, hd);
-        if(version == 1)
-            extractExtendedVersion(extendedVersion, hd);
 
         if(version == 0) {
-            txoIndex = 0;
-        }
-        else if(version == 1 and extendedVersion == 0) {
-            txoIndex = hd.dp[10];
-            txoIndex |= (hd.dp[11] << 5u);
-            txoIndex |= (hd.dp[12] << 10u);
+            txoIndex = hd.dp[9];
+            txoIndex |= (hd.dp[10] << 5u);
+            txoIndex |= (hd.dp[11] << 10u);
         }
         else {
             std::stringstream ss;
-            ss << "Unknown txref extended version detected: " << static_cast<int>(extendedVersion);
+            ss << "Unknown txref version detected: " << static_cast<int>(version);
             throw std::runtime_error(ss.str());
         }
     }
@@ -219,10 +209,10 @@ namespace {
     // some txref strings may have had the HRP stripped off. Attempt to prepend one if needed.
     // assumes that bech32::stripUnknownChars() has already been called
     std::string addHrpIfNeeded(const std::string & txref) {
-        if(isLengthValid(txref.length()) && txref.at(0) == 'r') {
+        if(isLengthValid(txref.length()) && (txref.at(0) == 'r' || txref.at(0) == 'y')) {
             return std::string(txref::BECH32_HRP_MAIN) + bech32::separator + txref;
         }
-        if(isLengthValid(txref.length()) && txref.at(0) == 'x') {
+        if(isLengthValid(txref.length()) && (txref.at(0) == 'x' || txref.at(0) == '8')) {
             return std::string(txref::BECH32_HRP_TEST) + bech32::separator + txref;
         }
         return txref;
@@ -283,42 +273,37 @@ namespace {
         checkTransactionPositionRange(transactionPosition);
         checkTxoIndexRange(txoIndex);
         checkMagicCodeRange(magicCode);
+        checkExtendedMagicCode(magicCode);
 
         // ranges have been checked. make unsigned copies of params
         auto bh = static_cast<uint32_t>(blockHeight);
         auto tp = static_cast<uint32_t>(transactionPosition);
         auto ti = static_cast<uint32_t>(txoIndex);
 
-        std::vector<unsigned char> dp(DATA_EXTENDED_SIZE);
+        std::vector<unsigned char> dp(DATA_EXTENDED_SIZE); // TODO need to recompute all this
 
         // set the magic code
         dp[0] = static_cast<uint8_t>(magicCode);  // sets 1-3 bits in the 1st 5 bits
 
         // set version bit to 1
-        uint8_t version = 1;
-        dp[1] = version;                          // sets 1 bit in 2nd 5 bits
-
-        // set extended version
-        uint8_t extendedVersion = 0;
-        dp[1] |= (extendedVersion & 0xFu) << 1u;  // sets 4 bits in 2nd 5 bits
-        dp[2] |= (extendedVersion & 0x10u) >> 4u; // sets 1 bit in 3rd 5 bits (5 bits total for extended version)
+        dp[1] &= ~(1u << 0u);                     // sets 1 bit in 2nd 5 bits
 
         // set block height
-        dp[2] |= (bh & 0xFu) << 1u;               // sets 4 bits in 3rd 5 bits
-        dp[3] |= (bh & 0x1F0u) >> 4u;             // sets 5 bits in 4th 5 bits
-        dp[4] |= (bh & 0x3E00u) >> 9u;            // sets 5 bits in 5th 5 bits
-        dp[5] |= (bh & 0x7C000u) >> 14u;          // sets 5 bits in 6th 5 bits
-        dp[6] |= (bh & 0xF80000u) >> 19u;         // sets 5 bits in 7th 5 bits (24 bits total for blockHeight)
+        dp[1] |= (bh & 0xFu) << 1u;               // sets 4 bits in 3rd 5 bits
+        dp[2] |= (bh & 0x1F0u) >> 4u;             // sets 5 bits in 4th 5 bits
+        dp[3] |= (bh & 0x3E00u) >> 9u;            // sets 5 bits in 5th 5 bits
+        dp[4] |= (bh & 0x7C000u) >> 14u;          // sets 5 bits in 6th 5 bits
+        dp[5] |= (bh & 0xF80000u) >> 19u;         // sets 5 bits in 7th 5 bits (24 bits total for blockHeight)
 
         // set transaction position
-        dp[7] |= (tp & 0x1Fu);                    // sets 5 bits in 8th 5 bits
-        dp[8] |= (tp & 0x3E0u) >> 5u;             // sets 5 bits in 9th 5 bits
-        dp[9] |= (tp & 0x7C00u) >> 10u;           // sets 5 bits in 10th 5 bits (15 bits total for transactionPosition)
+        dp[6] |= (tp & 0x1Fu);                    // sets 5 bits in 8th 5 bits
+        dp[7] |= (tp & 0x3E0u) >> 5u;             // sets 5 bits in 9th 5 bits
+        dp[8] |= (tp & 0x7C00u) >> 10u;           // sets 5 bits in 10th 5 bits (15 bits total for transactionPosition)
 
         // set txo index
-        dp[10] |= ti & 0x1Fu;                     // sets 5 bits in 11th 5 bits
-        dp[11] |= (ti & 0x3E0u) >> 5u;            // sets 5 bits in 12th 5 bits
-        dp[12] |= (ti & 0x7C00u) >> 10u;          // sets 5 bits in 13th 5 bits (15 bits total for txoIndex)
+        dp[9] |= ti & 0x1Fu;                     // sets 5 bits in 11th 5 bits
+        dp[10] |= (ti & 0x3E0u) >> 5u;            // sets 5 bits in 12th 5 bits
+        dp[11] |= (ti & 0x7C00u) >> 10u;          // sets 5 bits in 13th 5 bits (15 bits total for txoIndex)
 
         // Bech32 encode
         std::string result = bech32::encode(hrp, dp);
@@ -338,13 +323,12 @@ namespace txref {
             int transactionPosition,
             int txoIndex,
             bool forceExtended,
-            const std::string & hrp,
-            int magicCode) {
+            const std::string & hrp) {
 
         if(txoIndex == 0 && !forceExtended)
-            return txrefEncode(hrp, magicCode, blockHeight, transactionPosition);
+            return txrefEncode(hrp, MAGIC_BTC_MAIN, blockHeight, transactionPosition);
 
-        return txrefExtEncode(hrp, magicCode, blockHeight, transactionPosition, txoIndex);
+        return txrefExtEncode(hrp, MAGIC_BTC_MAIN_EXTENDED, blockHeight, transactionPosition, txoIndex);
 
     }
 
@@ -353,13 +337,12 @@ namespace txref {
             int transactionPosition,
             int txoIndex,
             bool forceExtended,
-            const std::string & hrp,
-            int magicCode) {
+            const std::string & hrp) {
 
         if(txoIndex == 0 && !forceExtended)
-            return txrefEncode(hrp, magicCode, blockHeight, transactionPosition);
+            return txrefEncode(hrp, MAGIC_BTC_TEST, blockHeight, transactionPosition);
 
-        return txrefExtEncode(hrp, magicCode, blockHeight, transactionPosition, txoIndex);
+        return txrefExtEncode(hrp, MAGIC_BTC_TEST_EXTENDED, blockHeight, transactionPosition, txoIndex);
 
     }
 

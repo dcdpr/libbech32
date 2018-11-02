@@ -23,6 +23,7 @@ TEST(TxrefApiTest, txref_decode) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
+    EXPECT_EQ(loc.txoIndex, 0);
 
     txref = "tx1-rqqq-qqll-l8xh-jkg";
     loc = txref::decode(txref);
@@ -30,6 +31,7 @@ TEST(TxrefApiTest, txref_decode) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0x7FFF);
+    EXPECT_EQ(loc.txoIndex, 0);
 
     txref = "tx1-r7ll-llqq-qghq-qr8";
     loc = txref::decode(txref);
@@ -37,6 +39,7 @@ TEST(TxrefApiTest, txref_decode) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0xFFFFFF);
     EXPECT_EQ(loc.transactionPosition, 0);
+    EXPECT_EQ(loc.txoIndex, 0);
 
     txref = "tx1-r7ll-llll-l5xt-jzw";
     loc = txref::decode(txref);
@@ -44,6 +47,7 @@ TEST(TxrefApiTest, txref_decode) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0xFFFFFF);
     EXPECT_EQ(loc.transactionPosition, 0x7FFF);
+    EXPECT_EQ(loc.txoIndex, 0);
 
     txref = "tx1-rjk0-uqay-zsrw-hqe";
     loc = txref::decode(txref);
@@ -51,6 +55,7 @@ TEST(TxrefApiTest, txref_decode) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 466793);
     EXPECT_EQ(loc.transactionPosition, 2205);
+    EXPECT_EQ(loc.txoIndex, 0);
 
     txref = "txtest1-xjk0-uqay-zat0-dz8";
     loc = txref::decode(txref);
@@ -58,7 +63,7 @@ TEST(TxrefApiTest, txref_decode) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST);
     EXPECT_EQ(loc.blockHeight, 466793);
     EXPECT_EQ(loc.transactionPosition, 2205);
-
+    EXPECT_EQ(loc.txoIndex, 0);
 }
 
 // check that we can deal with weird txref formatting (invalid characters)
@@ -72,6 +77,7 @@ TEST(TxrefApiTest, txref_decode_weird_formatting) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
+    EXPECT_EQ(loc.txoIndex, 0);
     EXPECT_EQ(loc.txref, "tx1:rqqq-qqqq-qmhu-qhp");
 
     txref = "tx1-rqqq qqqq qmhu qhp";
@@ -80,6 +86,7 @@ TEST(TxrefApiTest, txref_decode_weird_formatting) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
+    EXPECT_EQ(loc.txoIndex, 0);
     EXPECT_EQ(loc.txref, "tx1:rqqq-qqqq-qmhu-qhp");
 
     txref = "tx1rqqq,qqqq.qmhu.qhp";
@@ -88,6 +95,7 @@ TEST(TxrefApiTest, txref_decode_weird_formatting) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
+    EXPECT_EQ(loc.txoIndex, 0);
     EXPECT_EQ(loc.txref, "tx1:rqqq-qqqq-qmhu-qhp");
 
     txref = "tx@test1-xj$$k0-uq@@ay---zat0-d%$z 8";
@@ -96,8 +104,8 @@ TEST(TxrefApiTest, txref_decode_weird_formatting) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST);
     EXPECT_EQ(loc.blockHeight, 466793);
     EXPECT_EQ(loc.transactionPosition, 2205);
+    EXPECT_EQ(loc.txoIndex, 0);
     EXPECT_EQ(loc.txref, "txtest1:xjk0-uqay-zat0-dz8");
-
 }
 
 
@@ -112,6 +120,7 @@ TEST(TxrefApiTest, txref_decode_no_HRPs) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
+    EXPECT_EQ(loc.txoIndex, 0);
     EXPECT_EQ(loc.txref, "tx1:rqqq-qqqq-qmhu-qhp");
 
     txref = "xjk0-uqay-zat0-dz8";
@@ -120,8 +129,8 @@ TEST(TxrefApiTest, txref_decode_no_HRPs) {
     EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST);
     EXPECT_EQ(loc.blockHeight, 466793);
     EXPECT_EQ(loc.transactionPosition, 2205);
+    EXPECT_EQ(loc.txoIndex, 0);
     EXPECT_EQ(loc.txref, "txtest1:xjk0-uqay-zat0-dz8");
-
 }
 
 
@@ -130,38 +139,37 @@ TEST(TxrefApiTest, txref_extended_decode) {
     std::string txref;
     txref::LocationData loc;
 
-    txref = "tx1:rpqq-qqqq-qqqq-q2geahz";
+    txref = "tx1:yqqq-qqqq-qqqq-ksvh-26";
     loc = txref::decode(txref);
     EXPECT_EQ(loc.hrp, "tx");
-    EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
+    EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN_EXTENDED);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
     EXPECT_EQ(loc.txoIndex, 0);
 
-    txref = "tx1:rp7l-lllq-qqqq-qpvhwkq";
+    txref = "tx1:y7ll-llqq-qqqq-a5zy-tc";
     loc = txref::decode(txref);
     EXPECT_EQ(loc.hrp, "tx");
-    EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
+    EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN_EXTENDED);
     EXPECT_EQ(loc.blockHeight, 0xFFFFFF);
     EXPECT_EQ(loc.transactionPosition, 0);
     EXPECT_EQ(loc.txoIndex, 0);
 
-    txref = "tx1:rpjk-0uqa-yzu4-x0w0kuq";
+    txref = "tx1:yjk0-uqay-zu4x-nk6u-pc";
     loc = txref::decode(txref);
     EXPECT_EQ(loc.hrp, "tx");
-    EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
+    EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN_EXTENDED);
     EXPECT_EQ(loc.blockHeight, 466793);
     EXPECT_EQ(loc.transactionPosition, 2205);
     EXPECT_EQ(loc.txoIndex, 0x1ABC);
 
-    txref = "txtest1:xpjk-0uqa-yzu4-xgrlpue";
+    txref = "txtest1:8jk0-uqay-zu4x-aw4h-zl";
     loc = txref::decode(txref);
     EXPECT_EQ(loc.hrp, "txtest");
-    EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST);
+    EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST_EXTENDED);
     EXPECT_EQ(loc.blockHeight, 466793);
     EXPECT_EQ(loc.transactionPosition, 2205);
     EXPECT_EQ(loc.txoIndex, 0x1ABC);
-
 }
 
 //check that we correctly decode extended txrefs even with missing HRPs and weird formatting
@@ -169,34 +177,34 @@ TEST(TxrefApiTest, txref_extended_decode_weird) {
     std::string txref;
     txref::LocationData loc;
 
-    txref = "r p#q q$-q %qq^q- &qq* qq( -q)2g)ea  hz";
+    txref = "y q#q q- # q q q# %q   -#q % q qq# ks (vh-)  26";
     loc = txref::decode(txref);
     EXPECT_EQ(loc.hrp, "tx");
-    EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
+    EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN_EXTENDED);
     EXPECT_EQ(loc.blockHeight, 0);
     EXPECT_EQ(loc.transactionPosition, 0);
     EXPECT_EQ(loc.txoIndex, 0);
 
-    txref = "rp 7 l - l l l q - q q q q - q p v h w k q";
+    txref = "y 7 l l - l l q q - q q q q - a5  z y - t  c   ";
     loc = txref::decode(txref);
     EXPECT_EQ(loc.hrp, "tx");
-    EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
+    EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN_EXTENDED);
     EXPECT_EQ(loc.blockHeight, 0xFFFFFF);
     EXPECT_EQ(loc.transactionPosition, 0);
     EXPECT_EQ(loc.txoIndex, 0);
 
-    txref = "r@#$pjk$%-0u$%^qa-%^&yzu^&*4-x&*(0w0&%$%$kuq";
+    txref = "y#$%jk0$%^-u$%^&qa^&*(y-#$%z^&*u4x^&*-nk%^&*(6u-^&*(pc";
     loc = txref::decode(txref);
     EXPECT_EQ(loc.hrp, "tx");
-    EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN);
+    EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_MAIN_EXTENDED);
     EXPECT_EQ(loc.blockHeight, 466793);
     EXPECT_EQ(loc.transactionPosition, 2205);
     EXPECT_EQ(loc.txoIndex, 0x1ABC);
 
-    txref = "xpj..k...-0..uqa.-.y.z.u4-...xg..rl...pue....     ";
+    txref = "8jk.0.-.u.q.a..y.-..z.u..4.x..-..a.w.4.h.-.z....l..";
     loc = txref::decode(txref);
     EXPECT_EQ(loc.hrp, "txtest");
-    EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST);
+    EXPECT_EQ(loc.magicCode, txref::MAGIC_BTC_TEST_EXTENDED);
     EXPECT_EQ(loc.blockHeight, 466793);
     EXPECT_EQ(loc.transactionPosition, 2205);
     EXPECT_EQ(loc.txoIndex, 0x1ABC);
@@ -226,46 +234,46 @@ TEST(TxrefApiTest, txref_encode) {
 TEST(TxrefApiTest, txref_extended_encode) {
 
     EXPECT_EQ(txref::encode(0, 0, 100),
-              "tx1:rpqq-qqqq-qqyr-qnw9-54n");
+              "tx1:yqqq-qqqq-qyrq-0ks7-gt");
 
     EXPECT_EQ(txref::encode(0, 0, 0x1FFF),
-              "tx1:rpqq-qqqq-qqll-8av7-ma9");
+              "tx1:yqqq-qqqq-qll8-p5t3-qa");
 
     EXPECT_EQ(txref::encode(0, 0x1FFF, 100),
-              "tx1:rpqq-qqql-l8yr-qx4t-ctr");
+              "tx1:yqqq-qqll-8yrq-6d7j-km");
 
     EXPECT_EQ(txref::encode(0x1FFFFF, 0, 200),
-              "tx1:rp7l-llrq-qqgx-qk4d-6pv");
+              "tx1:y7ll-lrqq-qgxq-2dcs-u5");
 
     EXPECT_EQ(txref::encode(0x1FFFFF, 0x1FFF, 0x1FFF),
-              "tx1:rp7l-llrl-l8ll-80x4-z3s");
+              "tx1:y7ll-lrll-8ll8-n7qg-vg");
 
     EXPECT_EQ(txref::encode(466793, 2205, 10),
-              "tx1:rpjk-0uqa-yz2q-q2rj-ue8");
+              "tx1:yjk0-uqay-z2qq-km8k-yl");
 
     EXPECT_EQ(txref::encode(466793, 2205, 0x1FFF),
-              "tx1:rpjk-0uqa-yzll-8fna-plx");
+              "tx1:yjk0-uqay-zll8-4tgt-z7");
 
     EXPECT_EQ(txref::encodeTestnet(0, 0, 100),
-              "txtest1:xpqq-qqqq-qqyr-q5r4-r42");
+              "txtest1:8qqq-qqqq-qyrq-pwl4-tv");
 
     EXPECT_EQ(txref::encodeTestnet(0, 0, 0x1FFF),
-              "txtest1:xpqq-qqqq-qqll-86pw-vau");
+              "txtest1:8qqq-qqqq-qll8-0vy6-r6");
 
     EXPECT_EQ(txref::encodeTestnet(0, 0x7FFF, 100),
-              "txtest1:xpqq-qqql-llyr-qwuw-74x");
+              "txtest1:8qqq-qqll-lyrq-m3yg-tq");
 
     EXPECT_EQ(txref::encodeTestnet(0xFFFFFF, 0, 200),
-              "txtest1:xp7l-lllq-qqgx-qadk-tjj");
+              "txtest1:87ll-llqq-qgxq-gqua-v5");
 
     EXPECT_EQ(txref::encodeTestnet(0xFFFFFF, 0x7FFF, 0x1FFF),
-              "txtest1:xp7l-llll-llll-8t6m-zuj");
+              "txtest1:87ll-llll-lll8-7h35-z5");
 
     EXPECT_EQ(txref::encodeTestnet(466793, 2205, 10),
-              "txtest1:xpjk-0uqa-yz2q-qdwz-te7");
+              "txtest1:8jk0-uqay-z2qq-crga-8c");
 
     EXPECT_EQ(txref::encodeTestnet(466793, 2205, 0x1FFF),
-              "txtest1:xpjk-0uqa-yzll-8w7d-kll");
+              "txtest1:8jk0-uqay-zll8-mn8q-pe");
 }
 
 // check that we return regular txref for txoIndex=0, unless forceExtended is true
@@ -274,52 +282,52 @@ TEST(TxrefApiTest, txref_extended_encode_force_zero) {
     EXPECT_EQ(txref::encode(0, 0, 0),
               "tx1:rqqq-qqqq-qmhu-qhp");
     EXPECT_EQ(txref::encode(0, 0, 0, true),
-              "tx1:rpqq-qqqq-qqqq-q2ge-ahz");
+              "tx1:yqqq-qqqq-qqqq-ksvh-26");
 
     EXPECT_EQ(txref::encode(0, 0x1FFF, 0),
               "tx1:rqqq-qqll-8vnm-xax");
     EXPECT_EQ(txref::encode(0, 0x1FFF, 0, true),
-              "tx1:rpqq-qqql-l8qq-qlnh-3fj");
+              "tx1:yqqq-qqll-8qqq-rtzm-52");
 
     EXPECT_EQ(txref::encode(0x1FFFFF, 0, 0),
               "tx1:r7ll-lrqq-q32l-zcx");
     EXPECT_EQ(txref::encode(0x1FFFFF, 0, 0, true),
-              "tx1:rp7l-llrq-qqqq-qdeu-g98");
+              "tx1:y7ll-lrqq-qqqq-3pfz-cl");
 
     EXPECT_EQ(txref::encode(0x1FFFFF, 0x1FFF, 0),
               "tx1:r7ll-lrll-8xwc-yjp");
     EXPECT_EQ(txref::encode(0x1FFFFF, 0x1FFF, 0, true),
-              "tx1:rp7l-llrl-l8qq-qczj-ymh");
+              "tx1:y7ll-lrll-8qqq-y68w-x0");
 
     EXPECT_EQ(txref::encode(466793, 2205, 0),
               "tx1:rjk0-uqay-zsrw-hqe");
     EXPECT_EQ(txref::encode(466793, 2205, 0, true),
-              "tx1:rpjk-0uqa-yzqq-q7h6-84p");
+              "tx1:yjk0-uqay-zqqq-z00d-ge");
 
     EXPECT_EQ(txref::encodeTestnet(0, 0, 0),
               "txtest1:xqqq-qqqq-qkla-64l");
     EXPECT_EQ(txref::encodeTestnet(0, 0, 0, true),
-              "txtest1:xpqq-qqqq-qqqq-qd9f-2hm");
+              "txtest1:8qqq-qqqq-qqqq-cgru-fa");
 
     EXPECT_EQ(txref::encodeTestnet(0, 0x7FFF, 0),
               "txtest1:xqqq-qqll-l2wk-g5k");
     EXPECT_EQ(txref::encodeTestnet(0, 0x7FFF, 0, true),
-              "txtest1:xpqq-qqql-llqq-qh6j-hhh");
+              "txtest1:8qqq-qqll-lqqq-zhcp-f3");
 
     EXPECT_EQ(txref::encodeTestnet(0xFFFFFF, 0, 0),
               "txtest1:x7ll-llqq-q9lp-6pe");
     EXPECT_EQ(txref::encodeTestnet(0xFFFFFF, 0, 0, true),
-              "txtest1:xp7l-lllq-qqqq-qxp8-eke");
+              "txtest1:87ll-llqq-qqqq-nvd0-gl");
 
     EXPECT_EQ(txref::encodeTestnet(0xFFFFFF, 0x7FFF, 0),
               "txtest1:x7ll-llll-lew2-gqs");
     EXPECT_EQ(txref::encodeTestnet(0xFFFFFF, 0x7FFF, 0, true),
-              "txtest1:xp7l-llll-llqq-qu7u-yk4");
+              "txtest1:87ll-llll-lqqq-fnkj-gn");
 
     EXPECT_EQ(txref::encodeTestnet(466793, 2205, 0),
               "txtest1:xjk0-uqay-zat0-dz8");
     EXPECT_EQ(txref::encodeTestnet(466793, 2205, 0, true),
-              "txtest1:xpjk-0uqa-yzqq-qe62-s4c");
+              "txtest1:8jk0-uqay-zqqq-vhqx-t7");
 }
 
 //TEST(TxrefApiTest, txref_extended_encode_BIP_examples) {
@@ -454,7 +462,7 @@ RC_GTEST_PROP(TxrefApiTestRC, checkThatExtendedEncodeAndDecodeTestnetProduceSame
     auto pos = *rc::gen::inRange(0, 0x7FFF); // MAX_TRANSACTION_POSITION_TESTNET
     auto index = *rc::gen::inRange(0, 0x7FFF); // MAX_TXO_INDEX
 
-    auto txref = txref::encodeTestnet(height, pos, index);
+    auto txref = txref::encodeTestnet(height, pos, index, true);
     auto loc = txref::decode(txref);
 
     RC_ASSERT(loc.blockHeight == height);

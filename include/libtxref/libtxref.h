@@ -13,7 +13,9 @@ namespace txref {
 
     // magic codes used for chain identification and namespacing
     static const char MAGIC_BTC_MAIN = 0x3;
+    static const char MAGIC_BTC_MAIN_EXTENDED = 0x4;
     static const char MAGIC_BTC_TEST = 0x6;
+    static const char MAGIC_BTC_TEST_EXTENDED = 0x7;
 
     // characters used when pretty-printing
     static const char colon = ':';
@@ -39,8 +41,7 @@ namespace txref {
             int transactionPosition,
             int txoIndex = 0,
             bool forceExtended = false,
-            const std::string & hrp = BECH32_HRP_MAIN,
-            int magicCode = MAGIC_BTC_MAIN
+            const std::string & hrp = BECH32_HRP_MAIN
     );
 
     // encodes the position of a confirmed bitcoin transaction on the
@@ -54,8 +55,7 @@ namespace txref {
             int transactionPosition,
             int txoIndex = 0,
             bool forceExtended = false,
-            const std::string & hrp = BECH32_HRP_TEST,
-            int magicCode = MAGIC_BTC_TEST
+            const std::string & hrp = BECH32_HRP_TEST
     );
 
     // decodes a bech32 encoded "transaction position reference" (txref) and
@@ -67,12 +67,12 @@ namespace txref {
         const int TXREF_STRING_MIN_LENGTH = 18;                    // ex: "tx1rqqqqqqqqmhuqhp"
         const int TXREF_STRING_NO_HRP_MIN_LENGTH = 15;             // ex: "rqqqqqqqqmhuqhp"
 
-        const int TXREF_EXT_STRING_MIN_LENGTH = 22;                // ex: "tx1rpqqqqqqqqqqq2geahz"
-        const int TXREF_EXT_STRING_NO_HRP_MIN_LENGTH = 19;         // ex: "rpqqqqqqqqqqq2geahz"
+        const int TXREF_EXT_STRING_MIN_LENGTH = 21;                // ex: "tx1yqqqqqqqqqqqksvh26"
+        const int TXREF_EXT_STRING_NO_HRP_MIN_LENGTH = 18;         // ex: "yqqqqqqqqqqqksvh26"
 
         const int TXREF_STRING_MIN_LENGTH_TESTNET = 22;            // ex: "txtest1rqqqqqqqqmhuqhp"
 
-        const int TXREF_EXT_STRING_MIN_LENGTH_TESTNET = 26;        // ex: "txtest1xpjk0uqayzu4xgrlpue"
+        const int TXREF_EXT_STRING_MIN_LENGTH_TESTNET = 25;        // ex: "txtest18jk0uqayzu4xaw4hzl"
 
     }
 }

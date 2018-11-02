@@ -214,12 +214,12 @@ $ ./src/txid2txref f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528
 
 $ ./src/txid2txref --txoIndex 0 f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107 | jq '{txref}'
 {
-  "txref": "txtest1:xpyv-2xzp-qqqq-qsfj-0ds"
+  "txref": "txtest1:8yv2-xzpq-qqqq-9yce-nk"
 }
 
 $ ./src/txid2txref --txoIndex 1 f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107 | jq '{txref}'
 {
-  "txref": "txtest1:xpyv-2xzp-qqpq-qjtm-c5g"
+  "txref": "txtest1:8yv2-xzpq-qpqq-8x3w-2w"
 }
 ```
 
@@ -227,15 +227,15 @@ Alternately, instead of a txid, txid2txref can be given a txref to
 decode and look up the transaction info in bitcoind:
 
 ```
-$ ./src/txid2txref txtest1:xpyv-2xzp-qqpq-qjtm-c5g
+$ ./src/txid2txref txtest1:8yv2-xzpq-qpqq-8x3w-2w
 {
     "txid": "f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107",
-    "txref": "txtest1:xpyv-2xzp-qqpq-qjtm-c5g",
+    "txref": "txtest1:8yv2-xzpq-qpqq-8x3w-2w",
     "network": "test",
     "block-height": "1152194",
     "transaction-position": "1",
     "txo-index": "1",
-    "query-string": "txtest1:xpyv-2xzp-qqpq-qjtm-c5g"
+    "query-string": "txtest1:8yv2-xzpq-qpqq-8x3w-2w"
 }
 ```
 
@@ -340,7 +340,7 @@ convert your txid:
 ```
 $ ./src/txid2txref --txoIndex 0 79d864cc59b0c3ac240fc78e5a79edb13182b88c9ed1c60526eda6657a5d5e9e | jq '{txref}'
 {
-  "txref": "txtest1:xpvn-90z8-qqqq-qfhr-l9f"
+  "txref": "txtest1:8vn9-0z8q-qqqq-u6ff-m0"
 }
 ```
 

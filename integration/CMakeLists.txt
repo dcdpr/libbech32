@@ -44,17 +44,17 @@ set_tests_properties("IntegrationTests_t2t_txref_from_known_txid" PROPERTIES
 add_test(NAME "IntegrationTests_t2t_txrefext_from_known_txid_index_0"
     COMMAND $<TARGET_FILE:txid2txref> --txoIndex 0 f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107)
 set_tests_properties("IntegrationTests_t2t_txrefext_from_known_txid_index_0" PROPERTIES
-        PASS_REGULAR_EXPRESSION "txtest1:xpyv-2xzp-qqqq-qsfj-0ds")
+        PASS_REGULAR_EXPRESSION "txtest1:8yv2-xzpq-qqqq-9yce-nk")
 
 add_test(NAME "IntegrationTests_t2t_txrefext_from_known_txid_index_1"
     COMMAND $<TARGET_FILE:txid2txref> --txoIndex 1 f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107)
 set_tests_properties("IntegrationTests_t2t_txrefext_from_known_txid_index_1" PROPERTIES
-        PASS_REGULAR_EXPRESSION "txtest1:xpyv-2xzp-qqpq-qjtm-c5g")
+        PASS_REGULAR_EXPRESSION "txtest1:8yv2-xzpq-qpqq-8x3w-2w")
 
 # get txid from txref.
 
 add_test(NAME "IntegrationTests_t2t_txid_from_txrefext"
-    COMMAND $<TARGET_FILE:txid2txref> txtest1:xpyv-2xzp-qqqq-qsfj0ds)
+    COMMAND $<TARGET_FILE:txid2txref> txtest1:8yv2-xzpq-qqqq-9yce-nk)
 set_tests_properties("IntegrationTests_t2t_txid_from_txrefext" PROPERTIES
         PASS_REGULAR_EXPRESSION "f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107")
 
@@ -88,57 +88,57 @@ add_test(NAME "IntegrationTests_didResolver_Is_Runnable-h"
 
 # DID with zero updates/spends:
 #
-# did:btcr:txtest1:xpxv-hjzj-2ppq-qx4xrxs encodes txid
+# did:btcr:8xvh-jzj2-ppqq-ncv4-ck encodes txid
 # f3b955b2db510ba2f60446de51a9e4bcfb96a0e2ad8154d39bfefaffb305e6b0,
 # output index 1. This is unspent.
 add_test(NAME "IntegrationTests_didResolver_followTip_zero_spends"
-        COMMAND $<TARGET_FILE:didResolver> --exitAfterFollowTip did:btcr:txtest1:xpxv-hjzj-2ppq-qx4xrxs)
+        COMMAND $<TARGET_FILE:didResolver> --exitAfterFollowTip did:btcr:8xvh-jzj2-ppqq-ncv4-ck)
 
 set_tests_properties("IntegrationTests_didResolver_followTip_zero_spends" PROPERTIES
         PASS_REGULAR_EXPRESSION "txid with unspent output: f3b955b2db510ba2f60446de51a9e4bcfb96a0e2ad8154d39bfefaffb305e6b0")
 
 # DID with one update/spend:
 #
-# did:btcr:txtest1:xpsv-hjzt-7qpq-q4jc0fy encodes txid
+# did:btcr:8svh-jzt7-qpqq-qlje-hz encodes txid
 # 2e71684bba5c953c09c9f2363233af9938af4fe05d2b22df3df1c3dabdcc8200,
 # output index 1. This is spent to create new DID
-# did:btcr:txtest1:xpjv-hjzx-cppq-qwahapk. That encodes txid
+# did:btcr:8jvh-jzxc-ppqq-msat-ls. That encodes txid
 # 604a0cf5c5b794ca8b90a817b0624d5e6f1fab1ff4675f72b7a31679945ebdd9,
 # output index 1. This is unspent. Both DIDs should have the same "tip" (604a...)
 add_test(NAME "IntegrationTests_didResolver_followTip_one_spend_p1"
-        COMMAND $<TARGET_FILE:didResolver> --exitAfterFollowTip did:btcr:txtest1:xpsv-hjzt-7qpq-q4jc0fy)
+        COMMAND $<TARGET_FILE:didResolver> --exitAfterFollowTip did:btcr:8svh-jzt7-qpqq-qlje-hz)
 set_tests_properties("IntegrationTests_didResolver_followTip_one_spend_p1" PROPERTIES
         PASS_REGULAR_EXPRESSION "txid with unspent output: 604a0cf5c5b794ca8b90a817b0624d5e6f1fab1ff4675f72b7a31679945ebdd9")
 
 add_test(NAME "IntegrationTests_didResolver_followTip_one_spend_p2"
-        COMMAND $<TARGET_FILE:didResolver> --exitAfterFollowTip did:btcr:txtest1:xpjv-hjzx-cppq-qwahapk)
+        COMMAND $<TARGET_FILE:didResolver> --exitAfterFollowTip did:btcr:8jvh-jzxc-ppqq-msat-ls)
 set_tests_properties("IntegrationTests_didResolver_followTip_one_spend_p2" PROPERTIES
         PASS_REGULAR_EXPRESSION "txid with unspent output: 604a0cf5c5b794ca8b90a817b0624d5e6f1fab1ff4675f72b7a31679945ebdd9")
 
 # DID with two updates/spends:
 #
-# did:btcr:txtest1:xpz4-hjz7-lqpq-qx8daae encodes txid
+# did:btcr:8z4h-jz7l-qpqq-n28t-rl encodes txid
 # cb0252c5ea4e24bee19edd1ed1338ef077dc75d30383097d8c4bae3a9862b35a,
 # output index 1. This is spent to create new DID
-# did:btcr:txtest1:xpx4-hjz5-4qpq-qucsqnk. That encodes txid
+# did:btcr:8x4h-jz54-qpqq-f46k-ds. That encodes txid
 # 3289a36a8ca15017269a6b6e3977732fc21c8106d85020d5493ee9f5c8e00958,
 # output index 1. This is spent to create new DID
-# did:btcr:txtest1:xpg4-hjz2-gqpq-q3cy08m. That encodes txid
+# did:btcr:8g4h-jz2g-qpqq-y4we-ea. That encodes txid
 # 8a76b282fa1e3585d5c4c0dd2774400aa0a075e2cd255f0f5324f2e837f282c5,
 # output index 1. This is unspent. All three DIDs should have the
 # same "tip" (8a76...)
 add_test(NAME "IntegrationTests_didResolver_followTip_two_spends_p1"
-        COMMAND $<TARGET_FILE:didResolver> --exitAfterFollowTip did:btcr:txtest1:xpz4-hjz7-lqpq-qx8daae)
+        COMMAND $<TARGET_FILE:didResolver> --exitAfterFollowTip did:btcr:8z4h-jz7l-qpqq-n28t-rl)
 set_tests_properties("IntegrationTests_didResolver_followTip_two_spends_p1" PROPERTIES
         PASS_REGULAR_EXPRESSION "txid with unspent output: 8a76b282fa1e3585d5c4c0dd2774400aa0a075e2cd255f0f5324f2e837f282c5")
 
 add_test(NAME "IntegrationTests_didResolver_followTip_two_spends_p2"
-        COMMAND $<TARGET_FILE:didResolver> --exitAfterFollowTip did:btcr:txtest1:xpx4-hjz5-4qpq-qucsqnk)
+        COMMAND $<TARGET_FILE:didResolver> --exitAfterFollowTip did:btcr:8x4h-jz54-qpqq-f46k-ds)
 set_tests_properties("IntegrationTests_didResolver_followTip_two_spends_p2" PROPERTIES
         PASS_REGULAR_EXPRESSION "txid with unspent output: 8a76b282fa1e3585d5c4c0dd2774400aa0a075e2cd255f0f5324f2e837f282c5")
 
 add_test(NAME "IntegrationTests_didResolver_followTip_two_spends_p3"
-        COMMAND $<TARGET_FILE:didResolver> --exitAfterFollowTip did:btcr:txtest1:xpg4-hjz2-gqpq-q3cy08m)
+        COMMAND $<TARGET_FILE:didResolver> --exitAfterFollowTip did:btcr:8g4h-jz2g-qpqq-y4we-ea)
 set_tests_properties("IntegrationTests_didResolver_followTip_two_spends_p3" PROPERTIES
         PASS_REGULAR_EXPRESSION "txid with unspent output: 8a76b282fa1e3585d5c4c0dd2774400aa0a075e2cd255f0f5324f2e837f282c5")
 

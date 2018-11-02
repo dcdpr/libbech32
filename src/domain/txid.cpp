@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <memory>
 #include <stdexcept>
 #include <bitcoinapi/types.h>
@@ -5,17 +6,30 @@
 #include "txid.h"
 
 Txid::Txid(const std::string & inTxidStr, const BitcoinRPCFacade & btc) {
-    if(!isInputStringValid(inTxidStr))
+    // lowercase for consistency
+    std::string t = inTxidStr;
+    std::transform(t.begin(), t.end(), t.begin(), &::tolower);
+
+    if(!isInputStringValid(t))
         throw std::runtime_error("input string not valid");
 
-    if(!existsInNetwork(inTxidStr, btc))
+    if(!existsInNetwork(t, btc))
         throw std::runtime_error("txid does not exist");
 
-    extractTransactionDetails(inTxidStr, btc);
+    extractTransactionDetails(t, btc);
 
-    txidStr = inTxidStr;
+    txidStr = t;
 }
 
+/**
+ * Test for validity of the txid input string
+ *
+ * Tests to see if the input string is exactly 64 characters long and contains only digits
+ * and hex chars
+ *
+ * @param inTxidStr the string to test
+ * @return true if it is a valid txid string
+ */
 bool Txid::isInputStringValid(const std::string & inTxidStr) const {
     return inTxidStr.length() == 64 &&
             inTxidStr.find_first_not_of("0123456789abcdef") == std::string::npos;

@@ -54,16 +54,16 @@ TEST(ClassifyInputStringTest, test_txref) {
     EXPECT_EQ(classifyInputString("tx1rqqqqqqqqmhuqhp"), txref_param);
     EXPECT_EQ(classifyInputString("rqqqqqqqqmhuqhp"), txref_param);
     // testnet
-    EXPECT_EQ(classifyInputString("txtest1rqqqqqqqqmhuqhp"), txref_param);
-    EXPECT_EQ(classifyInputString("rqqqqqqqqmhuqhp"), txref_param);
+    EXPECT_EQ(classifyInputString("txtest1xjk0uqayzat0dz8"), txref_param);
+    EXPECT_EQ(classifyInputString("xjk0uqayzat0dz8"), txref_param);
 }
 
 TEST(ClassifyInputStringTest, test_txrefext) {
     // mainnet
-    EXPECT_EQ(classifyInputString("tx1rpqqqqqqqqqqq2geahz"), txrefext_param);
-    EXPECT_EQ(classifyInputString("rpqqqqqqqqqqq2geahz"), txrefext_param);
+    EXPECT_EQ(classifyInputString("tx1yqqqqqqqqqqqksvh26"), txrefext_param);
+    EXPECT_EQ(classifyInputString("yqqqqqqqqqqqksvh26"), txrefext_param);
     // testnet
-    EXPECT_EQ(classifyInputString("txtest1xpjk0uqayzu4xgrlpue"), txrefext_param);
-    EXPECT_EQ(classifyInputString("xpjk0uqayzu4xgrlpue"), txrefext_param);
+    EXPECT_EQ(classifyInputString("txtest18jk0uqayzu4xaw4hzl"), txrefext_param);
+    EXPECT_EQ(classifyInputString("8jk0uqayzu4xaw4hzl"), txrefext_param);
 }
 

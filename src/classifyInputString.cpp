@@ -13,23 +13,11 @@ namespace {
 
         using namespace txref::limits;
 
-        if(s.length() == TXREF_STRING_MIN_LENGTH)
+        if(s.length() == TXREF_STRING_MIN_LENGTH || s.length() == TXREF_STRING_MIN_LENGTH_TESTNET )
             return txref_param;
 
-        if(s.length() == TXREF_EXT_STRING_MIN_LENGTH_TESTNET)
+        if(s.length() == TXREF_EXT_STRING_MIN_LENGTH || s.length() == TXREF_EXT_STRING_MIN_LENGTH_TESTNET)
             return txrefext_param;
-
-        // special case: since TXREF_STRING_MIN_LENGTH_TESTNET == TXREF_EXT_STRING_MIN_LENGTH
-        // (22 == 22), then we need to dig deeper and check the first few characters
-        if(s.length() == TXREF_STRING_MIN_LENGTH_TESTNET &&
-           s.length() == TXREF_EXT_STRING_MIN_LENGTH) {
-            if (s[0] == txref::BECH32_HRP_MAIN[0] && // 't'
-                s[1] == txref::BECH32_HRP_MAIN[1] && // 'x'
-                s[2] == bech32::separator)           // '1'
-                return txrefext_param;
-            else
-                return txref_param;
-        }
 
         return unknown_param;
     }
@@ -79,6 +67,16 @@ InputParam classifyInputString(const std::string & str) {
     if(baseResult == unknown_param && missingResult != unknown_param)
         return missingResult;
 
+    // special case: if baseResult is 'txref_param' and missingResult is 'txrefext_param' then
+    // we need to dig deeper as TXREF_STRING_MIN_LENGTH == TXREF_EXT_STRING_NO_HRP_MIN_LENGTH
+    if (baseResult == txref_param && missingResult == txrefext_param) {
+        if (str[0] == txref::BECH32_HRP_MAIN[0] && // 't'
+            str[1] == txref::BECH32_HRP_MAIN[1] && // 'x'
+            str[2] == bech32::separator)           // '1'
+            return txref_param;
+        else
+            return txrefext_param;
+    }
 
     // otherwise, just return
     assert(baseResult == unknown_param);
