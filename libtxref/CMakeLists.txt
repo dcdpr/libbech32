@@ -1,7 +1,7 @@
 ############################################################
 # Target: txref
 
-add_library(txref STATIC txrefCodec.cpp)
+add_library(txref STATIC txref.cpp)
 
 target_include_directories(txref
     PUBLIC

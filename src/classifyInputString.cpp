@@ -1,6 +1,6 @@
 #include "classifyInputString.h"
-#include "bech32.h"
-#include "txrefCodec.h"
+#include "libbech32.h"
+#include "libtxref.h"
 #include <cassert>
 
 namespace {
@@ -13,12 +13,10 @@ namespace {
 
         using namespace txref::limits;
 
-        if(s.length() == TXREF_STRING_MIN_LENGTH ||
-           s.length() == TXREF_STRING_MIN_LENGTH_TESTNET)
+        if(s.length() == TXREF_STRING_MIN_LENGTH || s.length() == TXREF_STRING_MIN_LENGTH_TESTNET )
             return txref_param;
 
-        if(s.length() == TXREF_EXT_STRING_MIN_LENGTH ||
-           s.length() == TXREF_EXT_STRING_MIN_LENGTH_TESTNET)
+        if(s.length() == TXREF_EXT_STRING_MIN_LENGTH || s.length() == TXREF_EXT_STRING_MIN_LENGTH_TESTNET)
             return txrefext_param;
 
         return unknown_param;
@@ -32,12 +30,10 @@ namespace {
 
         using namespace txref::limits;
 
-        if(s.length() == TXREF_STRING_NO_HRP_MIN_LENGTH ||
-           s.length() == TXREF_STRING_NO_HRP_MIN_LENGTH_TESTNET)
+        if(s.length() == TXREF_STRING_NO_HRP_MIN_LENGTH)
             return txref_param;
 
-        if(s.length() == TXREF_EXT_STRING_NO_HRP_MIN_LENGTH ||
-           s.length() == TXREF_EXT_STRING_NO_HRP_MIN_LENGTH_TESTNET)
+        if(s.length() == TXREF_EXT_STRING_NO_HRP_MIN_LENGTH)
             return txrefext_param;
 
         return unknown_param;
@@ -71,10 +67,12 @@ InputParam classifyInputString(const std::string & str) {
     if(baseResult == unknown_param && missingResult != unknown_param)
         return missingResult;
 
-    // special case: if baseResult is 'txref' and missingResult is 'txrefext' then we need to dig
-    // deeper as mainnet min txref with HRP is same length as mainnet min txrefext without HRP
+    // special case: if baseResult is 'txref_param' and missingResult is 'txrefext_param' then
+    // we need to dig deeper as TXREF_STRING_MIN_LENGTH == TXREF_EXT_STRING_NO_HRP_MIN_LENGTH
     if (baseResult == txref_param && missingResult == txrefext_param) {
-        if (str[0] == 't' && str[1] == 'x' && str[2] == '1')
+        if (str[0] == txref::BECH32_HRP_MAIN[0] && // 't'
+            str[1] == txref::BECH32_HRP_MAIN[1] && // 'x'
+            str[2] == bech32::separator)           // '1'
             return txref_param;
         else
             return txrefext_param;

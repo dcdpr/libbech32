@@ -1,4 +1,4 @@
-#include "bech32.h"
+#include "libbech32.h"
 #include <algorithm>
 #include <stdexcept>
 

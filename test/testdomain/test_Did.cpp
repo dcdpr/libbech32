@@ -42,7 +42,7 @@ TEST(DidTest, constructingDid_withBadTxrefStr_isUnsuccessful) {
 TEST(DidTest, constructingDid_withGoodTxrefStr_isSuccessful) {
     MockBitcoinRPCFacade btc;
 
-    std::string didStr = "did:btcr:xg4h-jzgp-pqpq-q9r6sd9";
+    std::string didStr = "did:btcr:rjk0-uqay-zsrw-hqe";
 
     // if bitcoind CAN find a txid, it will return the hex of the rawtransaction
     getrawtransaction_t rawTransaction1;
@@ -69,8 +69,8 @@ TEST(DidTest, constructingDid_withGoodTxrefStr_isSuccessful) {
             .WillRepeatedly(Return(blockChainInfo));
 
     std::string txidStr = "8a76b282fa1e3585d5c4c0dd2774400aa0a075e2cd255f0f5324f2e837f282c5";
-    int blockHeight = 1355604;
-    std::vector<std::string>::size_type transactionPos = 266;
+    int blockHeight = 466793;
+    std::vector<std::string>::size_type transactionPos = 2205;
 
     // and a block height and collection of transaction ids
     blockinfo_t blockInfo;
@@ -86,3 +86,5 @@ TEST(DidTest, constructingDid_withGoodTxrefStr_isSuccessful) {
     ASSERT_NO_THROW(pDid.reset(new Did(didStr, btc)));
 
 }
+
+// TODO: redo above test with an extended txref with a non-zero Vout
