@@ -280,12 +280,12 @@ namespace {
         auto tp = static_cast<uint32_t>(transactionPosition);
         auto ti = static_cast<uint32_t>(txoIndex);
 
-        std::vector<unsigned char> dp(DATA_EXTENDED_SIZE); // TODO need to recompute all this
+        std::vector<unsigned char> dp(DATA_EXTENDED_SIZE);
 
         // set the magic code
         dp[0] = static_cast<uint8_t>(magicCode);  // sets 1-3 bits in the 1st 5 bits
 
-        // set version bit to 1
+        // set version bit to 0
         dp[1] &= ~(1u << 0u);                     // sets 1 bit in 2nd 5 bits
 
         // set block height
@@ -301,7 +301,7 @@ namespace {
         dp[8] |= (tp & 0x7C00u) >> 10u;           // sets 5 bits in 10th 5 bits (15 bits total for transactionPosition)
 
         // set txo index
-        dp[9] |= ti & 0x1Fu;                     // sets 5 bits in 11th 5 bits
+        dp[9] |= ti & 0x1Fu;                      // sets 5 bits in 11th 5 bits
         dp[10] |= (ti & 0x3E0u) >> 5u;            // sets 5 bits in 12th 5 bits
         dp[11] |= (ti & 0x7C00u) >> 10u;          // sets 5 bits in 13th 5 bits (15 bits total for txoIndex)
 
