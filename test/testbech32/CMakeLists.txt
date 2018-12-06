@@ -13,3 +13,15 @@ target_link_libraries(UnitTests_bech32 bech32 gtest gmock rapidcheck_gtest)
 
 add_test(NAME UnitTests_bech32
          COMMAND UnitTests_bech32)
+
+add_executable(bech32_c_api_tests
+        bech32_c_api_tests.c
+        )
+
+target_compile_features(bech32_c_api_tests PRIVATE c_std_99)
+set_target_properties(bech32_c_api_tests PROPERTIES C_EXTENSIONS OFF)
+
+target_link_libraries(bech32_c_api_tests PUBLIC bech32)
+
+add_test(NAME UnitTests_C_api_bech32
+        COMMAND bech32_c_api_tests)

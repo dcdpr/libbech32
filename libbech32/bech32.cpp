@@ -267,3 +267,153 @@ namespace bech32 {
 
 }
 
+// C bindings - functions
+
+const char *bech32_errordesc[] = {
+        "Success",
+        "Unknown error",
+        "Function argument was null",
+        "Function argument length was too short",
+        "Max error"
+};
+
+/**
+ * Returns error message string corresponding to the error code
+ *
+ * @param error_code the error code to convert
+ *
+ * @return error message string corresponding to the error code
+ */
+extern "C"
+const char * bech32_strerror(bech32_error_t error_code) {
+    const char * result = "";
+    if(error_code >= E_SUCCESS && error_code < E_MAX_ERROR) {
+        result = bech32_errordesc[error_code];
+    }
+    else
+        result = bech32_errordesc[E_UNKNOWN_ERROR];
+    return result;
+}
+
+/**
+ * clean a bech32 string of any stray characters not in the allowed charset, except for the
+ * separator character, which is '1'
+ *
+ * dstlen should be at least as large as srclen
+ *
+ * @param dst pointer to memory to put the cleaned string
+ * @param src pointer to the string to be cleaned
+ *
+ * @return E_SUCCESS on success, others on error (input/output is NULL, output not long enough for string)
+ */
+extern "C"
+int bech32_stripUnknownChars(
+        char *dst, size_t dstlen,
+        const char *src, size_t srclen) {
+    if(src == nullptr)
+        return E_NULL_ARGUMENT;
+    if(dst == nullptr)
+        return E_NULL_ARGUMENT;
+    if(dstlen > srclen)
+        return E_LENGTH_TOO_SHORT;
+    std::string inputStr(src);
+    std::string result = bech32::stripUnknownChars(inputStr);
+    if(dstlen < result.size()+1)
+        return E_LENGTH_TOO_SHORT;
+    std::copy_n(result.begin(), result.size(), dst);
+    dst[result.size()] = '\0';
+    return E_SUCCESS;
+}
+
+/**
+ * encode a "human-readable part" (ex: "xyz") and a "data part" (ex: {1,2,3}), returning a
+ * bech32 string
+ *
+ * @param bstr pointer to memory to put the bech32 string.
+ * @param bstrlen number of bytes allocated at bstr
+ * @param hrp pointer to the human-readable part"
+ * @param hrplen the length of the "human-readable part" string
+ * @param dp pointer to the "data part"
+ * @param dplen the length of the "data part" array
+ *
+ * @return E_SUCCESS on success, others on error (hrp/dp/bstr is NULL, bstr not long enough for bech32 string)
+ */
+extern "C"
+int bech32_encode(
+        char *bstr, size_t bstrlen,
+        const char *hrp, size_t hrplen,
+        const unsigned char *dp, size_t dplen) {
+
+    if(bstr == nullptr)
+        return E_NULL_ARGUMENT;
+    if(hrp == nullptr)
+        return E_NULL_ARGUMENT;
+    if(dp == nullptr)
+        return E_NULL_ARGUMENT;
+
+    std::string hrpStr(hrp);
+    if(hrpStr.size() > hrplen-1)
+        return E_LENGTH_TOO_SHORT;
+    std::vector<unsigned char> dpVec(dp, dp + dplen);
+
+    std::string b;
+    try {
+        b = bech32::encode(hrpStr, dpVec);
+    }
+    catch (std::exception &) {
+        // todo: convert exception message
+        return E_UNKNOWN_ERROR;
+    }
+    if(b.size() > bstrlen-1)
+        return E_LENGTH_TOO_SHORT;
+
+    std::copy_n(b.begin(), b.size(), bstr);
+    bstr[b.size()] = '\0';
+
+    return E_SUCCESS;
+}
+
+/**
+ * decode a bech32 string, returning the "human-readable part" and a "data part"
+ *
+ * @param output struct containing decoded "human-readable part" and "data part"
+ * @param bstr the bech32 string to decode
+ * @param bstrlen the length of the bech32 string
+ *
+ * @return E_SUCCESS on success, others on error (hrp/dp/bstr is NULL, hrp/dp not long enough for decoded bech32 data)
+ */
+extern "C"
+int bech32_decode(struct bech32_HrpAndDp *output, char const *bstr, size_t bstrlen) {
+
+    if(output == nullptr)
+        return E_NULL_ARGUMENT;
+    if(output->hrp == nullptr)
+        return E_NULL_ARGUMENT;
+    if(output->dp == nullptr)
+        return E_NULL_ARGUMENT;
+    if(bstr == nullptr)
+        return E_NULL_ARGUMENT;
+
+    std::string inputStr(bstr);
+    if(inputStr.size() > bstrlen-1)
+        return E_LENGTH_TOO_SHORT;
+
+    bech32::HrpAndDp hrpAndDp;
+    try {
+        hrpAndDp = bech32::decode(inputStr);
+    } catch (std::exception &) {
+        // todo: convert exception message
+        return E_UNKNOWN_ERROR;
+    }
+
+    if(hrpAndDp.hrp.size() > output->hrplen-1)
+        return E_LENGTH_TOO_SHORT;
+    if(hrpAndDp.dp.size() > output->dplen)
+        return E_LENGTH_TOO_SHORT;
+
+    std::copy_n(hrpAndDp.hrp.begin(), hrpAndDp.hrp.size(), output->hrp);
+    output->hrp[hrpAndDp.hrp.size()] = '\0';
+    std::copy_n(hrpAndDp.dp.begin(), hrpAndDp.dp.size(), output->dp);
+
+    return E_SUCCESS;
+}
