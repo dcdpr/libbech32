@@ -1,6 +1,7 @@
 
 #include "libtxref.h"
 #include "libbech32.h"
+#include <algorithm>
 #include <vector>
 #include <stdexcept>
 #include <sstream>
@@ -371,4 +372,269 @@ namespace txref {
         return data;
     }
 
+}
+
+// C bindings - functions
+
+const char *txref_errordesc[] = {
+        "Success",
+        "Unknown error",
+        "Function argument was null",
+        "Function argument length was too short",
+        "Max error"
+};
+
+/**
+ * Returns error message string corresponding to the error code
+ *
+ * @param error_code the error code to convert
+ *
+ * @return error message string corresponding to the error code
+ */
+extern "C"
+const char * txref_strerror(txref_error error_code) {
+    const char * result = "";
+    if(error_code >= E_TXREF_SUCCESS && error_code < E_TXREF_MAX_ERROR) {
+        result = txref_errordesc[error_code];
+    }
+    else
+        result = txref_errordesc[E_TXREF_UNKNOWN_ERROR];
+    return result;
+}
+
+/**
+ * Get MAX length any txref can be: main/testnet, regular or extended
+ *
+ * The length includes the final '\0' character
+ *
+ * @return MAX length for any txref
+ */
+extern "C"
+size_t max_Txref_length() {
+    return static_cast<size_t>(txref::limits::TXREF_MAX_LENGTH + 1);
+}
+
+
+/**
+ * Allocates memory for a txref and returns a pointer.
+ *
+ * This memory will be able to handle any size txref.
+ *
+ * This memory must be freed using the free_Txref_storage function.
+ *
+ * @return a pointer to a new txref, or NULL if error
+ */
+extern "C"
+char * create_Txref_storage() {
+    // allocate enough memory for the largest possible txref string, plus 1 for '\0'
+    return static_cast<char *> (calloc(max_Txref_length(), 1));
+}
+
+/**
+ * Frees memory for a txref
+ */
+ extern "C"
+void free_Txref_storage(char *txref) {
+     free(txref);
+ }
+
+/**
+ * Allocates memory for a txref_LocationData struct and returns a pointer.
+ *
+ * This struct will be able to handle any size txref.
+ *
+ * This memory must be freed using the free_LocationData_storage function.
+ *
+ * @return a pointer to a new txref_LocationData struct, or NULL if error
+ */
+ extern "C"
+txref_LocationData * create_LocationData_storage() {
+    auto locationData =
+            static_cast<txref_LocationData *> (calloc(1, sizeof(txref_LocationData)));
+    if(locationData == nullptr)
+        return nullptr;
+    locationData->txreflen = size_t(txref::limits::TXREF_MAX_LENGTH) + 1;
+    locationData->txref = create_Txref_storage();
+    if(locationData->txref == nullptr) {
+        free(locationData);
+        return nullptr;
+    }
+    locationData->hrplen = (txref::limits::TXREF_EXT_STRING_MIN_LENGTH_TESTNET - txref::limits::TXREF_EXT_STRING_NO_HRP_MIN_LENGTH) + 1;
+    locationData->hrp = static_cast<char *> (calloc(locationData->hrplen, 1));
+    if(locationData->hrp == nullptr) {
+        free_Txref_storage(locationData->txref);
+        free(locationData);
+        return nullptr;
+    }
+    return locationData;
+}
+
+/**
+ * Frees memory for a txref_LocationData struct.
+ */
+void free_LocationData_storage(txref_LocationData *locationData) {
+    free(locationData->hrp);
+    free_Txref_storage(locationData->txref);
+    free(locationData);
+}
+
+/**
+ * encodes the position of a confirmed bitcoin transaction on the
+ * mainnet network and returns a bech32 encoded "transaction position
+ * reference" (txref). If txoIndex is greater than 0, then an extended
+ * reference is returned (txref-ext). If txoIndex is zero, but
+ * forceExtended=true, then an extended reference is returned (txref-ext).
+ *
+ * @param txref pointer to memory to copy the output encoded txref
+ * @param txreflen number of bytes allocated at txref
+ * @param blockHeight the block height of block containing the transaction to encode
+ * @param transactionPosition the transaction position within the block of the transaction to encode
+ * @param txoIndex the txo index within the transaction of the transaction to encode
+ * @param forceExtended if true, will encode an extended txref, even if txoIndex is 0
+ * @param hrp the "human-readable part" for the bech32 encoding (normally "txtest")
+ * @param hrplen the length of the "human-readable part" string
+ *
+ * @return E_TXREF_SUCCESS on success, others on error
+ */
+extern "C"
+txref_error txref_encode(
+        char * txref,
+        size_t txreflen,
+        int blockHeight,
+        int transactionPosition,
+        int txoIndex,
+        bool forceExtended,
+        const char * hrp,
+        size_t hrplen) {
+
+    if(txref == nullptr)
+        return E_TXREF_NULL_ARGUMENT;
+    if(hrp == nullptr)
+        return E_TXREF_NULL_ARGUMENT;
+
+    std::string inputHrp(hrp);
+    if(inputHrp.size() > hrplen-1)
+        return E_TXREF_LENGTH_TOO_SHORT;
+
+    std::string outputTxref;
+    try {
+        outputTxref = txref::encode(blockHeight, transactionPosition, txoIndex, forceExtended, inputHrp);
+    } catch (std::exception &) {
+        // todo: convert exception message
+        return E_TXREF_UNKNOWN_ERROR;
+    }
+
+    if(outputTxref.size() > txreflen-1)
+        return E_TXREF_LENGTH_TOO_SHORT;
+
+    std::copy_n(outputTxref.begin(), outputTxref.size(), txref);
+    txref[outputTxref.size()] = '\0';
+
+    return E_TXREF_SUCCESS;
+}
+
+/**
+ * encodes the position of a confirmed bitcoin transaction on the
+ * mainnet network and returns a bech32 encoded "transaction position
+ * reference" (txref). If txoIndex is greater than 0, then an extended
+ * reference is returned (txref-ext). If txoIndex is zero, but
+ * forceExtended=true, then an extended reference is returned (txref-ext).
+ *
+ * @param txref pointer to memory to copy the output encoded txref
+ * @param txreflen number of bytes allocated at txref
+ * @param blockHeight the block height of block containing the transaction to encode
+ * @param transactionPosition the transaction position within the block of the transaction to encode
+ * @param txoIndex the txo index within the transaction of the transaction to encode
+ * @param forceExtended if true, will encode an extended txref, even if txoIndex is 0
+ * @param hrp the "human-readable part" for the bech32 encoding (normally "txtest")
+ * @param hrplen the length of the "human-readable part" string
+ *
+ * @return E_TXREF_SUCCESS on success, others on error
+ */
+extern "C"
+txref_error txref_encodeTestnet(
+        char * txref,
+        size_t txreflen,
+        int blockHeight,
+        int transactionPosition,
+        int txoIndex,
+        bool forceExtended,
+        const char * hrp,
+        size_t hrplen) {
+
+    if(txref == nullptr)
+        return E_TXREF_NULL_ARGUMENT;
+    if(hrp == nullptr)
+        return E_TXREF_NULL_ARGUMENT;
+
+    std::string inputHrp(hrp);
+    if(inputHrp.size() > hrplen-1)
+        return E_TXREF_LENGTH_TOO_SHORT;
+
+    std::string outputTxref;
+    try {
+        outputTxref = txref::encodeTestnet(blockHeight, transactionPosition, txoIndex, forceExtended, inputHrp);
+    } catch (std::exception &) {
+        // todo: convert exception message
+        return E_TXREF_UNKNOWN_ERROR;
+    }
+
+    if(outputTxref.size() > txreflen-1)
+        return E_TXREF_LENGTH_TOO_SHORT;
+
+    std::copy_n(outputTxref.begin(), outputTxref.size(), txref);
+    txref[outputTxref.size()] = '\0';
+
+    return E_TXREF_SUCCESS;
+}
+
+/**
+ * decodes a bech32 encoded "transaction position reference" (txref) and
+ * returns identifying data
+ *
+ * @param locationData pointer to struct to copy the decoded transaction data
+ * @param txref the txref string to decode
+ * @param txreflen the length of the txref string
+ *
+ * @return E_TXREF_SUCCESS on success, others on error
+ */
+extern "C"
+txref_error txref_decode(
+        txref_LocationData *locationData,
+        const char * txref,
+        size_t txreflen) {
+
+    if(locationData == nullptr)
+        return E_TXREF_NULL_ARGUMENT;
+    if(locationData->txref == nullptr)
+        return E_TXREF_NULL_ARGUMENT;
+    if(locationData->hrp == nullptr)
+        return E_TXREF_NULL_ARGUMENT;
+    if(txref == nullptr)
+        return E_TXREF_NULL_ARGUMENT;
+
+    std::string inputTxref(txref);
+    if(inputTxref.size() > txreflen-1)
+        return E_TXREF_LENGTH_TOO_SHORT;
+
+    txref::LocationData ld;
+    try {
+        ld = txref::decode(inputTxref);
+    } catch (std::exception &) {
+        // todo: convert exception message
+        return E_TXREF_UNKNOWN_ERROR;
+    }
+
+    locationData->magicCode = ld.magicCode;
+    locationData->blockHeight = ld.blockHeight;
+    locationData->transactionPosition = ld.transactionPosition;
+    locationData->txoIndex = ld.txoIndex;
+
+    std::copy_n(ld.hrp.begin(), ld.hrp.size(), locationData->hrp);
+    locationData->hrp[ld.hrp.size()] = '\0';
+
+    std::copy_n(ld.txref.begin(), ld.txref.size(), locationData->txref);
+    locationData->txref[ld.txref.size()] = '\0';
+
+    return E_TXREF_SUCCESS;
 }

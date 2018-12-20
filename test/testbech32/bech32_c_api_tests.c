@@ -4,13 +4,13 @@
 #include <stdlib.h>
 #include "libbech32.h"
 
-// make sure we can run these test even when building a release version
+// make sure we can run these tests even when building a release version
 #undef NDEBUG
 #include <assert.h>
 
 
 void strerror_withValidErrorCode_returnsErrorMessage() {
-    const char *message = bech32_strerror(E_SUCCESS);
+    const char *message = bech32_strerror(E_BECH32_SUCCESS);
     assert(message != NULL);
     assert(strcmp(message, "Success") == 0);
 }
@@ -25,7 +25,7 @@ void stripUnknownChars_withNullInput_returnsError() {
     char *src = NULL;
     char dst[] = "";
 
-    assert(bech32_stripUnknownChars(dst, sizeof(dst), src, 0) == E_NULL_ARGUMENT);
+    assert(bech32_stripUnknownChars(dst, sizeof(dst), src, 0) == E_BECH32_NULL_ARGUMENT);
 }
 
 void stripUnknownChars_withNullOutput_returnsError() {
@@ -33,14 +33,14 @@ void stripUnknownChars_withNullOutput_returnsError() {
     char *dst = NULL;
 
     // sizeof(dst) is meaningless here as we are testing dst == NULL
-    assert(bech32_stripUnknownChars(dst, 0, src, sizeof(src)) == E_NULL_ARGUMENT);
+    assert(bech32_stripUnknownChars(dst, 0, src, sizeof(src)) == E_BECH32_NULL_ARGUMENT);
 }
 
 void stripUnknownChars_withInsufficientOutputStorage_returnsError() {
     char src[] = "ffff";
     char dst[sizeof(src)-1];
 
-    assert(bech32_stripUnknownChars(dst, sizeof(dst), src, sizeof(src)) == E_LENGTH_TOO_SHORT);
+    assert(bech32_stripUnknownChars(dst, sizeof(dst), src, sizeof(src)) == E_BECH32_LENGTH_TOO_SHORT);
 }
 
 void stripUnknownChars_withSimpleString_returnsSameString() {
@@ -77,13 +77,13 @@ void decode_withBadArgs_isUnsuccessful() {
     { // input is null
         char *bstr = NULL;
 
-        struct bech32_HrpAndDp *hrpdp = malloc(sizeof(struct bech32_HrpAndDp));
+        bech32_HrpAndDp *hrpdp = malloc(sizeof(bech32_HrpAndDp));
         hrpdp->hrplen = 10;
         hrpdp->hrp = (char *) calloc(hrpdp->hrplen, 1);
         hrpdp->dplen = 10;
         hrpdp->dp = (unsigned char *) calloc(hrpdp->dplen, 1);
 
-        assert(bech32_decode(hrpdp, bstr, 0) == E_NULL_ARGUMENT);
+        assert(bech32_decode(hrpdp, bstr, 0) == E_BECH32_NULL_ARGUMENT);
 
         free(hrpdp->dp);
         free(hrpdp->hrp);
@@ -93,20 +93,20 @@ void decode_withBadArgs_isUnsuccessful() {
     { // output is null
         char bstr[] = "xyz1pzr9dvupm";
 
-        struct bech32_HrpAndDp *hrpdp = NULL;
+        bech32_HrpAndDp *hrpdp = NULL;
 
-        assert(bech32_decode(hrpdp, bstr, sizeof(bstr)) == E_NULL_ARGUMENT);
+        assert(bech32_decode(hrpdp, bstr, sizeof(bstr)) == E_BECH32_NULL_ARGUMENT);
     }
 
     { // hrp is null
         char bstr[] = "xyz1pzr9dvupm";
 
-        struct bech32_HrpAndDp *hrpdp = malloc(sizeof(struct bech32_HrpAndDp));
+        bech32_HrpAndDp *hrpdp = malloc(sizeof(bech32_HrpAndDp));
         hrpdp->dplen = 10;
         hrpdp->dp = (unsigned char *) calloc(hrpdp->dplen, 1);
         hrpdp->hrp = NULL;
 
-        assert(bech32_decode(hrpdp, bstr, sizeof(bstr)) == E_NULL_ARGUMENT);
+        assert(bech32_decode(hrpdp, bstr, sizeof(bstr)) == E_BECH32_NULL_ARGUMENT);
 
         free(hrpdp->dp);
         free(hrpdp);
@@ -115,12 +115,12 @@ void decode_withBadArgs_isUnsuccessful() {
     { // dp is null
         char bstr[] = "xyz1pzr9dvupm";
 
-        struct bech32_HrpAndDp *hrpdp = malloc(sizeof(struct bech32_HrpAndDp));
+        bech32_HrpAndDp *hrpdp = malloc(sizeof(bech32_HrpAndDp));
         hrpdp->hrplen = 1;
         hrpdp->hrp = (char *) calloc(hrpdp->hrplen, 1);
         hrpdp->dp = NULL;
 
-        assert(bech32_decode(hrpdp, bstr, sizeof(bstr)) == E_NULL_ARGUMENT);
+        assert(bech32_decode(hrpdp, bstr, sizeof(bstr)) == E_BECH32_NULL_ARGUMENT);
 
         free(hrpdp->hrp);
         free(hrpdp);
@@ -129,13 +129,13 @@ void decode_withBadArgs_isUnsuccessful() {
     { // allocated hrp is too short
         char bstr[] = "xyz1pzr9dvupm";
 
-        struct bech32_HrpAndDp *hrpdp = malloc(sizeof(struct bech32_HrpAndDp));
+        bech32_HrpAndDp *hrpdp = malloc(sizeof(bech32_HrpAndDp));
         hrpdp->hrplen = 1;
         hrpdp->hrp = (char *) calloc(hrpdp->hrplen, 1);
         hrpdp->dplen = 10;
         hrpdp->dp = (unsigned char *) calloc(hrpdp->dplen, 1);
 
-        assert(bech32_decode(hrpdp, bstr, sizeof(bstr)) == E_LENGTH_TOO_SHORT);
+        assert(bech32_decode(hrpdp, bstr, sizeof(bstr)) == E_BECH32_LENGTH_TOO_SHORT);
 
         free(hrpdp->dp);
         free(hrpdp->hrp);
@@ -145,13 +145,13 @@ void decode_withBadArgs_isUnsuccessful() {
     { // allocated dp is too short
         char bstr[] = "xyz1pzr9dvupm";
 
-        struct bech32_HrpAndDp *hrpdp = malloc(sizeof(struct bech32_HrpAndDp));
+        bech32_HrpAndDp *hrpdp = malloc(sizeof(bech32_HrpAndDp));
         hrpdp->hrplen = 10;
         hrpdp->hrp = (char *) calloc(hrpdp->hrplen, 1);
         hrpdp->dplen = 1;
         hrpdp->dp = (unsigned char *) calloc(hrpdp->dplen, 1);
 
-        assert(bech32_decode(hrpdp, bstr, sizeof(bstr)) == E_LENGTH_TOO_SHORT);
+        assert(bech32_decode(hrpdp, bstr, sizeof(bstr)) == E_BECH32_LENGTH_TOO_SHORT);
 
         free(hrpdp->dp);
         free(hrpdp->hrp);
@@ -163,39 +163,26 @@ void decode_minimalExample_isSuccessful() {
     char bstr[] = "a12uel5l";
     char expectedHrp[] = "a";
 
-    struct bech32_HrpAndDp * hrpdp = malloc(sizeof (struct bech32_HrpAndDp));
-    hrpdp->hrplen = 10;
-    hrpdp->hrp = (char *) calloc(hrpdp->hrplen, 1);
-    hrpdp->dplen = 10;
-    hrpdp->dp = (unsigned char *) calloc(hrpdp->dplen, 1);
+    bech32_HrpAndDp * hrpdp = create_HrpAndDp_storage(bstr);
 
-    assert(bech32_decode(hrpdp, bstr, sizeof(bstr)) == E_SUCCESS);
+    assert(bech32_decode(hrpdp, bstr, sizeof(bstr)) == E_BECH32_SUCCESS);
     assert(strcmp(hrpdp->hrp, expectedHrp) == 0);
 
-    free(hrpdp->dp);
-    free(hrpdp->hrp);
-    free(hrpdp);
+    free_HrpAndDp_storage(hrpdp);
 }
 
 void decode_longExample_isSuccessful() {
     char bstr[] = "abcdef1qpzry9x8gf2tvdw0s3jn54khce6mua7lmqqqxw";
     char expectedHrp[] = "abcdef";
-    size_t expectedDpSize = 32; // 32 = num chars after '1', minus 6 for checksum chars
 
-    struct bech32_HrpAndDp * hrpdp = malloc(sizeof (struct bech32_HrpAndDp));
-    hrpdp->hrplen = 10;
-    hrpdp->hrp = (char *) calloc(hrpdp->hrplen, 1);
-    hrpdp->dplen = expectedDpSize;
-    hrpdp->dp = (unsigned char *) calloc(expectedDpSize, 1);
+    bech32_HrpAndDp * hrpdp = create_HrpAndDp_storage(bstr);
 
-    assert(bech32_decode(hrpdp, bstr, sizeof(bstr)) == E_SUCCESS);
+    assert(bech32_decode(hrpdp, bstr, sizeof(bstr)) == E_BECH32_SUCCESS);
     assert(strcmp(hrpdp->hrp, expectedHrp) == 0);
     assert(hrpdp->dp[0] == '\0');    // 'q' in above dp part
     assert(hrpdp->dp[31] == '\x1f'); // 'l' in above dp part
 
-    free(hrpdp->dp);
-    free(hrpdp->hrp);
-    free(hrpdp);
+    free_HrpAndDp_storage(hrpdp);
 }
 
 void decode_whenMethodThrowsException_isUnsuccessful() {
@@ -204,19 +191,12 @@ void decode_whenMethodThrowsException_isUnsuccessful() {
     // and returns an error code
     char bstr[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1qpzry9x8gf2tvdw0s3jn54khce6mua7lmqqqxw";
     char expectedHrp[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-    size_t expectedDpSize = 32; // 32 = num chars after '1', minus 6 for checksum chars
 
-    struct bech32_HrpAndDp * hrpdp = malloc(sizeof (struct bech32_HrpAndDp));
-    hrpdp->hrplen = sizeof(expectedHrp); // 85 bytes
-    hrpdp->hrp = (char *) calloc(hrpdp->hrplen, 1);
-    hrpdp->dplen = expectedDpSize;
-    hrpdp->dp = (unsigned char *) calloc(expectedDpSize, 1);
+    bech32_HrpAndDp * hrpdp = create_HrpAndDp_storage(bstr);
 
-    assert(bech32_decode(hrpdp, bstr, sizeof(bstr)) == E_UNKNOWN_ERROR);
+    assert(bech32_decode(hrpdp, bstr, sizeof(bstr)) == E_BECH32_UNKNOWN_ERROR);
 
-    free(hrpdp->dp);
-    free(hrpdp->hrp);
-    free(hrpdp);
+    free_HrpAndDp_storage(hrpdp);
 }
 
 void encode_withBadArgs_isUnsuccessful() {
@@ -226,7 +206,7 @@ void encode_withBadArgs_isUnsuccessful() {
         unsigned char dp[] = {};
         char * bstr = NULL;
 
-        assert(bech32_encode(bstr, sizeof(bstr), hrp, sizeof(hrp), dp, sizeof(dp)) == E_NULL_ARGUMENT);
+        assert(bech32_encode(bstr, sizeof(bstr), hrp, sizeof(hrp), dp, sizeof(dp)) == E_BECH32_NULL_ARGUMENT);
     }
 
     { // dp is null
@@ -234,7 +214,7 @@ void encode_withBadArgs_isUnsuccessful() {
         unsigned char dp[] = {};
         char bstr[] = {};
 
-        assert(bech32_encode(bstr, sizeof(bstr), hrp, sizeof(hrp), dp, sizeof(dp)) == E_NULL_ARGUMENT);
+        assert(bech32_encode(bstr, sizeof(bstr), hrp, sizeof(hrp), dp, sizeof(dp)) == E_BECH32_NULL_ARGUMENT);
     }
 
     { // hrp is null
@@ -242,7 +222,7 @@ void encode_withBadArgs_isUnsuccessful() {
         unsigned char *dp = NULL;
         char bstr[] = {};
 
-        assert(bech32_encode(bstr, sizeof(bstr), hrp, sizeof(hrp), dp, sizeof(dp)) == E_NULL_ARGUMENT);
+        assert(bech32_encode(bstr, sizeof(bstr), hrp, sizeof(hrp), dp, sizeof(dp)) == E_BECH32_NULL_ARGUMENT);
     }
 
     { // allocated bstr is too small
@@ -250,17 +230,18 @@ void encode_withBadArgs_isUnsuccessful() {
         unsigned char dp[] = {1,2,3};
         char bstr[sizeof(hrp) + 1 + sizeof(dp) + 5] = {0}; // should be sizeof(hrp) + 1 + sizeof(dp) + 6
 
-        assert(bech32_encode(bstr, sizeof(bstr), hrp, sizeof(hrp), dp, sizeof(dp)) == E_LENGTH_TOO_SHORT);
+        assert(bech32_encode(bstr, sizeof(bstr), hrp, sizeof(hrp), dp, sizeof(dp)) == E_BECH32_LENGTH_TOO_SHORT);
     }
 
 }
-    void encode_minimalExample_isSuccessful() {
+
+void encode_minimalExample_isSuccessful() {
     char hrp[] = "a";
     unsigned char dp[] = {};
     char expected[] = "a12uel5l";
     char bstr[sizeof(hrp) + 1 + 6] = {0};
 
-    assert(bech32_encode(bstr, sizeof(bstr), hrp, sizeof(hrp), dp, sizeof(dp)) == E_SUCCESS);
+    assert(bech32_encode(bstr, sizeof(bstr), hrp, sizeof(hrp), dp, sizeof(dp)) == E_BECH32_SUCCESS);
     assert(strcmp(expected, bstr) == 0);
 }
 
@@ -270,7 +251,7 @@ void encode_smallExample_isSuccessful() {
     char expected[] = "xyz1pzr9dvupm";
     char bstr[sizeof(hrp) + 1 + sizeof(dp) + 6] = {0};
 
-    assert(bech32_encode(bstr, sizeof(bstr), hrp, sizeof(hrp), dp, sizeof(dp)) == E_SUCCESS);
+    assert(bech32_encode(bstr, sizeof(bstr), hrp, sizeof(hrp), dp, sizeof(dp)) == E_BECH32_SUCCESS);
     assert(strcmp(expected, bstr) == 0);
 }
 
@@ -282,7 +263,7 @@ void encode_whenMethodThrowsException_isUnsuccessful() {
     unsigned char dp[] = {1,2,3};
     char bstr[sizeof(hrp) + 1 + sizeof(dp) + 6] = {0};
 
-    assert(bech32_encode(bstr, sizeof(bstr), hrp, sizeof(hrp), dp, sizeof(dp)) == E_UNKNOWN_ERROR);
+    assert(bech32_encode(bstr, sizeof(bstr), hrp, sizeof(hrp), dp, sizeof(dp)) == E_BECH32_UNKNOWN_ERROR);
 }
 
 void decode_and_encode_minimalExample_producesSameResult() {
@@ -290,25 +271,19 @@ void decode_and_encode_minimalExample_producesSameResult() {
     char expectedHrp[] = "a";
     const size_t expectedDpSize = 0; // 0 = num chars after '1', minus 6 for checksum chars
 
-    struct bech32_HrpAndDp * hrpdp = malloc(sizeof (struct bech32_HrpAndDp));
-    hrpdp->hrplen = sizeof(expectedHrp);
-    hrpdp->hrp = (char *) calloc(sizeof(expectedHrp), 1);
-    hrpdp->dplen = expectedDpSize;
-    hrpdp->dp = (unsigned char *) calloc(expectedDpSize, 1);
+    bech32_HrpAndDp * hrpdp = create_HrpAndDp_storage(bstr1);
 
-    assert(bech32_decode(hrpdp, bstr1, sizeof(bstr1)) == E_SUCCESS);
+    assert(bech32_decode(hrpdp, bstr1, sizeof(bstr1)) == E_BECH32_SUCCESS);
     assert(strcmp(hrpdp->hrp, expectedHrp) == 0);
 
     size_t bstr2len = sizeof(expectedHrp) + 1 + expectedDpSize + 6;
     char bstr2[bstr2len];
     memset(bstr2, 0, bstr2len);
 
-    assert(bech32_encode(bstr2, sizeof(bstr2), hrpdp->hrp, sizeof(expectedHrp), hrpdp->dp, expectedDpSize) == E_SUCCESS);
+    assert(bech32_encode(bstr2, sizeof(bstr2), hrpdp->hrp, sizeof(expectedHrp), hrpdp->dp, expectedDpSize) == E_BECH32_SUCCESS);
     assert(strcmp(bstr1, bstr2) == 0);
 
-    free(hrpdp->dp);
-    free(hrpdp->hrp);
-    free(hrpdp);
+    free_HrpAndDp_storage(hrpdp);
 }
 
 void decode_and_encode_smallExample_producesSameResult() {
@@ -316,25 +291,19 @@ void decode_and_encode_smallExample_producesSameResult() {
     char expectedHrp[] = "xyz";
     const size_t expectedDpSize = 3; // 3 = num chars after '1', minus 6 for checksum chars
 
-    struct bech32_HrpAndDp * hrpdp = malloc(sizeof (struct bech32_HrpAndDp));
-    hrpdp->hrplen = sizeof(expectedHrp);
-    hrpdp->hrp = (char *) calloc(sizeof(expectedHrp), 1);
-    hrpdp->dplen = expectedDpSize;
-    hrpdp->dp = (unsigned char *) calloc(expectedDpSize, 1);
+    bech32_HrpAndDp * hrpdp = create_HrpAndDp_storage(bstr1);
 
-    assert(bech32_decode(hrpdp, bstr1, sizeof(bstr1)) == E_SUCCESS);
+    assert(bech32_decode(hrpdp, bstr1, sizeof(bstr1)) == E_BECH32_SUCCESS);
     assert(strcmp(hrpdp->hrp, expectedHrp) == 0);
 
     size_t bstr2len = sizeof(expectedHrp) + 1 + expectedDpSize + 6;
     char bstr2[bstr2len];
     memset(bstr2, 0, bstr2len);
 
-    assert(bech32_encode(bstr2, sizeof(bstr2), hrpdp->hrp, sizeof(expectedHrp), hrpdp->dp, expectedDpSize) == E_SUCCESS);
+    assert(bech32_encode(bstr2, sizeof(bstr2), hrpdp->hrp, sizeof(expectedHrp), hrpdp->dp, expectedDpSize) == E_BECH32_SUCCESS);
     assert(strcmp(bstr1, bstr2) == 0);
 
-    free(hrpdp->dp);
-    free(hrpdp->hrp);
-    free(hrpdp);
+    free_HrpAndDp_storage(hrpdp);
 }
 
 void decode_and_encode_longExample_producesSameResult() {
@@ -342,25 +311,19 @@ void decode_and_encode_longExample_producesSameResult() {
     char expectedHrp[] = "abcdef";
     const size_t expectedDpSize = 32; // 32 = num chars after '1', minus 6 for checksum chars
 
-    struct bech32_HrpAndDp * hrpdp = malloc(sizeof (struct bech32_HrpAndDp));
-    hrpdp->hrplen = sizeof(expectedHrp);
-    hrpdp->hrp = (char *) calloc(sizeof(expectedHrp), 1);
-    hrpdp->dplen = expectedDpSize;
-    hrpdp->dp = (unsigned char *) calloc(expectedDpSize, 1);
+    bech32_HrpAndDp * hrpdp = create_HrpAndDp_storage(bstr1);
 
-    assert(bech32_decode(hrpdp, bstr1, sizeof(bstr1)) == E_SUCCESS);
+    assert(bech32_decode(hrpdp, bstr1, sizeof(bstr1)) == E_BECH32_SUCCESS);
     assert(strcmp(hrpdp->hrp, expectedHrp) == 0);
 
     size_t bstr2len = sizeof(expectedHrp) + 1 + expectedDpSize + 6;
     char bstr2[bstr2len];
     memset(bstr2, 0, bstr2len);
 
-    assert(bech32_encode(bstr2, sizeof(bstr2), hrpdp->hrp, sizeof(expectedHrp), hrpdp->dp, expectedDpSize) == E_SUCCESS);
+    assert(bech32_encode(bstr2, sizeof(bstr2), hrpdp->hrp, sizeof(expectedHrp), hrpdp->dp, expectedDpSize) == E_BECH32_SUCCESS);
     assert(strcmp(bstr1, bstr2) == 0);
 
-    free(hrpdp->dp);
-    free(hrpdp->hrp);
-    free(hrpdp);
+    free_HrpAndDp_storage(hrpdp);
 }
 
 int main() {

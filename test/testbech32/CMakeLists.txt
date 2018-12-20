@@ -14,6 +14,7 @@ target_link_libraries(UnitTests_bech32 bech32 gtest gmock rapidcheck_gtest)
 add_test(NAME UnitTests_bech32
          COMMAND UnitTests_bech32)
 
+
 add_executable(bech32_c_api_tests
         bech32_c_api_tests.c
         )

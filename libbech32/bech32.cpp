@@ -285,14 +285,63 @@ const char *bech32_errordesc[] = {
  * @return error message string corresponding to the error code
  */
 extern "C"
-const char * bech32_strerror(bech32_error_t error_code) {
+const char * bech32_strerror(bech32_error error_code) {
     const char * result = "";
-    if(error_code >= E_SUCCESS && error_code < E_MAX_ERROR) {
+    if(error_code >= E_BECH32_SUCCESS && error_code < E_BECH32_MAX_ERROR) {
         result = bech32_errordesc[error_code];
     }
     else
-        result = bech32_errordesc[E_UNKNOWN_ERROR];
+        result = bech32_errordesc[E_BECH32_UNKNOWN_ERROR];
     return result;
+}
+
+/**
+ * Allocates memory for a bech32_HrpAndDp struct based on the size of the bech32 string passed in.
+ *
+ * This memory must be freed using the free_HrpAndDp_storage function.
+ *
+ * @param bstr the bech32 string to be decoded by bech32_decode()
+ *
+ * @return a pointer to a new bech32_HrpAndDp struct, or NULL if error
+ */
+extern "C"
+bech32_HrpAndDp * create_HrpAndDp_storage(const char *bstr) {
+    // the storage needed for a decoded bech32 string can be easily determined by the
+    // length of the input string
+    std::string inputStr(bstr);
+    size_t index_of_separator = inputStr.find_first_of('1');
+    size_t number_of_hrp_characters = index_of_separator;
+    size_t number_of_data_characters =
+            inputStr.length() - (index_of_separator+1) - bech32::limits::CHECKSUM_LENGTH; // +1 for zero-based index
+
+    auto hrpdp = static_cast<bech32_HrpAndDp *>(malloc(sizeof (bech32_HrpAndDp)));
+    if(hrpdp == nullptr)
+        return nullptr;
+    hrpdp->hrplen = number_of_hrp_characters + 1; // +1 for '\0'
+    hrpdp->hrp = static_cast<char *>(calloc(hrpdp->hrplen, 1));
+    if(hrpdp->hrp == nullptr) {
+        free(hrpdp);
+        return nullptr;
+    }
+    hrpdp->dplen = number_of_data_characters + 1; // +1 for '\0'
+    hrpdp->dp = static_cast<unsigned char *>(calloc(hrpdp->dplen, 1));
+    if(hrpdp->dp == nullptr) {
+        free(hrpdp->hrp);
+        free(hrpdp);
+        return nullptr;
+    }
+
+    return hrpdp;
+}
+
+/**
+ * Frees memory for a txref_LocationData struct.
+ */
+extern "C"
+void free_HrpAndDp_storage(bech32_HrpAndDp *hrpdp) {
+    free(hrpdp->dp);
+    free(hrpdp->hrp);
+    free(hrpdp);
 }
 
 /**
@@ -304,56 +353,62 @@ const char * bech32_strerror(bech32_error_t error_code) {
  * @param dst pointer to memory to put the cleaned string
  * @param src pointer to the string to be cleaned
  *
- * @return E_SUCCESS on success, others on error (input/output is NULL, output not long enough for string)
+ * @return E_BECH32_SUCCESS on success, others on error (input/output is NULL, output not
+ * long enough for string)
  */
 extern "C"
-int bech32_stripUnknownChars(
+bech32_error bech32_stripUnknownChars(
         char *dst, size_t dstlen,
         const char *src, size_t srclen) {
+
     if(src == nullptr)
-        return E_NULL_ARGUMENT;
+        return E_BECH32_NULL_ARGUMENT;
     if(dst == nullptr)
-        return E_NULL_ARGUMENT;
+        return E_BECH32_NULL_ARGUMENT;
     if(dstlen > srclen)
-        return E_LENGTH_TOO_SHORT;
+        return E_BECH32_LENGTH_TOO_SHORT;
+
     std::string inputStr(src);
     std::string result = bech32::stripUnknownChars(inputStr);
     if(dstlen < result.size()+1)
-        return E_LENGTH_TOO_SHORT;
+        return E_BECH32_LENGTH_TOO_SHORT;
+
     std::copy_n(result.begin(), result.size(), dst);
     dst[result.size()] = '\0';
-    return E_SUCCESS;
+
+    return E_BECH32_SUCCESS;
 }
 
 /**
  * encode a "human-readable part" (ex: "xyz") and a "data part" (ex: {1,2,3}), returning a
  * bech32 string
  *
- * @param bstr pointer to memory to put the bech32 string.
+ * @param bstr pointer to memory to copy the output encoded bech32 string.
  * @param bstrlen number of bytes allocated at bstr
- * @param hrp pointer to the human-readable part"
+ * @param hrp pointer to the "human-readable part"
  * @param hrplen the length of the "human-readable part" string
  * @param dp pointer to the "data part"
  * @param dplen the length of the "data part" array
  *
- * @return E_SUCCESS on success, others on error (hrp/dp/bstr is NULL, bstr not long enough for bech32 string)
+ * @return E_BECH32_SUCCESS on success, others on error (hrp/dp/bstr is NULL, bstr not
+ * long enough for bech32 string)
  */
 extern "C"
-int bech32_encode(
+bech32_error bech32_encode(
         char *bstr, size_t bstrlen,
         const char *hrp, size_t hrplen,
         const unsigned char *dp, size_t dplen) {
 
     if(bstr == nullptr)
-        return E_NULL_ARGUMENT;
+        return E_BECH32_NULL_ARGUMENT;
     if(hrp == nullptr)
-        return E_NULL_ARGUMENT;
+        return E_BECH32_NULL_ARGUMENT;
     if(dp == nullptr)
-        return E_NULL_ARGUMENT;
+        return E_BECH32_NULL_ARGUMENT;
 
     std::string hrpStr(hrp);
     if(hrpStr.size() > hrplen-1)
-        return E_LENGTH_TOO_SHORT;
+        return E_BECH32_LENGTH_TOO_SHORT;
     std::vector<unsigned char> dpVec(dp, dp + dplen);
 
     std::string b;
@@ -362,58 +417,59 @@ int bech32_encode(
     }
     catch (std::exception &) {
         // todo: convert exception message
-        return E_UNKNOWN_ERROR;
+        return E_BECH32_UNKNOWN_ERROR;
     }
     if(b.size() > bstrlen-1)
-        return E_LENGTH_TOO_SHORT;
+        return E_BECH32_LENGTH_TOO_SHORT;
 
     std::copy_n(b.begin(), b.size(), bstr);
     bstr[b.size()] = '\0';
 
-    return E_SUCCESS;
+    return E_BECH32_SUCCESS;
 }
 
 /**
  * decode a bech32 string, returning the "human-readable part" and a "data part"
  *
- * @param output struct containing decoded "human-readable part" and "data part"
+ * @param output pointer to struct to copy the decoded "human-readable part" and "data part"
  * @param bstr the bech32 string to decode
  * @param bstrlen the length of the bech32 string
  *
- * @return E_SUCCESS on success, others on error (hrp/dp/bstr is NULL, hrp/dp not long enough for decoded bech32 data)
+ * @return E_BECH32_SUCCESS on success, others on error (hrp/dp/bstr is NULL, hrp/dp not
+ * long enough for decoded bech32 data)
  */
 extern "C"
-int bech32_decode(struct bech32_HrpAndDp *output, char const *bstr, size_t bstrlen) {
+bech32_error bech32_decode(bech32_HrpAndDp *output, char const *bstr, size_t bstrlen) {
 
     if(output == nullptr)
-        return E_NULL_ARGUMENT;
+        return E_BECH32_NULL_ARGUMENT;
     if(output->hrp == nullptr)
-        return E_NULL_ARGUMENT;
+        return E_BECH32_NULL_ARGUMENT;
     if(output->dp == nullptr)
-        return E_NULL_ARGUMENT;
+        return E_BECH32_NULL_ARGUMENT;
     if(bstr == nullptr)
-        return E_NULL_ARGUMENT;
+        return E_BECH32_NULL_ARGUMENT;
 
     std::string inputStr(bstr);
     if(inputStr.size() > bstrlen-1)
-        return E_LENGTH_TOO_SHORT;
+        return E_BECH32_LENGTH_TOO_SHORT;
 
     bech32::HrpAndDp hrpAndDp;
     try {
         hrpAndDp = bech32::decode(inputStr);
     } catch (std::exception &) {
         // todo: convert exception message
-        return E_UNKNOWN_ERROR;
+        return E_BECH32_UNKNOWN_ERROR;
     }
 
     if(hrpAndDp.hrp.size() > output->hrplen-1)
-        return E_LENGTH_TOO_SHORT;
+        return E_BECH32_LENGTH_TOO_SHORT;
     if(hrpAndDp.dp.size() > output->dplen)
-        return E_LENGTH_TOO_SHORT;
+        return E_BECH32_LENGTH_TOO_SHORT;
 
     std::copy_n(hrpAndDp.hrp.begin(), hrpAndDp.hrp.size(), output->hrp);
     output->hrp[hrpAndDp.hrp.size()] = '\0';
     std::copy_n(hrpAndDp.dp.begin(), hrpAndDp.dp.size(), output->dp);
 
-    return E_SUCCESS;
+    return E_BECH32_SUCCESS;
 }
