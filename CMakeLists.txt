@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 
 project(btcr_did VERSION 1.0.0
                  DESCRIPTION "Creating and interacting with BTCR DIDs"
-                 LANGUAGES CXX )
+                 LANGUAGES C CXX )
 
 #if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
 #   message(FATAL_ERROR "In-source builds are not allowed.")

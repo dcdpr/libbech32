@@ -4,8 +4,8 @@
 add_library(bech32 STATIC bech32.cpp)
 
 target_include_directories(bech32
-    PUBLIC 
-        $<INSTALL_INTERFACE:include/libbech32>    
+    PUBLIC
+        $<INSTALL_INTERFACE:include/libbech32>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include/libbech32>
 )
 
