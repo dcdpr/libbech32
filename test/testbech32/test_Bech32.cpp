@@ -1,3 +1,5 @@
+#include "bech32.cpp"
+
 #include <gtest/gtest.h>
 #pragma clang diagnostic push
 #pragma GCC diagnostic push
@@ -7,8 +9,6 @@
 #include <rapidcheck/gtest.h>
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop
-
-#include "bech32.cpp"
 
 // check that we reject strings less than 8 chars in length
 TEST(Bech32Test, ensure_correct_data_size_low) {
