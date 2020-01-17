@@ -66,7 +66,7 @@ void badEncoding() {
         std::string bstr = bech32::encode(hrp, data);
     }
     catch (std::exception &e) {
-        assert(strcmp(e.what(), "data value is out of range") == 0);
+        assert(std::string(e.what()) == "data value is out of range");
     }
 }
 
