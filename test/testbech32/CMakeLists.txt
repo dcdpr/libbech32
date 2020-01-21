@@ -20,6 +20,7 @@ add_executable(bech32_c_api_tests
         )
 
 target_compile_features(bech32_c_api_tests PRIVATE c_std_99)
+target_compile_options(bech32_c_api_tests PRIVATE "-fPIC")
 set_target_properties(bech32_c_api_tests PROPERTIES C_EXTENSIONS OFF)
 
 target_link_libraries(bech32_c_api_tests PUBLIC bech32)

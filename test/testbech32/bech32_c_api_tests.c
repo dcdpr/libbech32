@@ -91,7 +91,7 @@ void decode_withBadArgs_isUnsuccessful() {
     }
 
     { // output is null
-        char bstr[] = "xyz1pzr9dvupm";
+        char bstr[] = "xyz1pzr6jnr79";
 
         bech32_HrpAndDp *hrpdp = NULL;
 
@@ -99,7 +99,7 @@ void decode_withBadArgs_isUnsuccessful() {
     }
 
     { // hrp is null
-        char bstr[] = "xyz1pzr9dvupm";
+        char bstr[] = "xyz1pzr6jnr79";
 
         bech32_HrpAndDp *hrpdp = malloc(sizeof(bech32_HrpAndDp));
         hrpdp->dplen = 10;
@@ -113,7 +113,7 @@ void decode_withBadArgs_isUnsuccessful() {
     }
 
     { // dp is null
-        char bstr[] = "xyz1pzr9dvupm";
+        char bstr[] = "xyz1pzr6jnr79";
 
         bech32_HrpAndDp *hrpdp = malloc(sizeof(bech32_HrpAndDp));
         hrpdp->hrplen = 1;
@@ -127,7 +127,7 @@ void decode_withBadArgs_isUnsuccessful() {
     }
 
     { // allocated hrp is too short
-        char bstr[] = "xyz1pzr9dvupm";
+        char bstr[] = "xyz1pzr6jnr79";
 
         bech32_HrpAndDp *hrpdp = malloc(sizeof(bech32_HrpAndDp));
         hrpdp->hrplen = 1;
@@ -143,7 +143,7 @@ void decode_withBadArgs_isUnsuccessful() {
     }
 
     { // allocated dp is too short
-        char bstr[] = "xyz1pzr9dvupm";
+        char bstr[] = "xyz1pzr6jnr79";
 
         bech32_HrpAndDp *hrpdp = malloc(sizeof(bech32_HrpAndDp));
         hrpdp->hrplen = 10;
@@ -160,7 +160,7 @@ void decode_withBadArgs_isUnsuccessful() {
 }
 
 void decode_minimalExample_isSuccessful() {
-    char bstr[] = "a12uel5l";
+    char bstr[] = "a14rxqtp";
     char expectedHrp[] = "a";
 
     bech32_HrpAndDp * hrpdp = create_HrpAndDp_storage(bstr);
@@ -172,7 +172,7 @@ void decode_minimalExample_isSuccessful() {
 }
 
 void decode_longExample_isSuccessful() {
-    char bstr[] = "abcdef1qpzry9x8gf2tvdw0s3jn54khce6mua7lmqqqxw";
+    char bstr[] = "abcdef1qpzry9x8gf2tvdw0s3jn54khce6mua7lyllles";
     char expectedHrp[] = "abcdef";
 
     bech32_HrpAndDp * hrpdp = create_HrpAndDp_storage(bstr);
@@ -181,6 +181,17 @@ void decode_longExample_isSuccessful() {
     assert(strcmp(hrpdp->hrp, expectedHrp) == 0);
     assert(hrpdp->dp[0] == '\0');    // 'q' in above dp part
     assert(hrpdp->dp[31] == '\x1f'); // 'l' in above dp part
+
+    free_HrpAndDp_storage(hrpdp);
+}
+
+void decode_minimalExampleBadChecksum_isUnsuccessful() {
+    char bstr[] = "a14rxqtq"; // last 'q' should be a 'p'
+    char expectedHrp[] = "a";
+
+    bech32_HrpAndDp * hrpdp = create_HrpAndDp_storage(bstr);
+
+    assert(bech32_decode(hrpdp, bstr, sizeof(bstr)) == E_BECH32_INVALID_CHECKSUM);
 
     free_HrpAndDp_storage(hrpdp);
 }
@@ -235,10 +246,19 @@ void encode_withBadArgs_isUnsuccessful() {
 
 }
 
+void encode_emptyExample_isUnsuccessful() {
+    char hrp[] = "";
+    unsigned char dp[] = {};
+    char expected[] = "a14rxqtp";
+    char bstr[sizeof(hrp) + 1 + 6] = {0};
+
+    assert(bech32_encode(bstr, sizeof(bstr), hrp, sizeof(hrp), dp, sizeof(dp)) == E_BECH32_UNKNOWN_ERROR);
+}
+
 void encode_minimalExample_isSuccessful() {
     char hrp[] = "a";
     unsigned char dp[] = {};
-    char expected[] = "a12uel5l";
+    char expected[] = "a14rxqtp";
     char bstr[sizeof(hrp) + 1 + 6] = {0};
 
     assert(bech32_encode(bstr, sizeof(bstr), hrp, sizeof(hrp), dp, sizeof(dp)) == E_BECH32_SUCCESS);
@@ -248,7 +268,7 @@ void encode_minimalExample_isSuccessful() {
 void encode_smallExample_isSuccessful() {
     char hrp[] = "xyz";
     unsigned char dp[] = {1,2,3};
-    char expected[] = "xyz1pzr9dvupm";
+    char expected[] = "xyz1pzr6jnr79";
     char bstr[sizeof(hrp) + 1 + sizeof(dp) + 6] = {0};
 
     assert(bech32_encode(bstr, sizeof(bstr), hrp, sizeof(hrp), dp, sizeof(dp)) == E_BECH32_SUCCESS);
@@ -267,7 +287,7 @@ void encode_whenMethodThrowsException_isUnsuccessful() {
 }
 
 void decode_and_encode_minimalExample_producesSameResult() {
-    char bstr1[] = "a12uel5l";
+    char bstr1[] = "a14rxqtp";
     char expectedHrp[] = "a";
     const size_t expectedDpSize = 0; // 0 = num chars after '1', minus 6 for checksum chars
 
@@ -287,7 +307,7 @@ void decode_and_encode_minimalExample_producesSameResult() {
 }
 
 void decode_and_encode_smallExample_producesSameResult() {
-    char bstr1[] = "xyz1pzr9dvupm";
+    char bstr1[] = "xyz1pzr6jnr79";
     char expectedHrp[] = "xyz";
     const size_t expectedDpSize = 3; // 3 = num chars after '1', minus 6 for checksum chars
 
@@ -307,7 +327,7 @@ void decode_and_encode_smallExample_producesSameResult() {
 }
 
 void decode_and_encode_longExample_producesSameResult() {
-    char bstr1[] = "abcdef1qpzry9x8gf2tvdw0s3jn54khce6mua7lmqqqxw";
+    char bstr1[] = "abcdef1qpzry9x8gf2tvdw0s3jn54khce6mua7lyllles";
     char expectedHrp[] = "abcdef";
     const size_t expectedDpSize = 32; // 32 = num chars after '1', minus 6 for checksum chars
 
@@ -342,9 +362,11 @@ int main() {
     decode_whenMethodThrowsException_isUnsuccessful();
     decode_minimalExample_isSuccessful();
     decode_longExample_isSuccessful();
+    decode_minimalExampleBadChecksum_isUnsuccessful();
 
     encode_withBadArgs_isUnsuccessful();
     encode_whenMethodThrowsException_isUnsuccessful();
+    encode_emptyExample_isUnsuccessful();
     encode_minimalExample_isSuccessful();
     encode_smallExample_isSuccessful();
 

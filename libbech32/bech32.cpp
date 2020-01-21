@@ -6,6 +6,9 @@ namespace {
 
     using namespace bech32::limits;
 
+    // exponent used in checksum generation, taken from recommendation
+    // in: https://gist.github.com/sipa/a9845b37c1b298a7301c33a04090b2eb
+    const unsigned int M = 0x3FFFFFFF;
 
     /** The Bech32 character set for encoding. The index into this string gives the char
      * each value is mapped to, i.e., 0 -> 'q', 10 -> '2', etc. This comes from the table
@@ -112,6 +115,18 @@ namespace {
         }
     }
 
+    // using the charset of valid chars, map the incoming data
+    std::string mapToCharset(std::vector<unsigned char> &data) {
+        std::string ret;
+        ret.reserve(data.size());
+        for (unsigned char c : data) {
+            if(c > VALID_CHARSET_SIZE - 1)
+                throw std::runtime_error("data part contains invalid character");
+            ret += charset[c];
+        }
+        return ret;
+    }
+
     // "expand" the HRP -- adapted from example in BIP-0173
     //
     // To expand the chars of the HRP means to create a new collection of
@@ -154,7 +169,7 @@ namespace {
     }
 
     bool verifyChecksum(const std::string &hrp, const std::vector<unsigned char> &dp) {
-        return polymod(cat(expandHrp(hrp), dp)) == 1;
+        return polymod(cat(expandHrp(hrp), dp)) == M;
     }
 
     void stripChecksum(std::vector<unsigned char> &dp) {
@@ -165,7 +180,7 @@ namespace {
     createChecksum(const std::string &hrp, const std::vector<unsigned char> &dp) {
         std::vector<unsigned char> c = cat(expandHrp(hrp), dp);
         c.resize(c.size() + CHECKSUM_LENGTH);
-        uint32_t mod = polymod(c) ^ 1u;
+        uint32_t mod = polymod(c) ^ M;
         std::vector<unsigned char> ret(CHECKSUM_LENGTH);
         for(std::vector<unsigned char>::size_type i = 0; i < CHECKSUM_LENGTH; ++i) {
             ret[i] = static_cast<unsigned char>((mod >> (5 * (5 - i))) & 31u);
@@ -274,6 +289,7 @@ const char *bech32_errordesc[] = {
         "Unknown error",
         "Function argument was null",
         "Function argument length was too short",
+        "Invalid Checksum",
         "Max error"
 };
 
@@ -461,6 +477,9 @@ bech32_error bech32_decode(bech32_HrpAndDp *output, char const *bstr, size_t bst
         // todo: convert exception message
         return E_BECH32_UNKNOWN_ERROR;
     }
+
+    if(hrpAndDp.hrp.empty() && hrpAndDp.dp.empty())
+        return E_BECH32_INVALID_CHECKSUM;
 
     if(hrpAndDp.hrp.size() > output->hrplen-1)
         return E_BECH32_LENGTH_TOO_SHORT;
