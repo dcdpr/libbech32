@@ -32,7 +32,7 @@ If the above doesn't work, you probably need to install some
 prerequirements. For example, on a fresh Debian Stretch system:
 
 ```
-$ sudo apt-get install make gcc g++
+sudo apt-get install make gcc g++
 ```
 
 It is worth getting the latest cmake, so install that the hard way:
@@ -63,7 +63,7 @@ int main() {
     // encode
     std::string bstr = bech32::encode(hrp, data);
 
-    // prints "hello1w0rldcs7fw6" : "hello" + Bech32.separator + encoded data + 6 char checksum
+    // prints "hello1w0rldjn365x" : "hello" + Bech32.separator + encoded data + 6 char checksum
     std::cout << bstr << std::endl;
 
     // decode
@@ -71,6 +71,7 @@ int main() {
 
     assert(hrp == hd.hrp);
     assert(data == hd.dp);
+    assert(bech32::Encoding::Bech32m == hd.encoding);
 }
 ```
 

@@ -7,15 +7,15 @@ namespace {
     using namespace bech32::limits;
 
     // exponent used in checksum generation, taken from recommendation
-    // in: https://gist.github.com/sipa/a9845b37c1b298a7301c33a04090b2eb
-    const unsigned int M = 0x3FFFFFFF;
+    // in: https://github.com/sipa/bips/blob/bip-bech32m/bip-bech32m.mediawiki
+    const unsigned int M = 0x2bc830a3;
 
     /** The Bech32 character set for encoding. The index into this string gives the char
      * each value is mapped to, i.e., 0 -> 'q', 10 -> '2', etc. This comes from the table
      * in BIP-0173 */
     const char charset[VALID_CHARSET_SIZE] = {
-            'q', 'p', 'z', 'r', 'y', '9', 'x', '8', 'g', 'f', '2', 't', 'v', 'd', 'w', '0',
-            's', '3', 'j', 'n', '5', '4', 'k', 'h', 'c', 'e', '6', 'm', 'u', 'a', '7', 'l'
+            'q', 'p', 'z', 'r', 'y', '9', 'x', '8', 'g', 'f', '2', 't', 'v', 'd', 'w', '0', // indexes 0 - F
+            's', '3', 'j', 'n', '5', '4', 'k', 'h', 'c', 'e', '6', 'm', 'u', 'a', '7', 'l'  // indexes 10 - 1F
     };
 
     /** The Bech32 character set for decoding. This comes from the table in BIP-0173
@@ -96,7 +96,7 @@ namespace {
         for(std::string::size_type i = 0; i < dpstr.size(); ++i) {
             dp[i] = static_cast<unsigned char>(dpstr[i]);
         }
-        return {hrp, dp};
+        return {bech32::Encoding::Unknown, hrp, dp};
     }
 
     void convertToLowercase(std::string & str) {
@@ -145,6 +145,7 @@ namespace {
     }
 
     // Concatenate two vectors
+    //todo: rename?
     std::vector<unsigned char> cat(const std::vector<unsigned char> & x, const std::vector<unsigned char> & y) {
         std::vector<unsigned char> ret(x);
         ret.insert(ret.end(), y.begin(), y.end());
@@ -172,6 +173,10 @@ namespace {
         return polymod(cat(expandHrp(hrp), dp)) == M;
     }
 
+    bool verifyChecksum_1(const std::string &hrp, const std::vector<unsigned char> &dp) {
+        return polymod(cat(expandHrp(hrp), dp)) == 1;
+    }
+
     void stripChecksum(std::vector<unsigned char> &dp) {
         dp.erase(dp.end() - CHECKSUM_LENGTH, dp.end());
     }
@@ -181,6 +186,18 @@ namespace {
         std::vector<unsigned char> c = cat(expandHrp(hrp), dp);
         c.resize(c.size() + CHECKSUM_LENGTH);
         uint32_t mod = polymod(c) ^ M;
+        std::vector<unsigned char> ret(CHECKSUM_LENGTH);
+        for(std::vector<unsigned char>::size_type i = 0; i < CHECKSUM_LENGTH; ++i) {
+            ret[i] = static_cast<unsigned char>((mod >> (5 * (5 - i))) & 31u);
+        }
+        return ret;
+    }
+
+    std::vector<unsigned char>
+    createChecksum_1(const std::string &hrp, const std::vector<unsigned char> &dp) {
+        std::vector<unsigned char> c = cat(expandHrp(hrp), dp);
+        c.resize(c.size() + CHECKSUM_LENGTH);
+        uint32_t mod = polymod(c) ^ 1;
         std::vector<unsigned char> ret(CHECKSUM_LENGTH);
         for(std::vector<unsigned char>::size_type i = 0; i < CHECKSUM_LENGTH; ++i) {
             ret[i] = static_cast<unsigned char>((mod >> (5 * (5 - i))) & 31u);
@@ -262,6 +279,27 @@ namespace bech32 {
         return ret;
     }
 
+    // encode a "human-readable part" and a "data part", returning a bech32 string
+    std::string encode_bech32_1(const std::string &hrp, const std::vector<unsigned char> &dp) {
+        rejectHRPTooShort(hrp);
+        rejectHRPTooLong(hrp);
+        rejectBothPartsTooLong(hrp, dp);
+        rejectDataValuesOutOfRange(dp);
+
+        std::string hrpCopy = hrp;
+        convertToLowercase(hrpCopy);
+        std::vector<unsigned char> checksum = createChecksum_1(hrpCopy, dp);
+        std::string ret = hrpCopy + '1';
+        std::vector<unsigned char> combined = cat(dp, checksum);
+        ret.reserve(ret.size() + combined.size());
+        for (unsigned char c : combined) {
+            if(c > limits::VALID_CHARSET_SIZE - 1)
+                throw std::runtime_error("data part contains invalid character");
+            ret += charset[c];
+        }
+        return ret;
+    }
+
     // decode a bech32 string, returning the "human-readable part" and a "data part"
     HrpAndDp decode(const std::string & bstring) {
         rejectBStringThatIsntWellFormed(bstring);
@@ -273,6 +311,12 @@ namespace bech32 {
         mapDP(b.dp);
         if (verifyChecksum(b.hrp, b.dp)) {
             stripChecksum(b.dp);
+            b.encoding = bech32::Encoding::Bech32m;
+            return b;
+        }
+        else if (verifyChecksum_1(b.hrp, b.dp)) {
+            stripChecksum(b.dp);
+            b.encoding = bech32::Encoding::Bech32;
             return b;
         }
         else {

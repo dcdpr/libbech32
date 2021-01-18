@@ -15,7 +15,7 @@ void encodeAndDecode() {
     // encode
     std::string bstr = bech32::encode(hrp, data);
 
-    // will print "example1qpzry9x8gnylnjs" ... last 6 characters are the checksum
+    // will print "example1qpzry9x8ge8sqgv" ... last 6 characters are the checksum
     std::cout << R"(bech32 encoding of human-readable part 'example' and data part '[0, 1, 2, 3, 4, 5, 6, 7, 8]' is:)" << std::endl;
     std::cout << bstr << std::endl;
 
@@ -24,18 +24,20 @@ void encodeAndDecode() {
 
     assert(hrp == hd.hrp);
     assert(data == hd.dp);
+    assert(bech32::Encoding::Bech32m == hd.encoding);
 }
 
 void decodeAndEncode() {
 
     // bech32 string with extra invalid characters
-    std::string bstr = " example1:qpz!r--y9#x8&%&%gn-y-lnjs ";
-    std::string expected = "example1qpzry9x8gnylnjs";
+    std::string bstr = " example1:qpz!r--y9#x8&%&%ge-8-sqgv ";
+    std::string expected = "example1qpzry9x8ge8sqgv";
     // decode - make sure to strip invalid characters before trying to decode
     bech32::HrpAndDp hd = bech32::decode(bech32::stripUnknownChars(bstr));
 
     // verify decoding
     assert(!hd.hrp.empty() && !hd.dp.empty());
+    assert(bech32::Encoding::Bech32m == hd.encoding);
 
     // encode
     bstr = bech32::encode(hd.hrp, hd.dp);
@@ -51,6 +53,7 @@ void decodeAndEncode() {
 
     // verify decoding failed
     assert(hd.hrp.empty() && hd.dp.empty());
+    assert(bech32::Encoding::None == hd.encoding);
 
 }
 
@@ -70,10 +73,10 @@ void badEncoding() {
     }
 }
 
-void badDecoding() {
+void badDecoding_corruptData() {
 
     // valid bech32 string
-    std::string bstr = "example1qpzry9x8gnylnjs";
+    std::string bstr = "example1qpzry9x8ge8sqgv";
     // simulate corrupted data--checksum verification will fail
     bstr[10] = 'x';
 
@@ -82,6 +85,23 @@ void badDecoding() {
 
     // verify decoding failed
     assert(hd.hrp.empty() && hd.dp.empty());
+    assert(bech32::Encoding::None == hd.encoding);
+
+}
+
+void badDecoding_corruptChecksum() {
+
+    // valid bech32 string
+    std::string bstr = "example1qpzry9x8ge8sqgv";
+    // simulate corrupted checksum--verification will fail
+    bstr[19] = 'q';
+
+    // decode
+    bech32::HrpAndDp hd = bech32::decode(bstr);
+
+    // verify decoding failed
+    assert(hd.hrp.empty() && hd.dp.empty());
+    assert(bech32::Encoding::None == hd.encoding);
 
 }
 
@@ -89,5 +109,6 @@ int main() {
     encodeAndDecode();
     decodeAndEncode();
     badEncoding();
-    badDecoding();
+    badDecoding_corruptData();
+    badDecoding_corruptChecksum();
 }

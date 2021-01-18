@@ -9,6 +9,14 @@
 
 namespace bech32 {
 
+    // Encoding enum: denotes which encoding was used for a bech32 string
+    enum Encoding {
+        None,    // no encoding was detected
+        Unknown, // encoding has not yet been determined
+        Bech32,  // encoding uses original checksum constant (1)
+        Bech32m  // encoding used default checksum constant (M = 0x2bc830a3)
+    };
+
     // The Bech32 separator character
     static const char separator = '1';
 
@@ -16,6 +24,7 @@ namespace bech32 {
     // hrp: the human-readable part
     //  dp: the data part
     struct HrpAndDp {
+        Encoding encoding;
         std::string hrp;
         std::vector<unsigned char> dp;
     };
@@ -24,8 +33,11 @@ namespace bech32 {
     // the separator character, which is '1'
     std::string stripUnknownChars(const std::string & bstring);
 
-    // encode a "human-readable part" and a "data part", returning a bech32 string
+    // encode a "human-readable part" and a "data part", returning a bech32m string
     std::string encode(const std::string & hrp, const std::vector<unsigned char> & dp);
+
+    // encode a "human-readable part" and a "data part", returning a bech32 string
+    std::string encode_bech32_1(const std::string & hrp, const std::vector<unsigned char> & dp);
 
     // decode a bech32 string, returning the "human-readable part" and a "data part"
     HrpAndDp decode(const std::string & bstring);
