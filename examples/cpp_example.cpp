@@ -12,12 +12,12 @@ void encodeAndDecode() {
     // data values can be 0-31
     std::vector<unsigned char> data = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
+    // expected bech32 string output
+    char expected[] = "example1qpzry9x8ge8sqgv";
+
     // encode
     std::string bstr = bech32::encode(hrp, data);
-
-    // will print "example1qpzry9x8ge8sqgv" ... last 6 characters are the checksum
-    std::cout << R"(bech32 encoding of human-readable part 'example' and data part '[0, 1, 2, 3, 4, 5, 6, 7, 8]' is:)" << std::endl;
-    std::cout << bstr << std::endl;
+    assert(expected == bstr);
 
     // decode
     bech32::HrpAndDp hd = bech32::decode(bstr);
@@ -45,23 +45,13 @@ void decodeAndEncode() {
     // encoding of "cleaned" decoded data should match expected string
     assert(bstr == expected);
 
-    // simulate corrupted data--checksum verification will fail
-    bstr[10] = 'x';
-
-    // decode - make sure to strip invalid characters before trying to decode
-    hd = bech32::decode(bech32::stripUnknownChars(bstr));
-
-    // verify decoding failed
-    assert(hd.hrp.empty() && hd.dp.empty());
-    assert(bech32::Encoding::None == hd.encoding);
-
 }
 
 void badEncoding() {
 
     // human-readable part
     std::string hrp = "example";
-    // data values can be 0-31
+    // data values can be 0-31. "33" is invalid
     std::vector<unsigned char> data = {0, 1, 2, 3, 4, 5, 6, 7, 33};
 
     // encode

@@ -99,13 +99,14 @@ int main() {
     printf("%s\n", bstr);
 
     // allocate memory for decoded data
-    bech32_HrpAndDp * hrpdp = create_HrpAndDp_storage(bstr);
+    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstr);
 
     // decode
     assert(bech32_decode(hrpdp, bstr, sizeof(bstr)) == E_BECH32_SUCCESS);
     assert(strcmp(hrpdp->hrp, "hello") == 0);
+    assert(ENCODING_BECH32M == hrpdp->encoding);
 
     // free memory
-    free_HrpAndDp_storage(hrpdp);
+    bech32_free_HrpAndDp(hrpdp);
 }
 ```

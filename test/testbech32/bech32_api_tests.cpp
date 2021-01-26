@@ -1,8 +1,7 @@
 // test program calling bech32 library from C++
 
 #include "libbech32.h"
-#include <cstring>
-#include <cstdlib>
+#include <stdexcept>
 
 // make sure we can run these tests even when building a release version
 #undef NDEBUG
