@@ -13,20 +13,20 @@ int main() {
     unsigned char dp[] = {14, 15, 3, 31, 13};
 
     // create output for bech32 string
-    bech32_bstring *bstr = bech32_create_bstring(sizeof(hrp), sizeof(dp));
+    bech32_bstring *bstring = bech32_create_bstring(strlen(hrp), sizeof(dp));
 
     // encode
-    assert(bech32_encode(bstr, hrp, dp, sizeof(dp)) == E_BECH32_SUCCESS);
+    assert(bech32_encode(bstring, hrp, dp, sizeof(dp)) == E_BECH32_SUCCESS);
 
     // prints "hello1w0rldjn365x" : "hello" + Bech32.separator + encoded data + 6 char checksum
     printf("bech32 encoding of human-readable part \'hello\' and data part \'[14, 15, 3, 31, 13]\' is:\n");
-    printf("%s\n", bstr->bstr);
+    printf("%s\n", bstring->string);
 
     // allocate memory for decoded data
-    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstr->bstr);
+    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstring->string);
 
     // decode
-    assert(bech32_decode(hrpdp, bstr->bstr) == E_BECH32_SUCCESS);
+    assert(bech32_decode(hrpdp, bstring->string) == E_BECH32_SUCCESS);
     assert(strcmp(hrpdp->hrp, hrp) == 0);
     assert(hrpdp->dp[0] == dp[0]);
     assert(hrpdp->dp[4] == dp[4]);
@@ -34,5 +34,5 @@ int main() {
 
     // free memory
     bech32_free_HrpAndDp(hrpdp);
-    bech32_free_bstring(bstr);
+    bech32_free_bstring(bstring);
 }

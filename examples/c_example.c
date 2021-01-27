@@ -13,20 +13,20 @@ void encodeAndDecode() {
     unsigned char dp[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
     // create output for bech32 string
-    bech32_bstring *bstr = bech32_create_bstring(sizeof(hrp), sizeof(dp));
+    bech32_bstring *bstring = bech32_create_bstring(sizeof(hrp), sizeof(dp));
 
     // expected bech32 string output
     char expected[] = "example1qpzry9x8ge8sqgv";
 
     // encode
-    assert(bech32_encode(bstr, hrp, dp, sizeof(dp)) == E_BECH32_SUCCESS);
-    assert(strcmp(expected, bstr->bstr) == 0);
+    assert(bech32_encode(bstring, hrp, dp, sizeof(dp)) == E_BECH32_SUCCESS);
+    assert(strcmp(expected, bstring->string) == 0);
 
     // allocate memory for decoded data
-    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstr->bstr);
+    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstring->string);
 
     // decode
-    assert(bech32_decode(hrpdp, bstr->bstr) == E_BECH32_SUCCESS);
+    assert(bech32_decode(hrpdp, bstring->string) == E_BECH32_SUCCESS);
     assert(strcmp(hrpdp->hrp, "example") == 0);
     assert(hrpdp->dp[0] == 0);
     assert(hrpdp->dp[8] == 8);
@@ -34,7 +34,7 @@ void encodeAndDecode() {
 
     // free memory
     bech32_free_HrpAndDp(hrpdp);
-    bech32_free_bstring(bstr);
+    bech32_free_bstring(bstring);
 }
 
 void decodeAndEncode() {
@@ -57,18 +57,17 @@ void decodeAndEncode() {
     assert(hrpdp->dp[8] == 8);
 
     // create output array for bech32 string
-    size_t bstr2len = bech32_compute_encoded_string_length(hrpdp->hrplen, hrpdp->dplen);
-    bech32_bstring *bstr2 = bech32_create_bstring_from_HrpAndDp(hrpdp);
+    bech32_bstring *bstring = bech32_create_bstring_from_HrpAndDp(hrpdp);
 
     // encode
-    assert(bech32_encode(bstr2, hrpdp->hrp, hrpdp->dp, hrpdp->dplen) == E_BECH32_SUCCESS);
+    assert(bech32_encode(bstring, hrpdp->hrp, hrpdp->dp, hrpdp->dplen) == E_BECH32_SUCCESS);
 
     // encoding of "cleaned" decoded data should match expected string
-    assert(strcmp(expected, bstr2->bstr) == 0);
+    assert(strcmp(expected, bstring->string) == 0);
 
     // free memory
     bech32_free_HrpAndDp(hrpdp);
-    bech32_free_bstring(bstr2);
+    bech32_free_bstring(bstring);
 }
 
 void badEncoding() {
@@ -78,13 +77,13 @@ void badEncoding() {
     unsigned char dp[] = {0, 1, 2, 3, 4, 5, 6, 7, 33};
 
     // create output for bech32 string
-    bech32_bstring *bstr = bech32_create_bstring(sizeof(hrp), sizeof(dp));
+    bech32_bstring *bstring = bech32_create_bstring(sizeof(hrp), sizeof(dp));
 
     // encode
-    assert(bech32_encode(bstr, hrp, dp, sizeof(dp)) == E_BECH32_UNKNOWN_ERROR);
+    assert(bech32_encode(bstring, hrp, dp, sizeof(dp)) == E_BECH32_UNKNOWN_ERROR);
 
     // free memory
-    bech32_free_bstring(bstr);
+    bech32_free_bstring(bstring);
 }
 
 void badDecoding_corruptData() {
