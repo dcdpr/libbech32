@@ -27,3 +27,17 @@ target_link_libraries(bech32_c_api_tests PUBLIC bech32)
 
 add_test(NAME UnitTests_C_api_bech32
         COMMAND bech32_c_api_tests)
+
+
+add_executable(bech32_api_tests
+        bech32_api_tests.cpp
+        )
+
+target_compile_features(bech32_api_tests PRIVATE cxx_std_11)
+target_compile_options(bech32_api_tests PRIVATE ${DCD_CXX_FLAGS})
+set_target_properties(bech32_api_tests PROPERTIES CXX_EXTENSIONS OFF)
+
+target_link_libraries(bech32_api_tests PUBLIC bech32)
+
+add_test(NAME UnitTests_api_bech32
+        COMMAND bech32_api_tests)

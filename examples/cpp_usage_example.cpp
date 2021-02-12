@@ -1,3 +1,4 @@
+// This small example is mainly meant for easy copy/paste into the README.md
 #include "libbech32.h"
 #include <iostream>
 
@@ -13,7 +14,7 @@ int main() {
     // encode
     std::string bstr = bech32::encode(hrp, data);
 
-    // prints "hello1w0rldcs7fw6" : "hello" + Bech32.separator + encoded data + 6 char checksum
+    // prints "hello1w0rldjn365x" : "hello" + Bech32.separator + encoded data + 6 char checksum
     std::cout << R"(bech32 encoding of human-readable part 'hello' and data part '[14, 15, 3, 31, 13]' is:)" << std::endl;
     std::cout << bstr << std::endl;
 
@@ -22,4 +23,5 @@ int main() {
 
     assert(hrp == hd.hrp);
     assert(data == hd.dp);
+    assert(bech32::Encoding::Bech32m == hd.encoding);
 }

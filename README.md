@@ -29,24 +29,26 @@ make test
 ### Installing prerequirements
 
 If the above doesn't work, you probably need to install some
-prerequirements. For example, on a fresh Debian Stretch system:
+prerequirements. For example, on a fresh Debian 10 ("buster") system:
 
 ```
-$ sudo apt-get install make gcc g++
+sudo apt-get install make gcc g++
 ```
 
 It is worth getting the latest cmake, so install that the hard way:
 
 ```
-wget https://cmake.org/files/v3.13/cmake-3.13.2.tar.gz
-tar xzf cmake-3.13.2.tar.gz
-cd cmake-3.13.2
+wget https://cmake.org/files/v3.19/cmake-3.19.4.tar.gz
+tar xzf cmake-3.19.4.tar.gz
+cd cmake-3.19.4
 ./configure
 make 
 sudo make install
 ```
 
 Now you can again try to build libbech32.
+
+## Example Code
 
 ### C++ Usage Example
 
@@ -63,7 +65,7 @@ int main() {
     // encode
     std::string bstr = bech32::encode(hrp, data);
 
-    // prints "hello1w0rldcs7fw6" : "hello" + Bech32.separator + encoded data + 6 char checksum
+    // prints "hello1w0rldjn365x" : "hello" + Bech32.separator + encoded data + 6 char checksum
     std::cout << bstr << std::endl;
 
     // decode
@@ -71,8 +73,11 @@ int main() {
 
     assert(hrp == hd.hrp);
     assert(data == hd.dp);
+    assert(bech32::Encoding::Bech32m == hd.encoding);
 }
 ```
+
+For more C++ examples, see `examples/cpp_example.cpp`
 
 ### C Usage Example
 
@@ -87,24 +92,68 @@ int main() {
     char hrp[] = "hello";
     unsigned char dp[] = {14, 15, 3, 31, 13};
 
-    // create output array for bech32 string
-    char bstr[sizeof(hrp) + 1 + sizeof(dp) + 6] = {0};
+    // create output for bech32 string
+    bech32_bstring *bstring = bech32_create_bstring(strlen(hrp), sizeof(dp));
 
     // encode
-    assert(bech32_encode(bstr, sizeof(bstr), hrp, sizeof(hrp), dp, sizeof(dp)) == E_BECH32_SUCCESS);
+    assert(bech32_encode(bstring, hrp, dp, sizeof(dp)) == E_BECH32_SUCCESS);
 
-    // prints "hello1w0rldcs7fw6" : "hello" + Bech32.separator + encoded data + 6 char checksum
+    // prints "hello1w0rldjn365x" : "hello" + Bech32.separator + encoded data + 6 char checksum
     printf("bech32 encoding of human-readable part \'hello\' and data part \'[14, 15, 3, 31, 13]\' is:\n");
-    printf("%s\n", bstr);
+    printf("%s\n", bstring->string);
 
     // allocate memory for decoded data
-    bech32_HrpAndDp * hrpdp = create_HrpAndDp_storage(bstr);
+    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstring->string);
 
     // decode
-    assert(bech32_decode(hrpdp, bstr, sizeof(bstr)) == E_BECH32_SUCCESS);
-    assert(strcmp(hrpdp->hrp, "hello") == 0);
+    assert(bech32_decode(hrpdp, bstring->string) == E_BECH32_SUCCESS);
+    assert(strcmp(hrpdp->hrp, hrp) == 0);
+    assert(hrpdp->dp[0] == dp[0]);
+    assert(hrpdp->dp[4] == dp[4]);
+    assert(ENCODING_BECH32M == hrpdp->encoding);
 
     // free memory
-    free_HrpAndDp_storage(hrpdp);
+    bech32_free_HrpAndDp(hrpdp);
+    bech32_free_bstring(bstring);
 }
+```
+
+For more C examples, see `examples/c_example.cpp`
+
+
+## Regarding bech32 checksums
+
+The Bech32 data encoding format was first proposed by Pieter Wuille in early 2017 in
+[BIP 0173](https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki). Later, in November 2019, Pieter published
+some research regarding that an exponent used in the bech32 checksum algorithm (value = 1) may not be
+optimal for the error detecting properties of bech32. In February 2021, Pieter published
+[BIP 0350](http://www.example.com) reporting that "exhaustive analysis" showed the best possible exponent value is
+0x2bc830a3. This improved variant of Bech32 is called "Bech32m".
+
+When decoding a possible bech32 encoded string, libbech32 returns an enum value showing whether bech32m or bech32
+was used to encode. This can be seen in the exaples above.
+
+When encoding data, libbech32 defaults to using the new exponent value of 0x2bc830a3. If the original exponent value
+of 1 is desired, then the following functions may be used:
+
+### C++ Usage Example
+
+```cpp
+    /// ... as above ...
+
+    // encode
+    std::string bstr = bech32::encodeUsingOriginalConstant(hrp, data);
+
+    /// ... as above ...
+```
+
+### C Usage Example
+
+```C
+    /// ... as above ...
+
+    // encode
+    assert(bech32_encode_using_original_constant(bstring, hrp, dp, sizeof(dp)) == E_BECH32_SUCCESS);
+
+    /// ... as above ...
 ```

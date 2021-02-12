@@ -436,37 +436,37 @@ TEST(Bech32Test, polymod) {
 
 // check the verifyChecksum method
 TEST(Bech32Test, verifyChecksum_good) {
-    std::string data("a14rxqtp");
+    std::string data("a1lqfn3a");
     bech32::HrpAndDp b = splitString(data);
     convertToLowercase(b.hrp);
     mapDP(b.dp);
     ASSERT_TRUE(verifyChecksum(b.hrp, b.dp));
 
-    data = "A14RXQTP";
+    data = "A1LQFN3A";
     b = splitString(data);
     convertToLowercase(b.hrp);
     mapDP(b.dp);
     ASSERT_TRUE(verifyChecksum(b.hrp, b.dp));
 
-    data = "abcdef1qpzry9x8gf2tvdw0s3jn54khce6mua7lyllles";
+    data = "abcdef1l7aum6echk45nj3s0wdvt2fg8x9yrzpqzd3ryx";
     b = splitString(data);
     convertToLowercase(b.hrp);
     mapDP(b.dp);
     ASSERT_TRUE(verifyChecksum(b.hrp, b.dp));
 
-    data = "split1checkupstagehandshakeupstreamerranterredcaperred4m6xws";
+    data = "split1checkupstagehandshakeupstreamerranterredcaperredlc445v";
     b = splitString(data);
     convertToLowercase(b.hrp);
     mapDP(b.dp);
     ASSERT_TRUE(verifyChecksum(b.hrp, b.dp));
 
-    data = "an83characterlonghumanreadablepartthatcontainsthenumber1andtheexcludedcharactersbio155t5hw";
+    data = "an83characterlonghumanreadablepartthatcontainsthetheexcludedcharactersbioandnumber11sg7hg6";
     b = splitString(data);
     convertToLowercase(b.hrp);
     mapDP(b.dp);
     ASSERT_TRUE(verifyChecksum(b.hrp, b.dp));
 
-    data = "11qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8c42pv";
+    data = "11llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllludsr8";
     b = splitString(data);
     convertToLowercase(b.hrp);
     mapDP(b.dp);
@@ -477,37 +477,37 @@ TEST(Bech32Test, verifyChecksum_good) {
 // check the verifyChecksum method
 // these are simply the "good" tests from above with a single character changed
 TEST(Bech32Test, verifyChecksum_bad) {
-    std::string data("a14rxqtm");
+    std::string data("a1lqfn33");
     bech32::HrpAndDp b = splitString(data);
     convertToLowercase(b.hrp);
     mapDP(b.dp);
     ASSERT_FALSE(verifyChecksum(b.hrp, b.dp));
 
-    data = "C14RXQTP";
+    data = "A1LQFN33";
     b = splitString(data);
     convertToLowercase(b.hrp);
     mapDP(b.dp);
     ASSERT_FALSE(verifyChecksum(b.hrp, b.dp));
 
-    data = "abcdefg1qpzry9x8gf2tvdw0s3jn54khce6mua7lyllles";
+    data = "abcdef1l7aum6echk45nj3s0wdvt2fg8x9yrzpqzd3ryy";
     b = splitString(data);
     convertToLowercase(b.hrp);
     mapDP(b.dp);
     ASSERT_FALSE(verifyChecksum(b.hrp, b.dp));
 
-    data = "split1dheckupstagehandshakeupstreamerranterredcaperred4m6xws";
+    data = "split1checkupstagehandshakeupstreamerranterredcaperredlc445s";
     b = splitString(data);
     convertToLowercase(b.hrp);
     mapDP(b.dp);
     ASSERT_FALSE(verifyChecksum(b.hrp, b.dp));
 
-    data = "an83characterlonghumanreadablepartthatcontainsthenumber1andhheexcludedcharactersbio155t5hw";
+    data = "an83characterlonghumanreadablepartthatcontainsthetheexcludedcharactersbioandnumber11sg7hg7";
     b = splitString(data);
     convertToLowercase(b.hrp);
     mapDP(b.dp);
     ASSERT_FALSE(verifyChecksum(b.hrp, b.dp));
 
-    data = "11qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8c42pc";
+    data = "11llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllludsrc";
     b = splitString(data);
     convertToLowercase(b.hrp);
     mapDP(b.dp);
@@ -516,23 +516,25 @@ TEST(Bech32Test, verifyChecksum_bad) {
 
 // check the main bech32 decode method
 TEST(Bech32Test, decode_good) {
-    std::string data("a14rxqtp");
+    std::string data("a1lqfn3a");
     bech32::HrpAndDp b = bech32::decode(data);
+    ASSERT_EQ(b.encoding, bech32::Encoding::Bech32m);
     ASSERT_EQ(b.hrp, "a");
     ASSERT_TRUE(b.dp.empty());
 
-    data = "A14RXQTP";
+    data = "A1LQFN3A";
     b = bech32::decode(data);
+    ASSERT_EQ(b.encoding, bech32::Encoding::Bech32m);
     ASSERT_EQ(b.hrp, "a");
     ASSERT_TRUE(b.dp.empty());
 
-    data = "abcdef1qpzry9x8gf2tvdw0s3jn54khce6mua7lyllles";
+    data = "abcdef1l7aum6echk45nj3s0wdvt2fg8x9yrzpqzd3ryx";
     b = bech32::decode(data);
+    ASSERT_EQ(b.encoding, bech32::Encoding::Bech32m);
     ASSERT_EQ(b.hrp, "abcdef");
     ASSERT_EQ(b.dp.size(), 32);
-    ASSERT_EQ(b.dp[0], '\0');    // 'q' in above dp part
-    ASSERT_EQ(b.dp[31], '\x1f'); // 'l' in above dp part
-
+    ASSERT_EQ(b.dp[0], '\x1f'); // first 'l' in above dp part
+    ASSERT_EQ(b.dp[31], '\0');  // last 'q' in above dp part
 }
 
 TEST(Bech32Test, create_checksum) {
@@ -540,36 +542,36 @@ TEST(Bech32Test, create_checksum) {
     std::vector<unsigned char> data;
     std::vector<unsigned char> checksum = createChecksum(hrp, data);
 
-    ASSERT_EQ(checksum[0], '\x15');
-    ASSERT_EQ(checksum[1], '\x03');
-    ASSERT_EQ(checksum[2], '\x06');
-    ASSERT_EQ(checksum[3], '\x00');
-    ASSERT_EQ(checksum[4], '\x0B');
-    ASSERT_EQ(checksum[5], '\x01');
+    ASSERT_EQ(checksum[0], '\x1F');
+    ASSERT_EQ(checksum[1], '\x00');
+    ASSERT_EQ(checksum[2], '\x09');
+    ASSERT_EQ(checksum[3], '\x13');
+    ASSERT_EQ(checksum[4], '\x11');
+    ASSERT_EQ(checksum[5], '\x1D');
 
     std::string mapped = mapToCharset(checksum);
 
-    ASSERT_EQ(mapped, "4rxqtp");
+    ASSERT_EQ(mapped, "lqfn3a");
 
     ////
 
     hrp = "abcdef";
-    data = {'q','p','z','r','y','9','x','8','g','f','2','t','v','d','w','0','s','3','j',
-            'n','5','4','k','h','c','e','6','m','u','a','7','l'};
+    data = {'l','7','a','u','m','6','e','c','h','k','4','5','n','j','3','s','0','w','d',
+            'v','t','2','f','g','8','x','9','y','r','z','p','q'};
 
     mapDP(data);
     checksum = createChecksum(hrp, data);
 
-    ASSERT_EQ(checksum[0], '\x04');
-    ASSERT_EQ(checksum[1], '\x1F');
-    ASSERT_EQ(checksum[2], '\x1F');
-    ASSERT_EQ(checksum[3], '\x1F');
-    ASSERT_EQ(checksum[4], '\x19');
-    ASSERT_EQ(checksum[5], '\x10');
+    ASSERT_EQ(checksum[0], '\x02');
+    ASSERT_EQ(checksum[1], '\x0D');
+    ASSERT_EQ(checksum[2], '\x11');
+    ASSERT_EQ(checksum[3], '\x03');
+    ASSERT_EQ(checksum[4], '\x04');
+    ASSERT_EQ(checksum[5], '\x06');
 
     mapped = mapToCharset(checksum);
 
-    ASSERT_EQ(mapped, "yllles");
+    ASSERT_EQ(mapped, "zd3ryx");
 
     ////
 
@@ -581,58 +583,58 @@ TEST(Bech32Test, create_checksum) {
     mapDP(data);
     checksum = createChecksum(hrp, data);
 
-    ASSERT_EQ(checksum[0], '\x15');
-    ASSERT_EQ(checksum[1], '\x1B');
-    ASSERT_EQ(checksum[2], '\x1A');
-    ASSERT_EQ(checksum[3], '\x06');
-    ASSERT_EQ(checksum[4], '\x0E');
-    ASSERT_EQ(checksum[5], '\x10');
+    ASSERT_EQ(checksum[0], '\x1F');
+    ASSERT_EQ(checksum[1], '\x18');
+    ASSERT_EQ(checksum[2], '\x15');
+    ASSERT_EQ(checksum[3], '\x15');
+    ASSERT_EQ(checksum[4], '\x14');
+    ASSERT_EQ(checksum[5], '\x0C');
 
     mapped = mapToCharset(checksum);
 
-    ASSERT_EQ(mapped, "4m6xws");
+    ASSERT_EQ(mapped, "lc445v");
 
     ////
 
-    hrp = "an83characterlonghumanreadablepartthatcontainsthenumber1andtheexcludedcharactersbio";
+    hrp = "an83characterlonghumanreadablepartthatcontainsthetheexcludedcharactersbioandnumber1";
     data = {};
 
     mapDP(data);
     checksum = createChecksum(hrp, data);
 
-    ASSERT_EQ(checksum[0], '\x14');
-    ASSERT_EQ(checksum[1], '\x14');
-    ASSERT_EQ(checksum[2], '\x0B');
-    ASSERT_EQ(checksum[3], '\x14');
-    ASSERT_EQ(checksum[4], '\x17');
-    ASSERT_EQ(checksum[5], '\x0E');
+    ASSERT_EQ(checksum[0], '\x10');
+    ASSERT_EQ(checksum[1], '\x08');
+    ASSERT_EQ(checksum[2], '\x1E');
+    ASSERT_EQ(checksum[3], '\x17');
+    ASSERT_EQ(checksum[4], '\x08');
+    ASSERT_EQ(checksum[5], '\x1A');
 
     mapped = mapToCharset(checksum);
 
-    ASSERT_EQ(mapped, "55t5hw");
+    ASSERT_EQ(mapped, "sg7hg6");
 
     ////
 
     hrp = "1";
-    data = {'q','q','q','q','q','q','q','q','q','q','q','q','q','q','q','q','q','q','q',
-            'q','q','q','q','q','q','q','q','q','q','q','q','q','q','q','q','q','q','q',
-            'q','q','q','q','q','q','q','q','q','q','q','q','q','q','q','q','q','q','q',
-            'q','q','q','q','q','q','q','q','q','q','q','q','q','q','q','q','q','q','q',
-            'q','q','q','q','q','q'};
+    data = {'l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l',
+            'l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l',
+            'l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l',
+            'l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l',
+            'l','l','l','l','l','l'};
 
     mapDP(data);
     checksum = createChecksum(hrp, data);
 
-    ASSERT_EQ(checksum[0], '\x07');
-    ASSERT_EQ(checksum[1], '\x18');
-    ASSERT_EQ(checksum[2], '\x15');
-    ASSERT_EQ(checksum[3], '\x0A');
-    ASSERT_EQ(checksum[4], '\x01');
-    ASSERT_EQ(checksum[5], '\x0C');
+    ASSERT_EQ(checksum[0], '\x1F');
+    ASSERT_EQ(checksum[1], '\x1C');
+    ASSERT_EQ(checksum[2], '\x0D');
+    ASSERT_EQ(checksum[3], '\x10');
+    ASSERT_EQ(checksum[4], '\x03');
+    ASSERT_EQ(checksum[5], '\x07');
 
     mapped = mapToCharset(checksum);
 
-    ASSERT_EQ(mapped, "8c42pv");
+    ASSERT_EQ(mapped, "ludsr8");
 
 }
 
@@ -641,30 +643,33 @@ TEST(Bech32Test, encode_good) {
     std::string hrp = "a";
     std::vector<unsigned char> data;
     std::string b = bech32::encode(hrp, data);
-    ASSERT_EQ(b, "a14rxqtp");
+    ASSERT_EQ(b, "a1lqfn3a");
 
     hrp = "A";
     b = bech32::encode(hrp, data);
-    ASSERT_EQ(b, "a14rxqtp");
+    ASSERT_EQ(b, "a1lqfn3a");
 }
 
 // check that we can decode and then encode back to the original
 TEST(Bech32Test, check_decode_encode) {
-    std::string data("a14rxqtp");
+    std::string data("a1lqfn3a");
     bech32::HrpAndDp bs = bech32::decode(data);
+    ASSERT_EQ(bs.encoding, bech32::Encoding::Bech32m);
     ASSERT_EQ(bs.hrp, "a");
     ASSERT_TRUE(bs.dp.empty());
     std::string enc = bech32::encode(bs.hrp, bs.dp);
     ASSERT_EQ(enc, data);
 
-    data = "abcdef1qpzry9x8gf2tvdw0s3jn54khce6mua7lyllles";
+    data = "abcdef1l7aum6echk45nj3s0wdvt2fg8x9yrzpqzd3ryx";
     bs = bech32::decode(data);
+    ASSERT_EQ(bs.encoding, bech32::Encoding::Bech32m);
     ASSERT_EQ(bs.hrp, "abcdef");
     enc = bech32::encode(bs.hrp, bs.dp);
     ASSERT_EQ(enc, data);
 
-    data = "split1checkupstagehandshakeupstreamerranterredcaperred4m6xws";
+    data = "split1checkupstagehandshakeupstreamerranterredcaperredlc445v";
     bs = bech32::decode(data);
+    ASSERT_EQ(bs.encoding, bech32::Encoding::Bech32m);
     ASSERT_EQ(bs.hrp, "split");
     enc = bech32::encode(bs.hrp, bs.dp);
     ASSERT_EQ(enc, data);
