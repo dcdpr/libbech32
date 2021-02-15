@@ -318,7 +318,7 @@ RC_GTEST_PROP(Bech32TestRC, findLastSeparatorCharacterPosition, ()
 // check that we can split strings based on the separator
 TEST(Bech32Test, split_strings) {
     std::string data("ab1cd");
-    bech32::HrpAndDp b = splitString(data);
+    bech32::DecodedResult b = splitString(data);
     ASSERT_EQ(b.hrp, "ab");
     ASSERT_EQ(b.dp[0], 'c');
     ASSERT_EQ(b.dp.size(), 2);
@@ -361,7 +361,7 @@ RC_GTEST_PROP(Bech32TestRC, checkSplitString, ()
     // combine the strings, with a separator character between
     auto str = str1 + bech32::separator + str2;
 
-    bech32::HrpAndDp b = splitString(str);
+    bech32::DecodedResult b = splitString(str);
 
     RC_ASSERT(b.hrp == str1);
     RC_ASSERT(b.dp.size() == str2.length());
@@ -385,7 +385,7 @@ TEST(Bech32Test, lowercase_strings) {
 // check that we can map the dp
 TEST(Bech32Test, map_data) {
     std::string data("ABC1acd");
-    bech32::HrpAndDp b = splitString(data);
+    bech32::DecodedResult b = splitString(data);
     ASSERT_NO_THROW(mapDP(b.dp));
     ASSERT_EQ(b.dp[0], '\x1d');
     ASSERT_EQ(b.dp[1], '\x18');
@@ -437,7 +437,7 @@ TEST(Bech32Test, polymod) {
 // check the verifyChecksum method
 TEST(Bech32Test, verifyChecksum_good) {
     std::string data("a1lqfn3a");
-    bech32::HrpAndDp b = splitString(data);
+    bech32::DecodedResult b = splitString(data);
     convertToLowercase(b.hrp);
     mapDP(b.dp);
     ASSERT_TRUE(verifyChecksum(b.hrp, b.dp));
@@ -478,7 +478,7 @@ TEST(Bech32Test, verifyChecksum_good) {
 // these are simply the "good" tests from above with a single character changed
 TEST(Bech32Test, verifyChecksum_bad) {
     std::string data("a1lqfn33");
-    bech32::HrpAndDp b = splitString(data);
+    bech32::DecodedResult b = splitString(data);
     convertToLowercase(b.hrp);
     mapDP(b.dp);
     ASSERT_FALSE(verifyChecksum(b.hrp, b.dp));
@@ -517,7 +517,7 @@ TEST(Bech32Test, verifyChecksum_bad) {
 // check the main bech32 decode method
 TEST(Bech32Test, decode_good) {
     std::string data("a1lqfn3a");
-    bech32::HrpAndDp b = bech32::decode(data);
+    bech32::DecodedResult b = bech32::decode(data);
     ASSERT_EQ(b.encoding, bech32::Encoding::Bech32m);
     ASSERT_EQ(b.hrp, "a");
     ASSERT_TRUE(b.dp.empty());
@@ -653,7 +653,7 @@ TEST(Bech32Test, encode_good) {
 // check that we can decode and then encode back to the original
 TEST(Bech32Test, check_decode_encode) {
     std::string data("a1lqfn3a");
-    bech32::HrpAndDp bs = bech32::decode(data);
+    bech32::DecodedResult bs = bech32::decode(data);
     ASSERT_EQ(bs.encoding, bech32::Encoding::Bech32m);
     ASSERT_EQ(bs.hrp, "a");
     ASSERT_TRUE(bs.dp.empty());
@@ -706,7 +706,7 @@ RC_GTEST_PROP(Bech32TestRC, encodeThenDecodeShouldProduceInitialData, ()
     }
 
     std::string bstr = bech32::encode(str1, data);
-    bech32::HrpAndDp b = bech32::decode(bstr);
+    bech32::DecodedResult b = bech32::decode(bstr);
 
     RC_ASSERT(str1 == b.hrp);
     RC_ASSERT(data == b.dp);

@@ -79,85 +79,85 @@ void decode_withBadArgs_isUnsuccessful() {
     { // input is null
         char *bstr = NULL;
 
-        bech32_HrpAndDp *hrpdp = malloc(sizeof(bech32_HrpAndDp));
-        hrpdp->hrplen = 10;
-        hrpdp->hrp = (char *) calloc(hrpdp->hrplen, 1);
-        hrpdp->dplen = 10;
-        hrpdp->dp = (unsigned char *) calloc(hrpdp->dplen, 1);
+        bech32_DecodedResult *decodedResult = malloc(sizeof(bech32_DecodedResult));
+        decodedResult->hrplen = 10;
+        decodedResult->hrp = (char *) calloc(decodedResult->hrplen, 1);
+        decodedResult->dplen = 10;
+        decodedResult->dp = (unsigned char *) calloc(decodedResult->dplen, 1);
 
-        assert(bech32_decode(hrpdp, bstr) == E_BECH32_NULL_ARGUMENT);
+        assert(bech32_decode(decodedResult, bstr) == E_BECH32_NULL_ARGUMENT);
 
-        free(hrpdp->dp);
-        free(hrpdp->hrp);
-        free(hrpdp);
+        free(decodedResult->dp);
+        free(decodedResult->hrp);
+        free(decodedResult);
     }
 
     { // output is null
         char bstr[] = "xyz1pzrs3usye";
 
-        bech32_HrpAndDp *hrpdp = NULL;
+        bech32_DecodedResult *decodedResult = NULL;
 
-        assert(bech32_decode(hrpdp, bstr) == E_BECH32_NULL_ARGUMENT);
+        assert(bech32_decode(decodedResult, bstr) == E_BECH32_NULL_ARGUMENT);
     }
 
     { // hrp is null
         char bstr[] = "xyz1pzrs3usye";
 
-        bech32_HrpAndDp *hrpdp = malloc(sizeof(bech32_HrpAndDp));
-        hrpdp->dplen = 10;
-        hrpdp->dp = (unsigned char *) calloc(hrpdp->dplen, 1);
-        hrpdp->hrp = NULL;
+        bech32_DecodedResult *decodedResult = malloc(sizeof(bech32_DecodedResult));
+        decodedResult->dplen = 10;
+        decodedResult->dp = (unsigned char *) calloc(decodedResult->dplen, 1);
+        decodedResult->hrp = NULL;
 
-        assert(bech32_decode(hrpdp, bstr) == E_BECH32_NULL_ARGUMENT);
+        assert(bech32_decode(decodedResult, bstr) == E_BECH32_NULL_ARGUMENT);
 
-        free(hrpdp->dp);
-        free(hrpdp);
+        free(decodedResult->dp);
+        free(decodedResult);
     }
 
     { // dp is null
         char bstr[] = "xyz1pzrs3usye";
 
-        bech32_HrpAndDp *hrpdp = malloc(sizeof(bech32_HrpAndDp));
-        hrpdp->hrplen = 1;
-        hrpdp->hrp = (char *) calloc(hrpdp->hrplen, 1);
-        hrpdp->dp = NULL;
+        bech32_DecodedResult *decodedResult = malloc(sizeof(bech32_DecodedResult));
+        decodedResult->hrplen = 1;
+        decodedResult->hrp = (char *) calloc(decodedResult->hrplen, 1);
+        decodedResult->dp = NULL;
 
-        assert(bech32_decode(hrpdp, bstr) == E_BECH32_NULL_ARGUMENT);
+        assert(bech32_decode(decodedResult, bstr) == E_BECH32_NULL_ARGUMENT);
 
-        free(hrpdp->hrp);
-        free(hrpdp);
+        free(decodedResult->hrp);
+        free(decodedResult);
     }
 
     { // allocated hrp is too short
         char bstr[] = "xyz1pzrs3usye";
 
-        bech32_HrpAndDp *hrpdp = malloc(sizeof(bech32_HrpAndDp));
-        hrpdp->hrplen = 1;
-        hrpdp->hrp = (char *) calloc(hrpdp->hrplen, 1);
-        hrpdp->dplen = 10;
-        hrpdp->dp = (unsigned char *) calloc(hrpdp->dplen, 1);
+        bech32_DecodedResult *decodedResult = malloc(sizeof(bech32_DecodedResult));
+        decodedResult->hrplen = 1;
+        decodedResult->hrp = (char *) calloc(decodedResult->hrplen, 1);
+        decodedResult->dplen = 10;
+        decodedResult->dp = (unsigned char *) calloc(decodedResult->dplen, 1);
 
-        assert(bech32_decode(hrpdp, bstr) == E_BECH32_LENGTH_TOO_SHORT);
+        assert(bech32_decode(decodedResult, bstr) == E_BECH32_LENGTH_TOO_SHORT);
 
-        free(hrpdp->dp);
-        free(hrpdp->hrp);
-        free(hrpdp);
+        free(decodedResult->dp);
+        free(decodedResult->hrp);
+        free(decodedResult);
     }
 
     { // allocated dp is too short
         char bstr[] = "xyz1pzrs3usye";
 
-        bech32_HrpAndDp *hrpdp = malloc(sizeof(bech32_HrpAndDp));
-        hrpdp->hrplen = 10;
-        hrpdp->hrp = (char *) calloc(hrpdp->hrplen, 1);
-        hrpdp->dplen = 1;
-        hrpdp->dp = (unsigned char *) calloc(hrpdp->dplen, 1);
+        bech32_DecodedResult *decodedResult = malloc(sizeof(bech32_DecodedResult));
+        decodedResult->hrplen = 10;
+        decodedResult->hrp = (char *) calloc(decodedResult->hrplen, 1);
+        decodedResult->dplen = 1;
+        decodedResult->dp = (unsigned char *) calloc(decodedResult->dplen, 1);
 
-        assert(bech32_decode(hrpdp, bstr) == E_BECH32_LENGTH_TOO_SHORT);
+        assert(bech32_decode(decodedResult, bstr) == E_BECH32_LENGTH_TOO_SHORT);
 
-        free(hrpdp->dp);
-        free(hrpdp->hrp);
-        free(hrpdp);
+        free(decodedResult->dp);
+        free(decodedResult->hrp);
+        free(decodedResult);
     }
 }
 
@@ -165,38 +165,38 @@ void decode_minimalExample_isSuccessful() {
     char bstr[] = "a1lqfn3a";
     char expectedHrp[] = "a";
 
-    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstr);
+    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult(bstr);
 
-    assert(bech32_decode(hrpdp, bstr) == E_BECH32_SUCCESS);
-    assert(strcmp(hrpdp->hrp, expectedHrp) == 0);
-    assert(ENCODING_BECH32M == hrpdp->encoding);
+    assert(bech32_decode(decodedResult, bstr) == E_BECH32_SUCCESS);
+    assert(strcmp(decodedResult->hrp, expectedHrp) == 0);
+    assert(ENCODING_BECH32M == decodedResult->encoding);
 
-    bech32_free_HrpAndDp(hrpdp);
+    bech32_free_DecodedResult(decodedResult);
 }
 
 void decode_longExample_isSuccessful() {
     char bstr[] = "abcdef1l7aum6echk45nj3s0wdvt2fg8x9yrzpqzd3ryx";
     char expectedHrp[] = "abcdef";
 
-    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstr);
+    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult(bstr);
 
-    assert(bech32_decode(hrpdp, bstr) == E_BECH32_SUCCESS);
-    assert(strcmp(hrpdp->hrp, expectedHrp) == 0);
-    assert(hrpdp->dp[0] == '\x1f');    // first 'l' in above dp part
-    assert(hrpdp->dp[31] == '\0'); // last 'q' in above dp part
-    assert(ENCODING_BECH32M == hrpdp->encoding);
+    assert(bech32_decode(decodedResult, bstr) == E_BECH32_SUCCESS);
+    assert(strcmp(decodedResult->hrp, expectedHrp) == 0);
+    assert(decodedResult->dp[0] == '\x1f');    // first 'l' in above dp part
+    assert(decodedResult->dp[31] == '\0'); // last 'q' in above dp part
+    assert(ENCODING_BECH32M == decodedResult->encoding);
 
-    bech32_free_HrpAndDp(hrpdp);
+    bech32_free_DecodedResult(decodedResult);
 }
 
 void decode_minimalExampleBadChecksum_isUnsuccessful() {
     char bstr[] = "a1lqfn3q"; // last 'q' should be a 'a'
 
-    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstr);
+    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult(bstr);
 
-    assert(bech32_decode(hrpdp, bstr) == E_BECH32_INVALID_CHECKSUM);
+    assert(bech32_decode(decodedResult, bstr) == E_BECH32_INVALID_CHECKSUM);
 
-    bech32_free_HrpAndDp(hrpdp);
+    bech32_free_DecodedResult(decodedResult);
 }
 
 void decode_whenCppMethodThrowsException_isUnsuccessful() {
@@ -205,11 +205,11 @@ void decode_whenCppMethodThrowsException_isUnsuccessful() {
     // and returns an error code
     char bstr[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1qpzry9x8gf2tvdw0s3jn54khce6mua7lmqqqxw";
 
-    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstr);
+    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult(bstr);
 
-    assert(bech32_decode(hrpdp, bstr) == E_BECH32_UNKNOWN_ERROR);
+    assert(bech32_decode(decodedResult, bstr) == E_BECH32_UNKNOWN_ERROR);
 
-    bech32_free_HrpAndDp(hrpdp);
+    bech32_free_DecodedResult(decodedResult);
 }
 
 void encode_withBadArgs_isUnsuccessful() {
@@ -244,7 +244,7 @@ void encode_withBadArgs_isUnsuccessful() {
         bech32_bstring bstring;
         bstring.length = 12; // length should (strlen(hrp) + 1 + sizeof(dp) + 6) = 13, but here we will mistakenly set it to 12
         bstring.string = (char *)calloc(bstring.length + 1, 1); //string size should be = string.length + 1 for '\0'
-        // Could also use bech32_create_bstring() to avoid this problem.
+        // Should use bech32_create_bstring() to avoid this problem.
 
         assert(bech32_encode(&bstring, hrp, dp, sizeof(dp)) == E_BECH32_LENGTH_TOO_SHORT);
         free(bstring.string);
@@ -304,19 +304,19 @@ void decode_and_encode_minimalExample_producesSameResult() {
     char expectedHrp[] = "a";
     const size_t expectedDpSize = 0; // 0 = num chars after '1', minus 6 for checksum chars
 
-    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstr);
+    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult(bstr);
 
-    assert(bech32_decode(hrpdp, bstr) == E_BECH32_SUCCESS);
-    assert(strcmp(hrpdp->hrp, expectedHrp) == 0);
-    assert(hrpdp->dplen == expectedDpSize);
-    assert(ENCODING_BECH32M == hrpdp->encoding);
+    assert(bech32_decode(decodedResult, bstr) == E_BECH32_SUCCESS);
+    assert(strcmp(decodedResult->hrp, expectedHrp) == 0);
+    assert(decodedResult->dplen == expectedDpSize);
+    assert(ENCODING_BECH32M == decodedResult->encoding);
 
-    bech32_bstring *bstring = bech32_create_bstring(hrpdp->hrplen, hrpdp->dplen);
+    bech32_bstring *bstring = bech32_create_bstring(decodedResult->hrplen, decodedResult->dplen);
 
-    assert(bech32_encode(bstring, hrpdp->hrp, hrpdp->dp, hrpdp->dplen) == E_BECH32_SUCCESS);
+    assert(bech32_encode(bstring, decodedResult->hrp, decodedResult->dp, decodedResult->dplen) == E_BECH32_SUCCESS);
     assert(strcmp(bstr, bstring->string) == 0);
 
-    bech32_free_HrpAndDp(hrpdp);
+    bech32_free_DecodedResult(decodedResult);
     bech32_free_bstring(bstring);
 }
 
@@ -325,19 +325,19 @@ void decode_and_encode_smallExample_producesSameResult() {
     char expectedHrp[] = "xyz";
     const size_t expectedDpSize = 3; // 3 = num chars after '1', minus 6 for checksum chars
 
-    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstr);
+    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult(bstr);
 
-    assert(bech32_decode(hrpdp, bstr) == E_BECH32_SUCCESS);
-    assert(strcmp(hrpdp->hrp, expectedHrp) == 0);
-    assert(hrpdp->dplen == expectedDpSize);
-    assert(ENCODING_BECH32M == hrpdp->encoding);
+    assert(bech32_decode(decodedResult, bstr) == E_BECH32_SUCCESS);
+    assert(strcmp(decodedResult->hrp, expectedHrp) == 0);
+    assert(decodedResult->dplen == expectedDpSize);
+    assert(ENCODING_BECH32M == decodedResult->encoding);
 
-    bech32_bstring *bstring = bech32_create_bstring(hrpdp->hrplen, hrpdp->dplen);
+    bech32_bstring *bstring = bech32_create_bstring(decodedResult->hrplen, decodedResult->dplen);
 
-    assert(bech32_encode(bstring, hrpdp->hrp, hrpdp->dp, hrpdp->dplen) == E_BECH32_SUCCESS);
+    assert(bech32_encode(bstring, decodedResult->hrp, decodedResult->dp, decodedResult->dplen) == E_BECH32_SUCCESS);
     assert(strcmp(bstr, bstring->string) == 0);
 
-    bech32_free_HrpAndDp(hrpdp);
+    bech32_free_DecodedResult(decodedResult);
     bech32_free_bstring(bstring);
 }
 
@@ -346,19 +346,19 @@ void decode_and_encode_longExample_producesSameResult() {
     char expectedHrp[] = "abcdef";
     const size_t expectedDpSize = 32; // 32 = num chars after '1', minus 6 for checksum chars
 
-    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstr);
+    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult(bstr);
 
-    assert(bech32_decode(hrpdp, bstr) == E_BECH32_SUCCESS);
-    assert(strcmp(hrpdp->hrp, expectedHrp) == 0);
-    assert(hrpdp->dplen == expectedDpSize);
-    assert(ENCODING_BECH32M == hrpdp->encoding);
+    assert(bech32_decode(decodedResult, bstr) == E_BECH32_SUCCESS);
+    assert(strcmp(decodedResult->hrp, expectedHrp) == 0);
+    assert(decodedResult->dplen == expectedDpSize);
+    assert(ENCODING_BECH32M == decodedResult->encoding);
 
-    bech32_bstring *bstring = bech32_create_bstring(hrpdp->hrplen, hrpdp->dplen);
+    bech32_bstring *bstring = bech32_create_bstring(decodedResult->hrplen, decodedResult->dplen);
 
-    assert(bech32_encode(bstring, hrpdp->hrp, hrpdp->dp, expectedDpSize) == E_BECH32_SUCCESS);
+    assert(bech32_encode(bstring, decodedResult->hrp, decodedResult->dp, expectedDpSize) == E_BECH32_SUCCESS);
     assert(strcmp(bstr, bstring->string) == 0);
 
-    bech32_free_HrpAndDp(hrpdp);
+    bech32_free_DecodedResult(decodedResult);
     bech32_free_bstring(bstring);
 }
 
@@ -368,28 +368,28 @@ void decode_c1_minimalExample_isSuccessful() {
     char bstr[] = "a12uel5l";
     char expectedHrp[] = "a";
 
-    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstr);
+    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult(bstr);
 
-    assert(bech32_decode(hrpdp, bstr) == E_BECH32_SUCCESS);
-    assert(strcmp(hrpdp->hrp, expectedHrp) == 0);
-    assert(ENCODING_BECH32 == hrpdp->encoding);
+    assert(bech32_decode(decodedResult, bstr) == E_BECH32_SUCCESS);
+    assert(strcmp(decodedResult->hrp, expectedHrp) == 0);
+    assert(ENCODING_BECH32 == decodedResult->encoding);
 
-    bech32_free_HrpAndDp(hrpdp);
+    bech32_free_DecodedResult(decodedResult);
 }
 
 void decode_c1_longExample_isSuccessful() {
     char bstr[] = "abcdef1qpzry9x8gf2tvdw0s3jn54khce6mua7lmqqqxw";
     char expectedHrp[] = "abcdef";
 
-    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstr);
+    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult(bstr);
 
-    assert(bech32_decode(hrpdp, bstr) == E_BECH32_SUCCESS);
-    assert(strcmp(hrpdp->hrp, expectedHrp) == 0);
-    assert(hrpdp->dp[0] == '\0');    // first 'q' in above dp part
-    assert(hrpdp->dp[31] == '\x1f'); // last 'l' in above dp part
-    assert(ENCODING_BECH32 == hrpdp->encoding);
+    assert(bech32_decode(decodedResult, bstr) == E_BECH32_SUCCESS);
+    assert(strcmp(decodedResult->hrp, expectedHrp) == 0);
+    assert(decodedResult->dp[0] == '\0');    // first 'q' in above dp part
+    assert(decodedResult->dp[31] == '\x1f'); // last 'l' in above dp part
+    assert(ENCODING_BECH32 == decodedResult->encoding);
 
-    bech32_free_HrpAndDp(hrpdp);
+    bech32_free_DecodedResult(decodedResult);
 }
 
 void encode_c1_minimalExample_isSuccessful() {
@@ -421,19 +421,19 @@ void decode_and_encode_c1_minimalExample_producesSameResult() {
     char expectedHrp[] = "a";
     const size_t expectedDpSize = 0; // 0 = num chars after '1', minus 6 for checksum chars
 
-    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstr);
+    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult(bstr);
 
-    assert(bech32_decode(hrpdp, bstr) == E_BECH32_SUCCESS);
-    assert(strcmp(hrpdp->hrp, expectedHrp) == 0);
-    assert(hrpdp->dplen == expectedDpSize);
-    assert(ENCODING_BECH32 == hrpdp->encoding);
+    assert(bech32_decode(decodedResult, bstr) == E_BECH32_SUCCESS);
+    assert(strcmp(decodedResult->hrp, expectedHrp) == 0);
+    assert(decodedResult->dplen == expectedDpSize);
+    assert(ENCODING_BECH32 == decodedResult->encoding);
 
-    bech32_bstring *bstring = bech32_create_bstring(hrpdp->hrplen, hrpdp->dplen);
+    bech32_bstring *bstring = bech32_create_bstring(decodedResult->hrplen, decodedResult->dplen);
 
-    assert(bech32_encode_using_original_constant(bstring, hrpdp->hrp, hrpdp->dp, hrpdp->dplen) == E_BECH32_SUCCESS);
+    assert(bech32_encode_using_original_constant(bstring, decodedResult->hrp, decodedResult->dp, decodedResult->dplen) == E_BECH32_SUCCESS);
     assert(strcmp(bstr, bstring->string) == 0);
 
-    bech32_free_HrpAndDp(hrpdp);
+    bech32_free_DecodedResult(decodedResult);
     bech32_free_bstring(bstring);
 }
 
@@ -442,19 +442,19 @@ void decode_and_encode_c1_smallExample_producesSameResult() {
     char expectedHrp[] = "xyz";
     const size_t expectedDpSize = 3; // 3 = num chars after '1', minus 6 for checksum chars
 
-    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstr);
+    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult(bstr);
 
-    assert(bech32_decode(hrpdp, bstr) == E_BECH32_SUCCESS);
-    assert(strcmp(hrpdp->hrp, expectedHrp) == 0);
-    assert(hrpdp->dplen == expectedDpSize);
-    assert(ENCODING_BECH32 == hrpdp->encoding);
+    assert(bech32_decode(decodedResult, bstr) == E_BECH32_SUCCESS);
+    assert(strcmp(decodedResult->hrp, expectedHrp) == 0);
+    assert(decodedResult->dplen == expectedDpSize);
+    assert(ENCODING_BECH32 == decodedResult->encoding);
 
-    bech32_bstring *bstring = bech32_create_bstring(hrpdp->hrplen, hrpdp->dplen);
+    bech32_bstring *bstring = bech32_create_bstring(decodedResult->hrplen, decodedResult->dplen);
 
-    assert(bech32_encode_using_original_constant(bstring, hrpdp->hrp, hrpdp->dp, hrpdp->dplen) == E_BECH32_SUCCESS);
+    assert(bech32_encode_using_original_constant(bstring, decodedResult->hrp, decodedResult->dp, decodedResult->dplen) == E_BECH32_SUCCESS);
     assert(strcmp(bstr, bstring->string) == 0);
 
-    bech32_free_HrpAndDp(hrpdp);
+    bech32_free_DecodedResult(decodedResult);
     bech32_free_bstring(bstring);
 }
 
@@ -463,19 +463,19 @@ void decode_and_encode_c1_longExample_producesSameResult() {
     char expectedHrp[] = "abcdef";
     const size_t expectedDpSize = 32; // 32 = num chars after '1', minus 6 for checksum chars
 
-    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstr);
+    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult(bstr);
 
-    assert(bech32_decode(hrpdp, bstr) == E_BECH32_SUCCESS);
-    assert(strcmp(hrpdp->hrp, expectedHrp) == 0);
-    assert(hrpdp->dplen == expectedDpSize);
-    assert(ENCODING_BECH32 == hrpdp->encoding);
+    assert(bech32_decode(decodedResult, bstr) == E_BECH32_SUCCESS);
+    assert(strcmp(decodedResult->hrp, expectedHrp) == 0);
+    assert(decodedResult->dplen == expectedDpSize);
+    assert(ENCODING_BECH32 == decodedResult->encoding);
 
-    bech32_bstring *bstring = bech32_create_bstring(hrpdp->hrplen, hrpdp->dplen);
+    bech32_bstring *bstring = bech32_create_bstring(decodedResult->hrplen, decodedResult->dplen);
 
-    assert(bech32_encode_using_original_constant(bstring, hrpdp->hrp, hrpdp->dp, hrpdp->dplen) == E_BECH32_SUCCESS);
+    assert(bech32_encode_using_original_constant(bstring, decodedResult->hrp, decodedResult->dp, decodedResult->dplen) == E_BECH32_SUCCESS);
     assert(strcmp(bstr, bstring->string) == 0);
 
-    bech32_free_HrpAndDp(hrpdp);
+    bech32_free_DecodedResult(decodedResult);
     bech32_free_bstring(bstring);
 }
 
@@ -494,43 +494,43 @@ void test_stripUnknownChars() {
     stripUnknownChars_withFunkyString_returnsStrippedString();
 }
 
-void create_HrpAndDp_storage_withNullInput_returnsNull() {
-    bech32_HrpAndDp *p = bech32_create_HrpAndDp(NULL);
+void create_DecodedResult_storage_withNullInput_returnsNull() {
+    bech32_DecodedResult *p = bech32_create_DecodedResult(NULL);
     assert(p == NULL);
 }
 
-void create_HrpAndDp_storage_withZeroLengthInput_returnsNull() {
+void create_DecodedResult_storage_withZeroLengthInput_returnsNull() {
     char empty[] = "";
-    bech32_HrpAndDp *p = bech32_create_HrpAndDp(empty);
+    bech32_DecodedResult *p = bech32_create_DecodedResult(empty);
     assert(p == NULL);
 }
 
-void create_HrpAndDp_storage_withMalformedInput_returnsNull() {
+void create_DecodedResult_storage_withMalformedInput_returnsNull() {
     char tooShort[] = "a1a";
-    bech32_HrpAndDp *p = bech32_create_HrpAndDp(tooShort);
+    bech32_DecodedResult *p = bech32_create_DecodedResult(tooShort);
     assert(p == NULL);
 
     char noSeparator[] = "aaaaaaaa";
-    p = bech32_create_HrpAndDp(noSeparator);
+    p = bech32_create_DecodedResult(noSeparator);
     assert(p == NULL);
 
     char checksumTooShort[] = "aa1qqqqq";
-    p = bech32_create_HrpAndDp(checksumTooShort);
+    p = bech32_create_DecodedResult(checksumTooShort);
     assert(p == NULL);
 }
 
-void create_HrpAndDp_storage_minimalExample_isSuccessful() {
+void create_DecodedResult_storage_minimalExample_isSuccessful() {
     char bstr[] = "a12uel5l";
-    bech32_HrpAndDp *p = bech32_create_HrpAndDp(bstr);
+    bech32_DecodedResult *p = bech32_create_DecodedResult(bstr);
     assert(p != NULL);
-    bech32_free_HrpAndDp(p);
+    bech32_free_DecodedResult(p);
 }
 
-void create_HrpAndDp_storage_smallExample_isSuccessful() {
+void create_DecodedResult_storage_smallExample_isSuccessful() {
     char bstr[] = "xyz1pzr9dvupm";
-    bech32_HrpAndDp *p = bech32_create_HrpAndDp(bstr);
+    bech32_DecodedResult *p = bech32_create_DecodedResult(bstr);
     assert(p != NULL);
-    bech32_free_HrpAndDp(p);
+    bech32_free_DecodedResult(p);
 }
 
 void create_encoded_string_storage_withMalformedInput_returnsNull() {
@@ -551,63 +551,63 @@ void create_encoded_string_storage_smallExample_isSuccessful() {
     bech32_free_bstring(bstring);
 }
 
-void create_encoded_string_storage_from_HrpAndDp_withNullInput_returnsNull() {
-    bech32_bstring *bstring = bech32_create_bstring_from_HrpAndDp(NULL);
+void create_encoded_string_storage_from_DecodedResult_withNullInput_returnsNull() {
+    bech32_bstring *bstring = bech32_create_bstring_from_DecodedResult(NULL);
     assert(bstring == NULL);
 }
 
-void create_encoded_string_storage_from_HrpAndDp_withMalformedInput_returnsNull() {
-    // create a valid bech32_HrpAndDp, then corrupt it for testing
+void create_encoded_string_storage_from_DecodedResult_withMalformedInput_returnsNull() {
+    // create a valid bech32_DecodedResult, then corrupt it for testing
     char bstr[] = "xyz1pzr9dvupm";
-    bech32_HrpAndDp *hd = bech32_create_HrpAndDp(bstr);
+    bech32_DecodedResult *decodedResult = bech32_create_DecodedResult(bstr);
 
     // hrp too short
-    hd->hrplen = 0;
-    bech32_bstring *bstring = bech32_create_bstring_from_HrpAndDp(hd);
+    decodedResult->hrplen = 0;
+    bech32_bstring *bstring = bech32_create_bstring_from_DecodedResult(decodedResult);
     assert(bstring == NULL);
 
-    bech32_free_HrpAndDp(hd);
+    bech32_free_DecodedResult(decodedResult);
 }
 
-void create_encoded_string_storage_from_HrpAndDp_minimalExample_isSuccessful() {
+void create_encoded_string_storage_from_DecodedResult_minimalExample_isSuccessful() {
     char bstr[] = "a12uel5l";
-    bech32_HrpAndDp *hd = bech32_create_HrpAndDp(bstr);
-    assert(hd != NULL);
+    bech32_DecodedResult *decodedResult = bech32_create_DecodedResult(bstr);
+    assert(decodedResult != NULL);
 
-    bech32_bstring *bstring = bech32_create_bstring_from_HrpAndDp(hd);
+    bech32_bstring *bstring = bech32_create_bstring_from_DecodedResult(decodedResult);
     assert(bstring != NULL);
 
-    bech32_free_HrpAndDp(hd);
+    bech32_free_DecodedResult(decodedResult);
     bech32_free_bstring(bstring);
 }
 
-void create_encoded_string_storage_from_HrpAndDp_smallExample_isSuccessful() {
+void create_encoded_string_storage_from_DecodedResult_smallExample_isSuccessful() {
     char bstr[] = "xyz1pzr9dvupm";
-    bech32_HrpAndDp *hd = bech32_create_HrpAndDp(bstr);
-    assert(hd != NULL);
+    bech32_DecodedResult *decodedResult = bech32_create_DecodedResult(bstr);
+    assert(decodedResult != NULL);
 
-    bech32_bstring *bstring = bech32_create_bstring_from_HrpAndDp(hd);
+    bech32_bstring *bstring = bech32_create_bstring_from_DecodedResult(decodedResult);
     assert(bstring != NULL);
 
-    bech32_free_HrpAndDp(hd);
+    bech32_free_DecodedResult(decodedResult);
     bech32_free_bstring(bstring);
 }
 
 void test_memoryAllocation() {
-    create_HrpAndDp_storage_withNullInput_returnsNull();
-    create_HrpAndDp_storage_withZeroLengthInput_returnsNull();
-    create_HrpAndDp_storage_withMalformedInput_returnsNull();
-    create_HrpAndDp_storage_minimalExample_isSuccessful();
-    create_HrpAndDp_storage_smallExample_isSuccessful();
+    create_DecodedResult_storage_withNullInput_returnsNull();
+    create_DecodedResult_storage_withZeroLengthInput_returnsNull();
+    create_DecodedResult_storage_withMalformedInput_returnsNull();
+    create_DecodedResult_storage_minimalExample_isSuccessful();
+    create_DecodedResult_storage_smallExample_isSuccessful();
 
     create_encoded_string_storage_withMalformedInput_returnsNull();
     create_encoded_string_storage_minimalExample_isSuccessful();
     create_encoded_string_storage_smallExample_isSuccessful();
 
-    create_encoded_string_storage_from_HrpAndDp_withNullInput_returnsNull();
-    create_encoded_string_storage_from_HrpAndDp_withMalformedInput_returnsNull();
-    create_encoded_string_storage_from_HrpAndDp_minimalExample_isSuccessful();
-    create_encoded_string_storage_from_HrpAndDp_smallExample_isSuccessful();
+    create_encoded_string_storage_from_DecodedResult_withNullInput_returnsNull();
+    create_encoded_string_storage_from_DecodedResult_withMalformedInput_returnsNull();
+    create_encoded_string_storage_from_DecodedResult_minimalExample_isSuccessful();
+    create_encoded_string_storage_from_DecodedResult_smallExample_isSuccessful();
 }
 
 void tests_using_default_checksum_constant() {

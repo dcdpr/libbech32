@@ -20,11 +20,11 @@ void encodeAndDecode() {
     assert(expected == bstr);
 
     // decode
-    bech32::HrpAndDp hd = bech32::decode(bstr);
+    bech32::DecodedResult decodedResult = bech32::decode(bstr);
 
-    assert(hrp == hd.hrp);
-    assert(data == hd.dp);
-    assert(bech32::Encoding::Bech32m == hd.encoding);
+    assert(hrp == decodedResult.hrp);
+    assert(data == decodedResult.dp);
+    assert(bech32::Encoding::Bech32m == decodedResult.encoding);
 }
 
 void decodeAndEncode() {
@@ -33,14 +33,14 @@ void decodeAndEncode() {
     std::string bstr = " example1:qpz!r--y9#x8&%&%ge-8-sqgv ";
     std::string expected = "example1qpzry9x8ge8sqgv";
     // decode - make sure to strip invalid characters before trying to decode
-    bech32::HrpAndDp hd = bech32::decode(bech32::stripUnknownChars(bstr));
+    bech32::DecodedResult decodedResult = bech32::decode(bech32::stripUnknownChars(bstr));
 
     // verify decoding
-    assert(!hd.hrp.empty() && !hd.dp.empty());
-    assert(bech32::Encoding::Bech32m == hd.encoding);
+    assert(!decodedResult.hrp.empty() && !decodedResult.dp.empty());
+    assert(bech32::Encoding::Bech32m == decodedResult.encoding);
 
     // encode
-    bstr = bech32::encode(hd.hrp, hd.dp);
+    bstr = bech32::encode(decodedResult.hrp, decodedResult.dp);
 
     // encoding of "cleaned" decoded data should match expected string
     assert(bstr == expected);
@@ -71,11 +71,11 @@ void badDecoding_corruptData() {
     bstr[10] = 'x';
 
     // decode
-    bech32::HrpAndDp hd = bech32::decode(bstr);
+    bech32::DecodedResult decodedResult = bech32::decode(bstr);
 
     // verify decoding failed
-    assert(hd.hrp.empty() && hd.dp.empty());
-    assert(bech32::Encoding::None == hd.encoding);
+    assert(decodedResult.hrp.empty() && decodedResult.dp.empty());
+    assert(bech32::Encoding::None == decodedResult.encoding);
 
 }
 
@@ -87,11 +87,11 @@ void badDecoding_corruptChecksum() {
     bstr[19] = 'q';
 
     // decode
-    bech32::HrpAndDp hd = bech32::decode(bstr);
+    bech32::DecodedResult decodedResult = bech32::decode(bstr);
 
     // verify decoding failed
-    assert(hd.hrp.empty() && hd.dp.empty());
-    assert(bech32::Encoding::None == hd.encoding);
+    assert(decodedResult.hrp.empty() && decodedResult.dp.empty());
+    assert(bech32::Encoding::None == decodedResult.encoding);
 
 }
 

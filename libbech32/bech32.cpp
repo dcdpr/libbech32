@@ -6,8 +6,8 @@ namespace {
 
     using namespace bech32::limits;
 
-    // exponent used in checksum generation, taken from recommendation
-    // in: https://github.com/sipa/bips/blob/bip-bech32m/bip-bech32m.mediawiki
+    // exponent used in checksum generation. see:
+    // https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
     const unsigned int M = 0x2bc830a3;
 
     /** The Bech32 character set for encoding. The index into this string gives the char
@@ -87,7 +87,7 @@ namespace {
 
 
     // split the hrp from the dp
-    bech32::HrpAndDp splitString(const std::string & bstring) {
+    bech32::DecodedResult splitString(const std::string & bstring) {
         auto pos = findSeparatorPosition(bstring);
         std::string hrp = bstring.substr(0, pos);
         std::string dpstr = bstring.substr(pos+1);
@@ -290,9 +290,9 @@ namespace bech32 {
     }
 
     // decode a bech32 string, returning the "human-readable part" and a "data part"
-    HrpAndDp decode(const std::string & bstring) {
+    DecodedResult decode(const std::string & bstring) {
         rejectBStringThatIsntWellFormed(bstring);
-        HrpAndDp b = splitString(bstring);
+        DecodedResult b = splitString(bstring);
         rejectHRPTooShort(b.hrp);
         rejectHRPTooLong(b.hrp);
         rejectDPTooShort(b.dp);
@@ -309,7 +309,7 @@ namespace bech32 {
             return b;
         }
         else {
-            return HrpAndDp();
+            return DecodedResult();
         }
     }
 
@@ -345,16 +345,16 @@ const char * bech32_strerror(bech32_error error_code) {
 }
 
 /**
- * Allocates memory for a bech32_HrpAndDp struct based on the size of the bech32 string passed in.
+ * Allocates memory for a bech32_DecodedResult struct based on the size of the bech32 string passed in.
  *
- * This memory must be freed using the bech32_free_HrpAndDp function.
+ * This memory must be freed using the bech32_free_DecodedResult function.
  *
  * @param str the bech32 string to be decoded by bech32_decode()
  *
- * @return a pointer to a new bech32_HrpAndDp struct, or NULL if error
+ * @return a pointer to a new bech32_DecodedResult struct, or NULL if error
  */
 extern "C"
-bech32_HrpAndDp * bech32_create_HrpAndDp(const char *str) {
+bech32_DecodedResult * bech32_create_DecodedResult(const char *str) {
     if(str == nullptr)
         return nullptr;
     // the storage needed for a decoded bech32 string can be easily determined by the
@@ -372,10 +372,10 @@ bech32_HrpAndDp * bech32_create_HrpAndDp(const char *str) {
     size_t number_of_data_characters =
             inputStr.length()
             - number_of_hrp_characters
-            - 1 // for separator character
+            - bech32::limits::SEPARATOR_LENGTH
             - bech32::limits::CHECKSUM_LENGTH;
 
-    auto hrpdp = static_cast<bech32_HrpAndDp *>(malloc(sizeof (bech32_HrpAndDp)));
+    auto hrpdp = static_cast<bech32_DecodedResult *>(malloc(sizeof (bech32_DecodedResult)));
     if(hrpdp == nullptr)
         return nullptr;
     hrpdp->hrplen = number_of_hrp_characters;
@@ -398,17 +398,17 @@ bech32_HrpAndDp * bech32_create_HrpAndDp(const char *str) {
 }
 
 /**
- * Frees memory for a bech32_HrpAndDp struct.
+ * Frees memory for a bech32_DecodedResult struct.
  *
- * @param hrpAndDp a pointer to a bech32_HrpAndDp struct
+ * @param decodedResult a pointer to a bech32_DecodedResult struct
  */
 extern "C"
-void bech32_free_HrpAndDp(bech32_HrpAndDp *hrpAndDp) {
-    if(hrpAndDp == nullptr)
+void bech32_free_DecodedResult(bech32_DecodedResult *decodedResult) {
+    if(decodedResult == nullptr)
         return;
-    free(hrpAndDp->dp);
-    free(hrpAndDp->hrp);
-    free(hrpAndDp);
+    free(decodedResult->dp);
+    free(decodedResult->hrp);
+    free(decodedResult);
 }
 
 /**
@@ -445,21 +445,21 @@ bech32_bstring * bech32_create_bstring(size_t hrplen, size_t dplen) {
 }
 
 /**
- * Allocates memory for a to-be-encoded bech32 string based on the size of the bech32_HrpAndDp struct
+ * Allocates memory for a to-be-encoded bech32 string based on the size of the bech32_DecodedResult struct
  *
  * This memory must be freed using the bech32_free_bstring function.
  *
- * @param hrpAndDp a pointer to a bech32_HrpAndDp struct
+ * @param decodedResult a pointer to a bech32_DecodedResult struct
  *
  * @return a pointer to a new bech32_bstring struct, or NULL if error
  */
 extern "C"
-bech32_bstring * bech32_create_bstring_from_HrpAndDp(bech32_HrpAndDp *hrpAndDp) {
-    if(hrpAndDp == nullptr)
+bech32_bstring * bech32_create_bstring_from_DecodedResult(bech32_DecodedResult *decodedResult) {
+    if(decodedResult == nullptr)
         return nullptr;
-    if(hrpAndDp->hrplen < 1)
+    if(decodedResult->hrplen < 1)
         return nullptr;
-    return bech32_create_bstring(hrpAndDp->hrplen, hrpAndDp->dplen);
+    return bech32_create_bstring(decodedResult->hrplen, decodedResult->dplen);
 }
 
 /**
@@ -484,7 +484,7 @@ void bech32_free_bstring(bech32_bstring *bstring) {
  * @param dst pointer to memory to put the cleaned string
  * @param src pointer to the string to be cleaned
  *
- * @return E_BECH32_SUCCESS on success, others on error (input/output is NULL, output not
+ * @return E_BECH32_SUCCESS on success, others on error (e.g., input/output is NULL, output not
  * long enough for string)
  */
 extern "C"
@@ -519,7 +519,7 @@ bech32_error bech32_stripUnknownChars(
  * @param dp pointer to the "data part"
  * @param dplen the length of the "data part" array
  *
- * @return E_BECH32_SUCCESS on success, others on error (i.e., hrp/dp/bstring is NULL, bstring not
+ * @return E_BECH32_SUCCESS on success, others on error (e.g., hrp/dp/bstring is NULL, bstring not
  * long enough for bech32 string)
  */
 extern "C"
@@ -564,7 +564,7 @@ bech32_error bech32_encode(
  * @param dp pointer to the "data part"
  * @param dplen the length of the "data part" array
  *
- * @return E_BECH32_SUCCESS on success, others on error (i.e., hrp/dp/sbtring is NULL, bstring not
+ * @return E_BECH32_SUCCESS on success, others on error (e.g., hrp/dp/sbtring is NULL, bstring not
  * long enough for bech32 string)
  */
 extern "C"
@@ -603,46 +603,46 @@ bech32_error bech32_encode_using_original_constant(
 /**
  * decode a bech32 string, returning the "human-readable part" and a "data part"
  *
- * @param output pointer to struct to copy the decoded "human-readable part" and "data part"
+ * @param decodedResult pointer to struct to copy the decoded "human-readable part" and "data part"
  * @param str the bech32 string to decode
  *
- * @return E_BECH32_SUCCESS on success, others on error (i.e., output is NULL, hrp/dp not
+ * @return E_BECH32_SUCCESS on success, others on error (e.g., output is NULL, hrp/dp not
  * long enough for decoded bech32 data)
  */
 extern "C"
-bech32_error bech32_decode(bech32_HrpAndDp *output, char const *str) {
+bech32_error bech32_decode(bech32_DecodedResult *decodedResult, char const *str) {
 
-    if(output == nullptr)
+    if(decodedResult == nullptr)
         return E_BECH32_NULL_ARGUMENT;
-    if(output->hrp == nullptr)
+    if(decodedResult->hrp == nullptr)
         return E_BECH32_NULL_ARGUMENT;
-    if(output->dp == nullptr)
+    if(decodedResult->dp == nullptr)
         return E_BECH32_NULL_ARGUMENT;
     if(str == nullptr)
         return E_BECH32_NULL_ARGUMENT;
 
     std::string inputStr(str);
 
-    bech32::HrpAndDp hrpAndDp;
+    bech32::DecodedResult localResult;
     try {
-        hrpAndDp = bech32::decode(inputStr);
+        localResult = bech32::decode(inputStr);
     } catch (std::exception &) {
         // todo: convert exception message
         return E_BECH32_UNKNOWN_ERROR;
     }
 
-    if(hrpAndDp.hrp.empty() && hrpAndDp.dp.empty())
+    if(localResult.hrp.empty() && localResult.dp.empty())
         return E_BECH32_INVALID_CHECKSUM;
 
-    if(hrpAndDp.hrp.size() > output->hrplen)
+    if(localResult.hrp.size() > decodedResult->hrplen)
         return E_BECH32_LENGTH_TOO_SHORT;
-    if(hrpAndDp.dp.size() > output->dplen)
+    if(localResult.dp.size() > decodedResult->dplen)
         return E_BECH32_LENGTH_TOO_SHORT;
 
-    output->encoding = static_cast<bech32_encoding>(hrpAndDp.encoding);
-    std::copy_n(hrpAndDp.hrp.begin(), hrpAndDp.hrp.size(), output->hrp);
-    output->hrp[hrpAndDp.hrp.size()] = '\0';
-    std::copy_n(hrpAndDp.dp.begin(), hrpAndDp.dp.size(), output->dp);
+    decodedResult->encoding = static_cast<bech32_encoding>(localResult.encoding);
+    std::copy_n(localResult.hrp.begin(), localResult.hrp.size(), decodedResult->hrp);
+    decodedResult->hrp[localResult.hrp.size()] = '\0';
+    std::copy_n(localResult.dp.begin(), localResult.dp.size(), decodedResult->dp);
 
     return E_BECH32_SUCCESS;
 }
