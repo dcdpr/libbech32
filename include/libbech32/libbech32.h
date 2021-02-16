@@ -11,9 +11,8 @@ namespace bech32 {
 
     // Encoding: denotes which encoding was used for a bech32 string
     enum Encoding {
-        None,    // no encoding was detected
-        Unknown, // encoding has not yet been determined
-        Bech32,  // encoding uses original checksum constant (1)
+        Invalid, // no or invalid encoding was detected
+        Bech32,  // encoding used original checksum constant (1)
         Bech32m  // encoding used default checksum constant (M = 0x2bc830a3)
     };
 
@@ -94,8 +93,7 @@ typedef struct bech32_bstring_s {
  * Encoding: denotes which encoding was used for a bech32 string
  */
 typedef enum bech32_encoding_e {
-    ENCODING_NONE,    // no encoding was detected
-    ENCODING_UNKNOWN, // encoding has not yet been determined
+    ENCODING_INVALID, // no or invalid encoding was detected
     ENCODING_BECH32,  // encoding uses original checksum constant (1)
     ENCODING_BECH32M  // encoding used default checksum constant (M = 0x2bc830a3)
 } bech32_encoding;

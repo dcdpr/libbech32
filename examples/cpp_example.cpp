@@ -44,7 +44,6 @@ void decodeAndEncode() {
 
     // encoding of "cleaned" decoded data should match expected string
     assert(bstr == expected);
-
 }
 
 void badEncoding() {
@@ -75,8 +74,7 @@ void badDecoding_corruptData() {
 
     // verify decoding failed
     assert(decodedResult.hrp.empty() && decodedResult.dp.empty());
-    assert(bech32::Encoding::None == decodedResult.encoding);
-
+    assert(bech32::Encoding::Invalid == decodedResult.encoding);
 }
 
 void badDecoding_corruptChecksum() {
@@ -91,8 +89,7 @@ void badDecoding_corruptChecksum() {
 
     // verify decoding failed
     assert(decodedResult.hrp.empty() && decodedResult.dp.empty());
-    assert(bech32::Encoding::None == decodedResult.encoding);
-
+    assert(bech32::Encoding::Invalid == decodedResult.encoding);
 }
 
 int main() {

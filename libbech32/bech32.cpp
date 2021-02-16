@@ -8,9 +8,10 @@ namespace {
 
     // exponent used in checksum generation. see:
     // https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
+    // https://github.com/bitcoin/bips/blob/master/bip-0350.mediawiki
     const unsigned int M = 0x2bc830a3;
 
-    /** The Bech32 character set for encoding. The index into this string gives the char
+    /** The Bech32 character set for encoding. The index into this array gives the char
      * each value is mapped to, i.e., 0 -> 'q', 10 -> '2', etc. This comes from the table
      * in BIP-0173 */
     const char charset[VALID_CHARSET_SIZE] = {
@@ -85,18 +86,22 @@ namespace {
         return bstring.find_last_of(bech32::separator);
     }
 
-
-    // split the hrp from the dp
-    bech32::DecodedResult splitString(const std::string & bstring) {
+    // extract the hrp from the string
+    std::string extractHumanReadablePart(const std::string & bstring) {
         auto pos = findSeparatorPosition(bstring);
-        std::string hrp = bstring.substr(0, pos);
+        return bstring.substr(0, pos);
+    }
+
+    // extract the dp from the string
+    std::vector<unsigned char> extractDataPart(const std::string & bstring) {
+        auto pos = findSeparatorPosition(bstring);
         std::string dpstr = bstring.substr(pos+1);
         // convert dpstr to dp vector
         std::vector<unsigned char> dp(bstring.size() - (pos + 1));
         for(std::string::size_type i = 0; i < dpstr.size(); ++i) {
             dp[i] = static_cast<unsigned char>(dpstr[i]);
         }
-        return {bech32::Encoding::Unknown, hrp, dp};
+        return dp;
     }
 
     void convertToLowercase(std::string & str) {
@@ -292,21 +297,20 @@ namespace bech32 {
     // decode a bech32 string, returning the "human-readable part" and a "data part"
     DecodedResult decode(const std::string & bstring) {
         rejectBStringThatIsntWellFormed(bstring);
-        DecodedResult b = splitString(bstring);
-        rejectHRPTooShort(b.hrp);
-        rejectHRPTooLong(b.hrp);
-        rejectDPTooShort(b.dp);
-        convertToLowercase(b.hrp);
-        mapDP(b.dp);
-        if (verifyChecksum(b.hrp, b.dp)) {
-            stripChecksum(b.dp);
-            b.encoding = bech32::Encoding::Bech32m;
-            return b;
+        std::string hrp = extractHumanReadablePart(bstring);
+        std::vector<unsigned char> dp = extractDataPart(bstring);
+        rejectHRPTooShort(hrp);
+        rejectHRPTooLong(hrp);
+        rejectDPTooShort(dp);
+        convertToLowercase(hrp);
+        mapDP(dp);
+        if (verifyChecksum(hrp, dp)) {
+            stripChecksum(dp);
+            return {bech32::Encoding::Bech32m, hrp, dp};
         }
-        else if (verifyChecksumUsingOriginalConstant(b.hrp, b.dp)) {
-            stripChecksum(b.dp);
-            b.encoding = bech32::Encoding::Bech32;
-            return b;
+        else if (verifyChecksumUsingOriginalConstant(hrp, dp)) {
+            stripChecksum(dp);
+            return {bech32::Encoding::Bech32, hrp, dp};
         }
         else {
             return DecodedResult();
@@ -392,7 +396,7 @@ bech32_DecodedResult * bech32_create_DecodedResult(const char *str) {
         return nullptr;
     }
 
-    hrpdp->encoding = ENCODING_UNKNOWN;
+    hrpdp->encoding = ENCODING_INVALID;
 
     return hrpdp;
 }
