@@ -315,32 +315,48 @@ RC_GTEST_PROP(Bech32TestRC, findLastSeparatorCharacterPosition, ()
     RC_ASSERT(findSeparatorPosition(str) == pos2);
 }
 
-// check that we can split strings based on the separator
-TEST(Bech32Test, split_strings) {
-    std::string data("ab1cd");
-    bech32::HrpAndDp b = splitString(data);
-    ASSERT_EQ(b.hrp, "ab");
-    ASSERT_EQ(b.dp[0], 'c');
-    ASSERT_EQ(b.dp.size(), 2);
+// check that we can extract the human readable part of the string
+TEST(Bech32Test, extractHumanReadablePart) {
+    std::string str("ab1cd");
+    std::string hrp = extractHumanReadablePart(str);
+    ASSERT_EQ(hrp, "ab");
 
-    data = "ab1";
-    b = splitString(data);
-    ASSERT_EQ(b.hrp, "ab");
-    ASSERT_TRUE(b.dp.empty());
+    str = "ab1";
+    hrp = extractHumanReadablePart(str);
+    ASSERT_EQ(hrp, "ab");
 
-    data = "1cd";
-    b = splitString(data);
-    ASSERT_EQ(b.hrp, "");
-    ASSERT_EQ(b.dp[0], 'c');
-    ASSERT_EQ(b.dp.size(), 2);
+    str = "1cd";
+    hrp = extractHumanReadablePart(str);
+    ASSERT_EQ(hrp, "");
 
-    data = "1";
-    b = splitString(data);
-    ASSERT_EQ(b.hrp, "");
-    ASSERT_TRUE(b.dp.empty());
+    str = "1";
+    hrp = extractHumanReadablePart(str);
+    ASSERT_EQ(hrp, "");
 }
 
-RC_GTEST_PROP(Bech32TestRC, checkSplitString, ()
+// check that we can extract the data part of the string
+TEST(Bech32Test, extractDataPart) {
+    std::string str("ab1cd");
+    std::vector<unsigned char> dp = extractDataPart(str);
+    ASSERT_EQ(dp[0], 'c');
+    ASSERT_EQ(dp.size(), 2);
+
+    str = "ab1";
+    dp = extractDataPart(str);
+    ASSERT_TRUE(dp.empty());
+
+    str = "1cd";
+    dp = extractDataPart(str);
+    ASSERT_EQ(dp.size(), 2);
+    ASSERT_EQ(dp[0], 'c');
+    ASSERT_EQ(dp[1], 'd');
+
+    str = "1";
+    dp = extractDataPart(str);
+    ASSERT_TRUE(dp.empty());
+}
+
+RC_GTEST_PROP(Bech32TestRC, checkExtractSubstrings, ()
 ) {
     // generate string with chars between a-z and 0-9
     const auto str1 =
@@ -361,46 +377,49 @@ RC_GTEST_PROP(Bech32TestRC, checkSplitString, ()
     // combine the strings, with a separator character between
     auto str = str1 + bech32::separator + str2;
 
-    bech32::HrpAndDp b = splitString(str);
+    std::string hrp = extractHumanReadablePart(str);
+    std::vector<unsigned char> dp = extractDataPart(str);
 
-    RC_ASSERT(b.hrp == str1);
-    RC_ASSERT(b.dp.size() == str2.length());
+    RC_ASSERT(hrp == str1);
+    RC_ASSERT(dp.size() == str2.length());
+    for(size_t i=0; i<dp.size(); ++i)
+        RC_ASSERT(dp[i] == str2[i]);
 }
 
 // check that we can lowercase strings
 TEST(Bech32Test, lowercase_strings) {
-    std::string data("ABC");
-    convertToLowercase(data);
-    ASSERT_EQ(data, "abc");
+    std::string str("ABC");
+    convertToLowercase(str);
+    ASSERT_EQ(str, "abc");
 
-    data = "AbC";
-    convertToLowercase(data);
-    ASSERT_EQ(data, "abc");
+    str = "AbC";
+    convertToLowercase(str);
+    ASSERT_EQ(str, "abc");
 
-    data = "123";
-    convertToLowercase(data);
-    ASSERT_EQ(data, "123");
+    str = "123";
+    convertToLowercase(str);
+    ASSERT_EQ(str, "123");
 }
 
 // check that we can map the dp
 TEST(Bech32Test, map_data) {
-    std::string data("ABC1acd");
-    bech32::HrpAndDp b = splitString(data);
-    ASSERT_NO_THROW(mapDP(b.dp));
-    ASSERT_EQ(b.dp[0], '\x1d');
-    ASSERT_EQ(b.dp[1], '\x18');
-    ASSERT_EQ(b.dp[2], '\x0d');
+    std::string str("ABC1acd");
+    std::vector<unsigned char> dp = extractDataPart(str);
+    ASSERT_NO_THROW(mapDP(dp));
+    ASSERT_EQ(dp[0], '\x1d');
+    ASSERT_EQ(dp[1], '\x18');
+    ASSERT_EQ(dp[2], '\x0d');
 
-    data = "ACB1DEF";
-    b = splitString(data);
-    ASSERT_NO_THROW(mapDP(b.dp));
-    ASSERT_EQ(b.dp[0], '\x0d');
-    ASSERT_EQ(b.dp[1], '\x19');
-    ASSERT_EQ(b.dp[2], '\x09');
+    str = "ACB1DEF";
+    dp = extractDataPart(str);
+    ASSERT_NO_THROW(mapDP(dp));
+    ASSERT_EQ(dp[0], '\x0d');
+    ASSERT_EQ(dp[1], '\x19');
+    ASSERT_EQ(dp[2], '\x09');
 
-    data = "ACB1abc";
-    b = splitString(data);
-    ASSERT_THROW(mapDP(b.dp), std::runtime_error); // throws because 'b' is invalid character
+    str = "ACB1abc";
+    dp = extractDataPart(str);
+    ASSERT_THROW(mapDP(dp), std::runtime_error); // throws because 'b' is invalid character
 }
 
 // check that we can expand the hrp
@@ -436,88 +455,100 @@ TEST(Bech32Test, polymod) {
 
 // check the verifyChecksum method
 TEST(Bech32Test, verifyChecksum_good) {
-    std::string data("a1lqfn3a");
-    bech32::HrpAndDp b = splitString(data);
-    convertToLowercase(b.hrp);
-    mapDP(b.dp);
-    ASSERT_TRUE(verifyChecksum(b.hrp, b.dp));
+    std::string str("a1lqfn3a");
+    std::string hrp = extractHumanReadablePart(str);
+    std::vector<unsigned char> dp = extractDataPart(str);
+    convertToLowercase(hrp);
+    mapDP(dp);
+    ASSERT_TRUE(verifyChecksum(hrp, dp));
 
-    data = "A1LQFN3A";
-    b = splitString(data);
-    convertToLowercase(b.hrp);
-    mapDP(b.dp);
-    ASSERT_TRUE(verifyChecksum(b.hrp, b.dp));
+    str = "A1LQFN3A";
+    hrp = extractHumanReadablePart(str);
+    dp = extractDataPart(str);
+    convertToLowercase(hrp);
+    mapDP(dp);
+    ASSERT_TRUE(verifyChecksum(hrp, dp));
 
-    data = "abcdef1l7aum6echk45nj3s0wdvt2fg8x9yrzpqzd3ryx";
-    b = splitString(data);
-    convertToLowercase(b.hrp);
-    mapDP(b.dp);
-    ASSERT_TRUE(verifyChecksum(b.hrp, b.dp));
+    str = "abcdef1l7aum6echk45nj3s0wdvt2fg8x9yrzpqzd3ryx";
+    hrp = extractHumanReadablePart(str);
+    dp = extractDataPart(str);
+    convertToLowercase(hrp);
+    mapDP(dp);
+    ASSERT_TRUE(verifyChecksum(hrp, dp));
 
-    data = "split1checkupstagehandshakeupstreamerranterredcaperredlc445v";
-    b = splitString(data);
-    convertToLowercase(b.hrp);
-    mapDP(b.dp);
-    ASSERT_TRUE(verifyChecksum(b.hrp, b.dp));
+    str = "split1checkupstagehandshakeupstreamerranterredcaperredlc445v";
+    hrp = extractHumanReadablePart(str);
+    dp = extractDataPart(str);
+    convertToLowercase(hrp);
+    mapDP(dp);
+    ASSERT_TRUE(verifyChecksum(hrp, dp));
 
-    data = "an83characterlonghumanreadablepartthatcontainsthetheexcludedcharactersbioandnumber11sg7hg6";
-    b = splitString(data);
-    convertToLowercase(b.hrp);
-    mapDP(b.dp);
-    ASSERT_TRUE(verifyChecksum(b.hrp, b.dp));
+    str = "an83characterlonghumanreadablepartthatcontainsthetheexcludedcharactersbioandnumber11sg7hg6";
+    hrp = extractHumanReadablePart(str);
+    dp = extractDataPart(str);
+    convertToLowercase(hrp);
+    mapDP(dp);
+    ASSERT_TRUE(verifyChecksum(hrp, dp));
 
-    data = "11llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllludsr8";
-    b = splitString(data);
-    convertToLowercase(b.hrp);
-    mapDP(b.dp);
-    ASSERT_TRUE(verifyChecksum(b.hrp, b.dp));
+    str = "11llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllludsr8";
+    hrp = extractHumanReadablePart(str);
+    dp = extractDataPart(str);
+    convertToLowercase(hrp);
+    mapDP(dp);
+    ASSERT_TRUE(verifyChecksum(hrp, dp));
 
 }
 
 // check the verifyChecksum method
 // these are simply the "good" tests from above with a single character changed
 TEST(Bech32Test, verifyChecksum_bad) {
-    std::string data("a1lqfn33");
-    bech32::HrpAndDp b = splitString(data);
-    convertToLowercase(b.hrp);
-    mapDP(b.dp);
-    ASSERT_FALSE(verifyChecksum(b.hrp, b.dp));
+    std::string str("a1lqfn33");
+    std::string hrp = extractHumanReadablePart(str);
+    std::vector<unsigned char> dp = extractDataPart(str);
+    convertToLowercase(hrp);
+    mapDP(dp);
+    ASSERT_FALSE(verifyChecksum(hrp, dp));
 
-    data = "A1LQFN33";
-    b = splitString(data);
-    convertToLowercase(b.hrp);
-    mapDP(b.dp);
-    ASSERT_FALSE(verifyChecksum(b.hrp, b.dp));
+    str = "A1LQFN33";
+    hrp = extractHumanReadablePart(str);
+    dp = extractDataPart(str);
+    convertToLowercase(hrp);
+    mapDP(dp);
+    ASSERT_FALSE(verifyChecksum(hrp, dp));
 
-    data = "abcdef1l7aum6echk45nj3s0wdvt2fg8x9yrzpqzd3ryy";
-    b = splitString(data);
-    convertToLowercase(b.hrp);
-    mapDP(b.dp);
-    ASSERT_FALSE(verifyChecksum(b.hrp, b.dp));
+    str = "abcdef1l7aum6echk45nj3s0wdvt2fg8x9yrzpqzd3ryy";
+    hrp = extractHumanReadablePart(str);
+    dp = extractDataPart(str);
+    convertToLowercase(hrp);
+    mapDP(dp);
+    ASSERT_FALSE(verifyChecksum(hrp, dp));
 
-    data = "split1checkupstagehandshakeupstreamerranterredcaperredlc445s";
-    b = splitString(data);
-    convertToLowercase(b.hrp);
-    mapDP(b.dp);
-    ASSERT_FALSE(verifyChecksum(b.hrp, b.dp));
+    str = "split1checkupstagehandshakeupstreamerranterredcaperredlc445s";
+    hrp = extractHumanReadablePart(str);
+    dp = extractDataPart(str);
+    convertToLowercase(hrp);
+    mapDP(dp);
+    ASSERT_FALSE(verifyChecksum(hrp, dp));
 
-    data = "an83characterlonghumanreadablepartthatcontainsthetheexcludedcharactersbioandnumber11sg7hg7";
-    b = splitString(data);
-    convertToLowercase(b.hrp);
-    mapDP(b.dp);
-    ASSERT_FALSE(verifyChecksum(b.hrp, b.dp));
+    str = "an83characterlonghumanreadablepartthatcontainsthetheexcludedcharactersbioandnumber11sg7hg7";
+    hrp = extractHumanReadablePart(str);
+    dp = extractDataPart(str);
+    convertToLowercase(hrp);
+    mapDP(dp);
+    ASSERT_FALSE(verifyChecksum(hrp, dp));
 
-    data = "11llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllludsrc";
-    b = splitString(data);
-    convertToLowercase(b.hrp);
-    mapDP(b.dp);
-    ASSERT_FALSE(verifyChecksum(b.hrp, b.dp));
+    str = "11llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllludsrc";
+    hrp = extractHumanReadablePart(str);
+    dp = extractDataPart(str);
+    convertToLowercase(hrp);
+    mapDP(dp);
+    ASSERT_FALSE(verifyChecksum(hrp, dp));
 }
 
 // check the main bech32 decode method
 TEST(Bech32Test, decode_good) {
     std::string data("a1lqfn3a");
-    bech32::HrpAndDp b = bech32::decode(data);
+    bech32::DecodedResult b = bech32::decode(data);
     ASSERT_EQ(b.encoding, bech32::Encoding::Bech32m);
     ASSERT_EQ(b.hrp, "a");
     ASSERT_TRUE(b.dp.empty());
@@ -653,25 +684,25 @@ TEST(Bech32Test, encode_good) {
 // check that we can decode and then encode back to the original
 TEST(Bech32Test, check_decode_encode) {
     std::string data("a1lqfn3a");
-    bech32::HrpAndDp bs = bech32::decode(data);
-    ASSERT_EQ(bs.encoding, bech32::Encoding::Bech32m);
-    ASSERT_EQ(bs.hrp, "a");
-    ASSERT_TRUE(bs.dp.empty());
-    std::string enc = bech32::encode(bs.hrp, bs.dp);
+    bech32::DecodedResult decodedResult = bech32::decode(data);
+    ASSERT_EQ(decodedResult.encoding, bech32::Encoding::Bech32m);
+    ASSERT_EQ(decodedResult.hrp, "a");
+    ASSERT_TRUE(decodedResult.dp.empty());
+    std::string enc = bech32::encode(decodedResult.hrp, decodedResult.dp);
     ASSERT_EQ(enc, data);
 
     data = "abcdef1l7aum6echk45nj3s0wdvt2fg8x9yrzpqzd3ryx";
-    bs = bech32::decode(data);
-    ASSERT_EQ(bs.encoding, bech32::Encoding::Bech32m);
-    ASSERT_EQ(bs.hrp, "abcdef");
-    enc = bech32::encode(bs.hrp, bs.dp);
+    decodedResult = bech32::decode(data);
+    ASSERT_EQ(decodedResult.encoding, bech32::Encoding::Bech32m);
+    ASSERT_EQ(decodedResult.hrp, "abcdef");
+    enc = bech32::encode(decodedResult.hrp, decodedResult.dp);
     ASSERT_EQ(enc, data);
 
     data = "split1checkupstagehandshakeupstreamerranterredcaperredlc445v";
-    bs = bech32::decode(data);
-    ASSERT_EQ(bs.encoding, bech32::Encoding::Bech32m);
-    ASSERT_EQ(bs.hrp, "split");
-    enc = bech32::encode(bs.hrp, bs.dp);
+    decodedResult = bech32::decode(data);
+    ASSERT_EQ(decodedResult.encoding, bech32::Encoding::Bech32m);
+    ASSERT_EQ(decodedResult.hrp, "split");
+    enc = bech32::encode(decodedResult.hrp, decodedResult.dp);
     ASSERT_EQ(enc, data);
 
 }
@@ -706,7 +737,7 @@ RC_GTEST_PROP(Bech32TestRC, encodeThenDecodeShouldProduceInitialData, ()
     }
 
     std::string bstr = bech32::encode(str1, data);
-    bech32::HrpAndDp b = bech32::decode(bstr);
+    bech32::DecodedResult b = bech32::decode(bstr);
 
     RC_ASSERT(str1 == b.hrp);
     RC_ASSERT(data == b.dp);
@@ -720,7 +751,6 @@ TEST(Bech32Test, encode_empty_args) {
 }
 
 TEST(Bech32Test, strip_unknown_chars) {
-    std::string bStr;
     EXPECT_EQ(bech32::stripUnknownChars("tx1-rqqq-qqqq-qmhu-qk"), "tx1rqqqqqqqqmhuqk");
     // TODO Not sure what to do about the extra '1' in the next test. We leave it in
     // because we leave in the separator character, but I think the test might be expected

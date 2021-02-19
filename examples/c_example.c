@@ -23,17 +23,17 @@ void encodeAndDecode() {
     assert(strcmp(expected, bstring->string) == 0);
 
     // allocate memory for decoded data
-    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstring->string);
+    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult(bstring->string);
 
     // decode
-    assert(bech32_decode(hrpdp, bstring->string) == E_BECH32_SUCCESS);
-    assert(strcmp(hrpdp->hrp, "example") == 0);
-    assert(hrpdp->dp[0] == 0);
-    assert(hrpdp->dp[8] == 8);
-    assert(ENCODING_BECH32M == hrpdp->encoding);
+    assert(bech32_decode(decodedResult, bstring->string) == E_BECH32_SUCCESS);
+    assert(strcmp(decodedResult->hrp, "example") == 0);
+    assert(decodedResult->dp[0] == 0);
+    assert(decodedResult->dp[8] == 8);
+    assert(ENCODING_BECH32M == decodedResult->encoding);
 
     // free memory
-    bech32_free_HrpAndDp(hrpdp);
+    bech32_free_DecodedResult(decodedResult);
     bech32_free_bstring(bstring);
 }
 
@@ -48,25 +48,25 @@ void decodeAndEncode() {
     assert(bech32_stripUnknownChars(bstr, sizeof(bstr), bstr, sizeof(bstr)) == E_BECH32_SUCCESS);
 
     // allocate memory for decoded data
-    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstr);
+    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult(bstr);
 
     // decode
-    assert(bech32_decode(hrpdp, bstr) == E_BECH32_SUCCESS);
-    assert(strcmp(hrpdp->hrp, "example") == 0);
-    assert(hrpdp->dp[0] == 0);
-    assert(hrpdp->dp[8] == 8);
+    assert(bech32_decode(decodedResult, bstr) == E_BECH32_SUCCESS);
+    assert(strcmp(decodedResult->hrp, "example") == 0);
+    assert(decodedResult->dp[0] == 0);
+    assert(decodedResult->dp[8] == 8);
 
     // create output array for bech32 string
-    bech32_bstring *bstring = bech32_create_bstring_from_HrpAndDp(hrpdp);
+    bech32_bstring *bstring = bech32_create_bstring_from_DecodedResult(decodedResult);
 
     // encode
-    assert(bech32_encode(bstring, hrpdp->hrp, hrpdp->dp, hrpdp->dplen) == E_BECH32_SUCCESS);
+    assert(bech32_encode(bstring, decodedResult->hrp, decodedResult->dp, decodedResult->dplen) == E_BECH32_SUCCESS);
 
     // encoding of "cleaned" decoded data should match expected string
     assert(strcmp(expected, bstring->string) == 0);
 
     // free memory
-    bech32_free_HrpAndDp(hrpdp);
+    bech32_free_DecodedResult(decodedResult);
     bech32_free_bstring(bstring);
 }
 
@@ -94,13 +94,13 @@ void badDecoding_corruptData() {
     bstr[10] = 'x';
 
     // allocate memory for decoded data
-    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstr);
+    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult(bstr);
 
     // decode
-    assert(bech32_decode(hrpdp, bstr) == E_BECH32_INVALID_CHECKSUM);
+    assert(bech32_decode(decodedResult, bstr) == E_BECH32_INVALID_CHECKSUM);
 
     // free memory
-    bech32_free_HrpAndDp(hrpdp);
+    bech32_free_DecodedResult(decodedResult);
 }
 
 void badDecoding_corruptChecksum() {
@@ -111,13 +111,13 @@ void badDecoding_corruptChecksum() {
     bstr[19] = 'q';
 
     // allocate memory for decoded data
-    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstr);
+    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult(bstr);
 
     // decode
-    assert(bech32_decode(hrpdp, bstr) == E_BECH32_INVALID_CHECKSUM);
+    assert(bech32_decode(decodedResult, bstr) == E_BECH32_INVALID_CHECKSUM);
 
     // free memory
-    bech32_free_HrpAndDp(hrpdp);
+    bech32_free_DecodedResult(decodedResult);
 }
 
 int main() {

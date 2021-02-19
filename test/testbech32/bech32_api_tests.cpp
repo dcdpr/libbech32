@@ -31,33 +31,33 @@ void decode_minimalExample_isSuccessful() {
     std::string bstr = "a1lqfn3a";
     std::string expectedHrp = "a";
 
-    bech32::HrpAndDp hd = bech32::decode(bstr);
+    bech32::DecodedResult decodedResult = bech32::decode(bstr);
 
-    assert(expectedHrp == hd.hrp);
-    assert(bech32::Encoding::Bech32m == hd.encoding);
+    assert(expectedHrp == decodedResult.hrp);
+    assert(bech32::Encoding::Bech32m == decodedResult.encoding);
 }
 
 void decode_longExample_isSuccessful() {
     std::string bstr = "abcdef1l7aum6echk45nj3s0wdvt2fg8x9yrzpqzd3ryx";
     std::string expectedHrp = "abcdef";
 
-    bech32::HrpAndDp hd = bech32::decode(bstr);
+    bech32::DecodedResult decodedResult = bech32::decode(bstr);
 
-    assert(expectedHrp == hd.hrp);
-    assert(bech32::Encoding::Bech32m == hd.encoding);
+    assert(expectedHrp == decodedResult.hrp);
+    assert(bech32::Encoding::Bech32m == decodedResult.encoding);
 
-    assert(hd.dp[0] == '\x1f'); // first 'l' in above dp part
-    assert(hd.dp[31] == '\0');  // last 'q' in above dp part
+    assert(decodedResult.dp[0] == '\x1f'); // first 'l' in above dp part
+    assert(decodedResult.dp[31] == '\0');  // last 'q' in above dp part
 }
 
 void decode_minimalExampleBadChecksum_isUnsuccessful() {
     std::string bstr = "a1lqfn3q"; // last 'q' should be a 'a'
     std::string expectedHrp = "a";
 
-    bech32::HrpAndDp hd = bech32::decode(bstr);
+    bech32::DecodedResult decodedResult = bech32::decode(bstr);
 
-    assert(hd.hrp.empty());
-    assert(hd.dp.empty());
+    assert(decodedResult.hrp.empty());
+    assert(decodedResult.dp.empty());
 }
 
 void decode_whenMethodThrowsException_isUnsuccessful() {
@@ -67,7 +67,7 @@ void decode_whenMethodThrowsException_isUnsuccessful() {
     std::string expectedHrp = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
     try {
-        bech32::HrpAndDp hd = bech32::decode(bstr);
+        bech32::DecodedResult decodedResult = bech32::decode(bstr);
     }
     catch (std::runtime_error &e) {
         assert(std::string(e.what()) == "bech32 string too long");
@@ -122,12 +122,12 @@ void decode_and_encode_minimalExample_producesSameResult() {
     std::string bstr1 = "a1lqfn3a";
     std::string expectedHrp = "a";
 
-    bech32::HrpAndDp hd = bech32::decode(bstr1);
+    bech32::DecodedResult decodedResult = bech32::decode(bstr1);
 
-    assert(expectedHrp == hd.hrp);
-    assert(bech32::Encoding::Bech32m == hd.encoding);
+    assert(expectedHrp == decodedResult.hrp);
+    assert(bech32::Encoding::Bech32m == decodedResult.encoding);
 
-    std::string bstr2 = bech32::encode(hd.hrp, hd.dp);
+    std::string bstr2 = bech32::encode(decodedResult.hrp, decodedResult.dp);
 
     assert(bstr1 == bstr2);
 }
@@ -136,12 +136,12 @@ void decode_and_encode_smallExample_producesSameResult() {
     std::string bstr1 = "xyz1pzrs3usye";
     std::string expectedHrp = "xyz";
 
-    bech32::HrpAndDp hd = bech32::decode(bstr1);
+    bech32::DecodedResult decodedResult = bech32::decode(bstr1);
 
-    assert(expectedHrp == hd.hrp);
-    assert(bech32::Encoding::Bech32m == hd.encoding);
+    assert(expectedHrp == decodedResult.hrp);
+    assert(bech32::Encoding::Bech32m == decodedResult.encoding);
 
-    std::string bstr2 = bech32::encode(hd.hrp, hd.dp);
+    std::string bstr2 = bech32::encode(decodedResult.hrp, decodedResult.dp);
 
     assert(bstr1 == bstr2);
 }
@@ -150,12 +150,12 @@ void decode_and_encode_longExample_producesSameResult() {
     std::string bstr1 = "abcdef1l7aum6echk45nj3s0wdvt2fg8x9yrzpqzd3ryx";
     std::string expectedHrp = "abcdef";
 
-    bech32::HrpAndDp hd = bech32::decode(bstr1);
+    bech32::DecodedResult decodedResult = bech32::decode(bstr1);
 
-    assert(expectedHrp == hd.hrp);
-    assert(bech32::Encoding::Bech32m == hd.encoding);
+    assert(expectedHrp == decodedResult.hrp);
+    assert(bech32::Encoding::Bech32m == decodedResult.encoding);
 
-    std::string bstr2 = bech32::encode(hd.hrp, hd.dp);
+    std::string bstr2 = bech32::encode(decodedResult.hrp, decodedResult.dp);
 
     assert(bstr1 == bstr2);
 }
@@ -166,23 +166,23 @@ void decode_c1_minimalExample_isSuccessful() {
     std::string bstr = "a12uel5l";
     std::string expectedHrp = "a";
 
-    bech32::HrpAndDp hd = bech32::decode(bstr);
+    bech32::DecodedResult decodedResult = bech32::decode(bstr);
 
-    assert(expectedHrp == hd.hrp);
-    assert(bech32::Encoding::Bech32 == hd.encoding);
+    assert(expectedHrp == decodedResult.hrp);
+    assert(bech32::Encoding::Bech32 == decodedResult.encoding);
 }
 
 void decode_c1_longExample_isSuccessful() {
     std::string bstr = "abcdef1qpzry9x8gf2tvdw0s3jn54khce6mua7lmqqqxw";
     std::string expectedHrp = "abcdef";
 
-    bech32::HrpAndDp hd = bech32::decode(bstr);
+    bech32::DecodedResult decodedResult = bech32::decode(bstr);
 
-    assert(expectedHrp == hd.hrp);
-    assert(bech32::Encoding::Bech32 == hd.encoding);
+    assert(expectedHrp == decodedResult.hrp);
+    assert(bech32::Encoding::Bech32 == decodedResult.encoding);
 
-    assert(hd.dp[0] == '\0');    // first 'q' in above dp part
-    assert(hd.dp[31] == '\x1f'); // last 'l' in above dp part
+    assert(decodedResult.dp[0] == '\0');    // first 'q' in above dp part
+    assert(decodedResult.dp[31] == '\x1f'); // last 'l' in above dp part
 }
 
 void encode_c1_minimalExample_isSuccessful() {
@@ -205,12 +205,12 @@ void decode_and_encode_c1_minimalExample_producesSameResult() {
     std::string bstr1 = "a12uel5l";
     std::string expectedHrp = "a";
 
-    bech32::HrpAndDp hd = bech32::decode(bstr1);
+    bech32::DecodedResult decodedResult = bech32::decode(bstr1);
 
-    assert(expectedHrp == hd.hrp);
-    assert(bech32::Encoding::Bech32 == hd.encoding);
+    assert(expectedHrp == decodedResult.hrp);
+    assert(bech32::Encoding::Bech32 == decodedResult.encoding);
 
-    std::string bstr2 = bech32::encodeUsingOriginalConstant(hd.hrp, hd.dp);
+    std::string bstr2 = bech32::encodeUsingOriginalConstant(decodedResult.hrp, decodedResult.dp);
 
     assert(bstr1 == bstr2);
 }
@@ -219,12 +219,12 @@ void decode_and_encode_c1_smallExample_producesSameResult() {
     std::string bstr1 = "xyz1pzr9dvupm";
     std::string expectedHrp = "xyz";
 
-    bech32::HrpAndDp hd = bech32::decode(bstr1);
+    bech32::DecodedResult decodedResult = bech32::decode(bstr1);
 
-    assert(expectedHrp == hd.hrp);
-    assert(bech32::Encoding::Bech32 == hd.encoding);
+    assert(expectedHrp == decodedResult.hrp);
+    assert(bech32::Encoding::Bech32 == decodedResult.encoding);
 
-    std::string bstr2 = bech32::encodeUsingOriginalConstant(hd.hrp, hd.dp);
+    std::string bstr2 = bech32::encodeUsingOriginalConstant(decodedResult.hrp, decodedResult.dp);
 
     assert(bstr1 == bstr2);
 }
@@ -233,12 +233,12 @@ void decode_and_encode_c1_longExample_producesSameResult() {
     std::string bstr1 = "abcdef1qpzry9x8gf2tvdw0s3jn54khce6mua7lmqqqxw";
     std::string expectedHrp = "abcdef";
 
-    bech32::HrpAndDp hd = bech32::decode(bstr1);
+    bech32::DecodedResult decodedResult = bech32::decode(bstr1);
 
-    assert(expectedHrp == hd.hrp);
-    assert(bech32::Encoding::Bech32 == hd.encoding);
+    assert(expectedHrp == decodedResult.hrp);
+    assert(bech32::Encoding::Bech32 == decodedResult.encoding);
 
-    std::string bstr2 = bech32::encodeUsingOriginalConstant(hd.hrp, hd.dp);
+    std::string bstr2 = bech32::encodeUsingOriginalConstant(decodedResult.hrp, decodedResult.dp);
 
     assert(bstr1 == bstr2);
 }

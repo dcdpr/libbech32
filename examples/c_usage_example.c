@@ -23,16 +23,16 @@ int main() {
     printf("%s\n", bstring->string);
 
     // allocate memory for decoded data
-    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstring->string);
+    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult(bstring->string);
 
     // decode
-    assert(bech32_decode(hrpdp, bstring->string) == E_BECH32_SUCCESS);
-    assert(strcmp(hrpdp->hrp, hrp) == 0);
-    assert(hrpdp->dp[0] == dp[0]);
-    assert(hrpdp->dp[4] == dp[4]);
-    assert(ENCODING_BECH32M == hrpdp->encoding);
+    assert(bech32_decode(decodedResult, bstring->string) == E_BECH32_SUCCESS);
+    assert(strcmp(decodedResult->hrp, hrp) == 0);
+    assert(decodedResult->dp[0] == dp[0]);
+    assert(decodedResult->dp[4] == dp[4]);
+    assert(ENCODING_BECH32M == decodedResult->encoding);
 
     // free memory
-    bech32_free_HrpAndDp(hrpdp);
+    bech32_free_DecodedResult(decodedResult);
     bech32_free_bstring(bstring);
 }

@@ -26,10 +26,10 @@ You can also run all the tests:
 make test
 ```
 
-### Installing prerequirements
+### Installing prerequisites
 
 If the above doesn't work, you probably need to install some
-prerequirements. For example, on a fresh Debian 10 ("buster") system:
+prerequisites. For example, on a fresh Debian 10 ("buster") system:
 
 ```
 sudo apt-get install make gcc g++
@@ -69,11 +69,11 @@ int main() {
     std::cout << bstr << std::endl;
 
     // decode
-    bech32::HrpAndDp hd = bech32::decode(bstr);
+    bech32::DecodedResult decodedResult = bech32::decode(bstr);
 
-    assert(hrp == hd.hrp);
-    assert(data == hd.dp);
-    assert(bech32::Encoding::Bech32m == hd.encoding);
+    assert(hrp == decodedResult.hrp);
+    assert(data == decodedResult.dp);
+    assert(bech32::Encoding::Bech32m == decodedResult.encoding);
 }
 ```
 
@@ -103,17 +103,17 @@ int main() {
     printf("%s\n", bstring->string);
 
     // allocate memory for decoded data
-    bech32_HrpAndDp * hrpdp = bech32_create_HrpAndDp(bstring->string);
+    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult(bstring->string);
 
     // decode
-    assert(bech32_decode(hrpdp, bstring->string) == E_BECH32_SUCCESS);
-    assert(strcmp(hrpdp->hrp, hrp) == 0);
-    assert(hrpdp->dp[0] == dp[0]);
-    assert(hrpdp->dp[4] == dp[4]);
-    assert(ENCODING_BECH32M == hrpdp->encoding);
+    assert(bech32_decode(decodedResult, bstring->string) == E_BECH32_SUCCESS);
+    assert(strcmp(decodedResult->hrp, hrp) == 0);
+    assert(decodedResult->dp[0] == dp[0]);
+    assert(decodedResult->dp[4] == dp[4]);
+    assert(ENCODING_BECH32M == decodedResult->encoding);
 
     // free memory
-    bech32_free_HrpAndDp(hrpdp);
+    bech32_free_DecodedResult(decodedResult);
     bech32_free_bstring(bstring);
 }
 ```
@@ -127,11 +127,11 @@ The Bech32 data encoding format was first proposed by Pieter Wuille in early 201
 [BIP 0173](https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki). Later, in November 2019, Pieter published
 some research regarding that an exponent used in the bech32 checksum algorithm (value = 1) may not be
 optimal for the error detecting properties of bech32. In February 2021, Pieter published
-[BIP 0350](http://www.example.com) reporting that "exhaustive analysis" showed the best possible exponent value is
+[BIP 0350](https://github.com/bitcoin/bips/blob/master/bip-0350.mediawiki) reporting that "exhaustive analysis" showed the best possible exponent value is
 0x2bc830a3. This improved variant of Bech32 is called "Bech32m".
 
 When decoding a possible bech32 encoded string, libbech32 returns an enum value showing whether bech32m or bech32
-was used to encode. This can be seen in the exaples above.
+was used to encode. This can be seen in the examples above.
 
 When encoding data, libbech32 defaults to using the new exponent value of 0x2bc830a3. If the original exponent value
 of 1 is desired, then the following functions may be used:

@@ -19,9 +19,9 @@ int main() {
     std::cout << bstr << std::endl;
 
     // decode
-    bech32::HrpAndDp hd = bech32::decode(bstr);
+    bech32::DecodedResult decodedResult = bech32::decode(bstr);
 
-    assert(hrp == hd.hrp);
-    assert(data == hd.dp);
-    assert(bech32::Encoding::Bech32m == hd.encoding);
+    assert(hrp == decodedResult.hrp);
+    assert(data == decodedResult.dp);
+    assert(bech32::Encoding::Bech32m == decodedResult.encoding);
 }

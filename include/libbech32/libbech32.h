@@ -11,9 +11,8 @@ namespace bech32 {
 
     // Encoding: denotes which encoding was used for a bech32 string
     enum Encoding {
-        None,    // no encoding was detected
-        Unknown, // encoding has not yet been determined
-        Bech32,  // encoding uses original checksum constant (1)
+        Invalid, // no or invalid encoding was detected
+        Bech32,  // encoding used original checksum constant (1)
         Bech32m  // encoding used default checksum constant (M = 0x2bc830a3)
     };
 
@@ -23,7 +22,7 @@ namespace bech32 {
     // Represents the payload within a bech32 string.
     // hrp: the human-readable part
     //  dp: the data part
-    struct HrpAndDp {
+    struct DecodedResult {
         Encoding encoding;
         std::string hrp;
         std::vector<unsigned char> dp;
@@ -40,7 +39,7 @@ namespace bech32 {
     std::string encodeUsingOriginalConstant(const std::string & hrp, const std::vector<unsigned char> & dp);
 
     // decode a bech32 string, returning the "human-readable part" and a "data part"
-    HrpAndDp decode(const std::string & bstring);
+    DecodedResult decode(const std::string & bstring);
 
     namespace limits {
 
@@ -94,8 +93,7 @@ typedef struct bech32_bstring_s {
  * Encoding: denotes which encoding was used for a bech32 string
  */
 typedef enum bech32_encoding_e {
-    ENCODING_NONE,    // no encoding was detected
-    ENCODING_UNKNOWN, // encoding has not yet been determined
+    ENCODING_INVALID, // no or invalid encoding was detected
     ENCODING_BECH32,  // encoding uses original checksum constant (1)
     ENCODING_BECH32M  // encoding used default checksum constant (M = 0x2bc830a3)
 } bech32_encoding;
@@ -109,13 +107,13 @@ typedef enum bech32_encoding_e {
  * dp: the data part
  * dplen: length of the data part
  */
-typedef struct bech32_HrpAndDp_s {
+typedef struct bech32_DecodedResult_s {
     bech32_encoding encoding;
     char * hrp;
     size_t hrplen;
     unsigned char * dp;
     size_t dplen;
-} bech32_HrpAndDp;
+} bech32_DecodedResult;
 
 /**
  * Possible error codes
@@ -145,22 +143,22 @@ extern const char *bech32_errordesc[];
 extern const char * bech32_strerror(bech32_error error_code);
 
 /**
- * Allocates memory for a bech32_HrpAndDp struct based on the size of the bech32 string passed in.
+ * Allocates memory for a bech32_DecodedResult struct based on the size of the bech32 string passed in.
  *
- * This memory must be freed using the bech32_free_HrpAndDp function.
+ * This memory must be freed using the bech32_free_DecodedResult function.
  *
  * @param str the bech32 string to be decoded by bech32_decode()
  *
- * @return a pointer to a new bech32_HrpAndDp struct, or NULL if error
+ * @return a pointer to a new bech32_DecodedResult struct, or NULL if error
  */
-extern bech32_HrpAndDp * bech32_create_HrpAndDp(const char *str);
+extern bech32_DecodedResult * bech32_create_DecodedResult(const char *str);
 
 /**
- * Frees memory for a bech32_HrpAndDp struct.
+ * Frees memory for a bech32_DecodedResult struct.
  *
- * @param hrpAndDp pointer to a bech32_HrpAndDp struct
+ * @param decodedResult pointer to a bech32_DecodedResult struct
  */
-extern void bech32_free_HrpAndDp(bech32_HrpAndDp *hrpAndDp);
+extern void bech32_free_DecodedResult(bech32_DecodedResult *decodedResult);
 
 /**
  * Computes final length for a to-be-encoded bech32 string
@@ -185,15 +183,15 @@ extern size_t bech32_compute_encoded_string_length(size_t hrplen, size_t dplen);
 extern bech32_bstring * bech32_create_bstring(size_t hrplen, size_t dplen);
 
 /**
- * Allocates memory for a to-be-encoded bech32 string based on the size of the bech32_HrpAndDp struct
+ * Allocates memory for a to-be-encoded bech32 string based on the size of the bech32_DecodedResult struct
  *
  * This memory must be freed using the bech32_free_bstring function.
  *
- * @param hrpAndDp a pointer to a bech32_HrpAndDp struct
+ * @param decodedResult a pointer to a bech32_DecodedResult struct
  *
  * @return a pointer to a new bech32_bstring struct, or NULL if error
  */
-extern bech32_bstring * bech32_create_bstring_from_HrpAndDp(bech32_HrpAndDp *hrpAndDp);
+extern bech32_bstring * bech32_create_bstring_from_DecodedResult(bech32_DecodedResult *decodedResult);
 
 /**
  * Frees memory for a bech32 string.
@@ -255,14 +253,14 @@ extern bech32_error bech32_encode_using_original_constant(
 /**
  * decode a bech32 string, returning the "human-readable part" and a "data part"
  *
- * @param output pointer to struct to copy the decoded "human-readable part" and "data part"
+ * @param decodedResult pointer to struct to copy the decoded "human-readable part" and "data part"
  * @param str the bech32 string to decode
  *
- * @return E_BECH32_SUCCESS on success, others on error (i.e., output is NULL, hrp/dp not
+ * @return E_BECH32_SUCCESS on success, others on error (i.e., decodedResult is NULL, hrp/dp not
  * long enough for decoded bech32 data)
  */
 extern bech32_error bech32_decode(
-        bech32_HrpAndDp *output,
+        bech32_DecodedResult *decodedResult,
         const char *str);
 
 #ifdef __cplusplus
