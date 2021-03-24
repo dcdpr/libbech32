@@ -50,7 +50,7 @@ Now you can again try to build libbech32.
 
 ## Example Code
 
-### C++ Usage Example
+### C++ Encoding Example
 
 ```cpp
 #include "libbech32.h"
@@ -67,9 +67,18 @@ int main() {
 
     // prints "hello1w0rldjn365x" : "hello" + Bech32.separator + encoded data + 6 char checksum
     std::cout << bstr << std::endl;
+}
+```
 
-    // decode
-    bech32::DecodedResult decodedResult = bech32::decode(bstr);
+### C++ Decoding Example
+
+```cpp
+#include "libbech32.h"
+#include <iostream>
+#include <cassert>
+
+int main() {
+    bech32::DecodedResult decodedResult = bech32::decode("hello1w0rldjn365x");
 
     assert(hrp == decodedResult.hrp);
     assert(data == decodedResult.dp);
@@ -79,7 +88,7 @@ int main() {
 
 For more C++ examples, see `examples/cpp_example.cpp`
 
-### C Usage Example
+### C Encoding Example
 
 ```C
 #include "libbech32.h"
@@ -102,19 +111,31 @@ int main() {
     printf("bech32 encoding of human-readable part \'hello\' and data part \'[14, 15, 3, 31, 13]\' is:\n");
     printf("%s\n", bstring->string);
 
+    // free memory
+    bech32_free_bstring(bstring);
+}
+```
+
+### C Decoding Example
+
+```C
+#include "libbech32.h"
+#include <string.h>
+#include <stdio.h>
+#include <assert.h>
+
+int main() {
     // allocate memory for decoded data
-    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult(bstring->string);
+    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult("hello1w0rldjn365x");
 
     // decode
-    assert(bech32_decode(decodedResult, bstring->string) == E_BECH32_SUCCESS);
-    assert(strcmp(decodedResult->hrp, hrp) == 0);
-    assert(decodedResult->dp[0] == dp[0]);
-    assert(decodedResult->dp[4] == dp[4]);
+    assert(bech32_decode(decodedResult, "hello1w0rldjn365x") == E_BECH32_SUCCESS);
+    assert(strcmp(decodedResult->hrp, "hello") == 0);
+    assert(decodedResult->dp[0] == 14);
     assert(ENCODING_BECH32M == decodedResult->encoding);
 
     // free memory
     bech32_free_DecodedResult(decodedResult);
-    bech32_free_bstring(bstring);
 }
 ```
 
