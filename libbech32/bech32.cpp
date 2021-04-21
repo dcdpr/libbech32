@@ -6,7 +6,7 @@ namespace {
 
     using namespace bech32::limits;
 
-    // exponent used in checksum generation. see:
+    // constant used in checksum generation. see:
     // https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
     // https://github.com/bitcoin/bips/blob/master/bip-0350.mediawiki
     const unsigned int M = 0x2bc830a3;

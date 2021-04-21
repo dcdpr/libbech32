@@ -32,15 +32,20 @@ If the above doesn't work, you probably need to install some
 prerequisites. For example, on a fresh Debian 10 ("buster") system:
 
 ```
+sudo apt-get update
 sudo apt-get install make gcc g++
 ```
 
-It is worth getting the latest cmake, so install that the hard way:
+It is worth getting the latest cmake (check [cmake.org](https://cmake.org/download/) for 
+the latest release), so install that the hard way:
 
 ```
-wget https://cmake.org/files/v3.19/cmake-3.19.4.tar.gz
-tar xzf cmake-3.19.4.tar.gz
-cd cmake-3.19.4
+sudo apt-get install libssl-dev # recent cmake needs ssl
+wget https://github.com/Kitware/CMake/releases/download/v3.20.1/cmake-3.20.1.tar.gz
+wget https://github.com/Kitware/CMake/releases/download/v3.20.1/cmake-3.20.1-SHA-256.txt
+shasum -a 256 --ignore-missing -c cmake-3.20.1-SHA-256.txt # make sure this says "OK"
+tar xzf cmake-3.20.1.tar.gz
+cd cmake-3.20.1
 ./configure
 make 
 sudo make install
@@ -48,7 +53,7 @@ sudo make install
 
 Now you can again try to build libbech32.
 
-## Example Code
+## Usage Examples
 
 ### C++ Encoding Example
 
@@ -146,15 +151,15 @@ For more C examples, see `examples/c_example.cpp`
 
 The Bech32 data encoding format was first proposed by Pieter Wuille in early 2017 in
 [BIP 0173](https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki). Later, in November 2019, Pieter published
-some research regarding that an exponent used in the bech32 checksum algorithm (value = 1) may not be
+some research that a constant used in the bech32 checksum algorithm (value = 1) may not be
 optimal for the error detecting properties of bech32. In February 2021, Pieter published
-[BIP 0350](https://github.com/bitcoin/bips/blob/master/bip-0350.mediawiki) reporting that "exhaustive analysis" showed the best possible exponent value is
+[BIP 0350](https://github.com/bitcoin/bips/blob/master/bip-0350.mediawiki) reporting that "exhaustive analysis" showed the best possible constant value is
 0x2bc830a3. This improved variant of Bech32 is called "Bech32m".
 
 When decoding a possible bech32 encoded string, libbech32 returns an enum value showing whether bech32m or bech32
 was used to encode. This can be seen in the examples above.
 
-When encoding data, libbech32 defaults to using the new exponent value of 0x2bc830a3. If the original exponent value
+When encoding data, libbech32 defaults to using the new constant value of 0x2bc830a3. If the original constant value
 of 1 is desired, then the following functions may be used:
 
 ### C++ Usage Example
