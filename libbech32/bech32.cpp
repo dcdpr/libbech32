@@ -351,7 +351,7 @@ const char * bech32_strerror(bech32_error error_code) {
 /**
  * Allocates memory for a bech32_DecodedResult struct based on the size of the bech32 string passed in.
  *
- * This memory must be freed using the bech32_free_DecodedResult function.
+ * This memory must be freed using bech32_free_DecodedResult().
  *
  * @param str the bech32 string to be decoded by bech32_decode()
  *
@@ -431,7 +431,7 @@ size_t bech32_compute_encoded_string_length(size_t hrplen, size_t dplen) {
 /**
  * Allocates memory for a to-be-encoded bech32 string
  *
- * This memory must be freed using the bech32_free_bstring function.
+ * This memory must be freed using bech32_free_bstring().
  *
  * @param hrplen the length of the "human-readable part" string. must be > 0
  * @param dplen the length of the "data part" array
@@ -443,15 +443,21 @@ bech32_bstring * bech32_create_bstring(size_t hrplen, size_t dplen) {
     if(hrplen < 1)
         return nullptr;
     auto *bstring = static_cast<bech32_bstring *>(malloc(sizeof(bech32_bstring)));
+    if(bstring == nullptr)
+        return nullptr;
     bstring->length = bech32_compute_encoded_string_length(hrplen, dplen);
     bstring->string = static_cast<char *>(calloc(bstring->length + 1, 1)); // +1 for '\0'
+    if(bstring->string == nullptr) {
+        bech32_free_bstring(bstring);
+        return nullptr;
+    }
     return bstring;
 }
 
 /**
  * Allocates memory for a to-be-encoded bech32 string based on the size of the bech32_DecodedResult struct
  *
- * This memory must be freed using the bech32_free_bstring function.
+ * This memory must be freed using bech32_free_bstring().
  *
  * @param decodedResult a pointer to a bech32_DecodedResult struct
  *
@@ -469,7 +475,7 @@ bech32_bstring * bech32_create_bstring_from_DecodedResult(bech32_DecodedResult *
 /**
  * Frees memory for a bech32 string.
  *
- * @param bstring pointer to a bech32 string
+ * @param bstring pointer to a bech32_bstring struct
  */
 extern "C"
 void bech32_free_bstring(bech32_bstring *bstring) {
