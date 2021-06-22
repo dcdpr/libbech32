@@ -60,7 +60,6 @@ Now you can again try to build libbech32.
 ```cpp
 #include "libbech32.h"
 #include <iostream>
-#include <cassert>
 
 int main() {
     // simple human readable part with some data
@@ -70,8 +69,9 @@ int main() {
     // encode
     std::string bstr = bech32::encode(hrp, data);
 
-    // prints "hello1w0rldjn365x" : "hello" + Bech32.separator + encoded data + 6 char checksum
     std::cout << bstr << std::endl;
+    // prints "hello1w0rldjn365x"
+    // ... "hello" + Bech32.separator ("1") + encoded data ("w0rld") + 6 char checksum ("jn365x")
 }
 ```
 
@@ -79,19 +79,17 @@ int main() {
 
 ```cpp
 #include "libbech32.h"
-#include <iostream>
-#include <cassert>
 
 int main() {
     bech32::DecodedResult decodedResult = bech32::decode("hello1w0rldjn365x");
 
-    assert(hrp == decodedResult.hrp);
-    assert(data == decodedResult.dp);
-    assert(bech32::Encoding::Bech32m == decodedResult.encoding);
+    // decodedResult.hrp == "hello"
+    // decodedResult.dp[0] == 14
+    // decodedResult.encoding == bech32::Encoding::Bech32m
 }
 ```
 
-For more C++ examples, see `examples/cpp_example.cpp`
+For more C++ examples, see [examples/cpp_other_examples.cpp](examples/cpp_other_examples.cpp)
 
 ### C Encoding Example
 
@@ -99,25 +97,36 @@ For more C++ examples, see `examples/cpp_example.cpp`
 #include "libbech32.h"
 #include <string.h>
 #include <stdio.h>
-#include <assert.h>
 
 int main() {
     // simple human readable part with some data
     char hrp[] = "hello";
     unsigned char dp[] = {14, 15, 3, 31, 13};
 
-    // create output for bech32 string
+    // create storage for bech32 string
     bech32_bstring *bstring = bech32_create_bstring(strlen(hrp), sizeof(dp));
+    if(!bstring) {
+        printf("bech32 string can not be created");
+        return E_BECH32_NO_MEMORY;
+    }
 
     // encode
-    assert(bech32_encode(bstring, hrp, dp, sizeof(dp)) == E_BECH32_SUCCESS);
+    bech32_error err = bech32_encode(bstring, hrp, dp, sizeof(dp));
+    if(err != E_BECH32_SUCCESS) {
+        printf("%s\n", bech32_strerror(err));
+        bech32_free_bstring(bstring);
+        return err;
+    }
 
-    // prints "hello1w0rldjn365x" : "hello" + Bech32.separator + encoded data + 6 char checksum
     printf("bech32 encoding of human-readable part \'hello\' and data part \'[14, 15, 3, 31, 13]\' is:\n");
     printf("%s\n", bstring->string);
+    // prints "hello1w0rldjn365x"
+    // ... "hello" + Bech32.separator ("1") + encoded data ("w0rld") + 6 char checksum ("jn365x")
 
     // free memory
     bech32_free_bstring(bstring);
+
+    return E_BECH32_SUCCESS;
 }
 ```
 
@@ -127,24 +136,36 @@ int main() {
 #include "libbech32.h"
 #include <string.h>
 #include <stdio.h>
-#include <assert.h>
 
 int main() {
-    // allocate memory for decoded data
-    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult("hello1w0rldjn365x");
+
+    char str[] = "hello1w0rldjn365x";
+
+    // create storage for decoded bech32 data
+    bech32_DecodedResult * decodedResult = bech32_create_DecodedResult(str);
+    if(!decodedResult) {
+        printf("bech32 DecodedResult can not be created");
+        return E_BECH32_NO_MEMORY;
+    }
 
     // decode
-    assert(bech32_decode(decodedResult, "hello1w0rldjn365x") == E_BECH32_SUCCESS);
-    assert(strcmp(decodedResult->hrp, "hello") == 0);
-    assert(decodedResult->dp[0] == 14);
-    assert(ENCODING_BECH32M == decodedResult->encoding);
+    bech32_error err = bech32_decode(decodedResult, str);
+    if(err != E_BECH32_SUCCESS) {
+        printf("%s\n", bech32_strerror(err));
+        bech32_free_DecodedResult(decodedResult);
+        return err;
+    }
+
+    // decodedResult->hrp == "hello"
+    // decodedResult->dp[0] == 14
+    // decodedResult->encoding == ENCODING_BECH32M
 
     // free memory
     bech32_free_DecodedResult(decodedResult);
 }
 ```
 
-For more C examples, see `examples/c_example.cpp`
+For more C examples, see [examples/c_other_examples.c](examples/c_other_examples.c)
 
 
 ## Regarding bech32 checksums
@@ -179,7 +200,7 @@ of 1 is desired, then the following functions may be used:
     /// ... as above ...
 
     // encode
-    assert(bech32_encode_using_original_constant(bstring, hrp, dp, sizeof(dp)) == E_BECH32_SUCCESS);
+    bech32_error err = bech32_encode_using_original_constant(bstring, hrp, dp, sizeof(dp));
 
     /// ... as above ...
 ```

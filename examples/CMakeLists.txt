@@ -1,36 +1,55 @@
 
-add_executable(bech32_cpp_example cpp_example.cpp)
+add_executable(bech32_cpp_other_examples cpp_other_examples.cpp)
 
-target_compile_features(bech32_cpp_example PRIVATE cxx_std_11)
-target_compile_options(bech32_cpp_example PRIVATE ${DCD_CXX_FLAGS})
-set_target_properties(bech32_cpp_example PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features(bech32_cpp_other_examples PRIVATE cxx_std_11)
+target_compile_options(bech32_cpp_other_examples PRIVATE ${DCD_CXX_FLAGS})
+set_target_properties(bech32_cpp_other_examples PROPERTIES CXX_EXTENSIONS OFF)
 
-target_link_libraries(bech32_cpp_example bech32)
-
-##
-
-add_executable(bech32_cpp_usage_example cpp_usage_example.cpp)
-
-target_compile_features(bech32_cpp_usage_example PRIVATE cxx_std_11)
-target_compile_options(bech32_cpp_usage_example PRIVATE ${DCD_CXX_FLAGS})
-set_target_properties(bech32_cpp_usage_example PROPERTIES CXX_EXTENSIONS OFF)
-
-target_link_libraries(bech32_cpp_usage_example bech32)
+target_link_libraries(bech32_cpp_other_examples bech32)
 
 ##
 
-add_executable(bech32_c_example c_example.c)
+add_executable(bech32_cpp_usage_encoding_example cpp_usage_encoding_example.cpp)
 
-target_compile_features(bech32_c_example PRIVATE c_std_99)
-set_target_properties(bech32_c_example PROPERTIES C_EXTENSIONS OFF)
+target_compile_features(bech32_cpp_usage_encoding_example PRIVATE cxx_std_11)
+target_compile_options(bech32_cpp_usage_encoding_example PRIVATE ${DCD_CXX_FLAGS})
+set_target_properties(bech32_cpp_usage_encoding_example PROPERTIES CXX_EXTENSIONS OFF)
 
-target_link_libraries(bech32_c_example bech32)
+target_link_libraries(bech32_cpp_usage_encoding_example bech32)
 
 ##
 
-add_executable(bech32_c_usage_example c_usage_example.c)
+add_executable(bech32_cpp_usage_decoding_example cpp_usage_decoding_example.cpp)
 
-target_compile_features(bech32_c_usage_example PRIVATE c_std_99)
-set_target_properties(bech32_c_usage_example PROPERTIES C_EXTENSIONS OFF)
+target_compile_features(bech32_cpp_usage_decoding_example PRIVATE cxx_std_11)
+target_compile_options(bech32_cpp_usage_decoding_example PRIVATE ${DCD_CXX_FLAGS})
+set_target_properties(bech32_cpp_usage_decoding_example PROPERTIES CXX_EXTENSIONS OFF)
 
-target_link_libraries(bech32_c_usage_example bech32)
+target_link_libraries(bech32_cpp_usage_decoding_example bech32)
+
+##
+
+add_executable(bech32_c_other_examples c_other_examples.c)
+
+target_compile_features(bech32_c_other_examples PRIVATE c_std_99)
+set_target_properties(bech32_c_other_examples PROPERTIES C_EXTENSIONS OFF)
+
+target_link_libraries(bech32_c_other_examples bech32)
+
+##
+
+add_executable(bech32_c_usage_encoding_example c_usage_encoding_example.c)
+
+target_compile_features(bech32_c_usage_encoding_example PRIVATE c_std_99)
+set_target_properties(bech32_c_usage_encoding_example PROPERTIES C_EXTENSIONS OFF)
+
+target_link_libraries(bech32_c_usage_encoding_example bech32)
+
+##
+
+add_executable(bech32_c_usage_decoding_example c_usage_decoding_example.c)
+
+target_compile_features(bech32_c_usage_decoding_example PRIVATE c_std_99)
+set_target_properties(bech32_c_usage_decoding_example PROPERTIES C_EXTENSIONS OFF)
+
+target_link_libraries(bech32_c_usage_decoding_example bech32)

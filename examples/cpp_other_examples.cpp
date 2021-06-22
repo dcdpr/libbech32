@@ -5,6 +5,11 @@
 #undef NDEBUG
 #include <cassert>
 
+
+/**
+ * Illustrates encoding a "human readable part" and a "data part" to a bech32 string, then
+ * decoding that bech32 string and comparing the results.
+ */
 void encodeAndDecode() {
 
     // human-readable part
@@ -27,6 +32,10 @@ void encodeAndDecode() {
     assert(bech32::Encoding::Bech32m == decodedResult.encoding);
 }
 
+/**
+ * Illustrates decoding a possibly "dirty" bech32 string into its "human readable part" and
+ * "data part". Then encodes that data to another bech32 string and compares the results.
+ */
 void decodeAndEncode() {
 
     // bech32 string with extra invalid characters
@@ -46,11 +55,14 @@ void decodeAndEncode() {
     assert(bstr == expected);
 }
 
+/**
+ * Illustrates exception thrown when attempting to encode bad data--in this case, "33" is not in the
+ * range of allowed data values (0-31).
+ */
 void badEncoding() {
 
-    // human-readable part
+    // hrp and data to encode
     std::string hrp = "example";
-    // data values can be 0-31. "33" is invalid
     std::vector<unsigned char> data = {0, 1, 2, 3, 4, 5, 6, 7, 33};
 
     // encode
@@ -62,6 +74,11 @@ void badEncoding() {
     }
 }
 
+/**
+ * Illustrates failure when attempting to decode bad data--in this case, the "z" character from
+ * the bech32 string has been corrupted and changed to a "x". This will cause the checksum
+ * verification to fail and an "Invalid" encoding to be returned.
+ */
 void badDecoding_corruptData() {
 
     // valid bech32 string
@@ -77,6 +94,11 @@ void badDecoding_corruptData() {
     assert(bech32::Encoding::Invalid == decodedResult.encoding);
 }
 
+/**
+ * Illustrates failure when attempting to decode bad data--in this case, the "s" character from
+ * the bech32 string's checksum has been corrupted and changed to a "q". This will cause the
+ * checksum verification to fail and an "Invalid" encoding to be returned.
+ */
 void badDecoding_corruptChecksum() {
 
     // valid bech32 string
