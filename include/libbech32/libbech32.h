@@ -125,6 +125,7 @@ typedef enum bech32_error_e
     E_BECH32_NULL_ARGUMENT,
     E_BECH32_LENGTH_TOO_SHORT,
     E_BECH32_INVALID_CHECKSUM,
+    E_BECH32_NO_MEMORY,
     E_BECH32_MAX_ERROR
 } bech32_error;
 

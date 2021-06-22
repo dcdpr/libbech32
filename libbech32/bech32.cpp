@@ -327,6 +327,7 @@ const char *bech32_errordesc[] = {
         "Function argument was null",
         "Function argument length was too short",
         "Invalid Checksum",
+        "Out of Memory",
         "Max error"
 };
 
