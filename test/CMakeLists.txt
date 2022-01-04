@@ -20,6 +20,5 @@ endif()
 if(LIBBECH32_BUILD_RAPIDCHECK)
   option(RC_ENABLE_GTEST "Build Google Test integration" ON)
   add_subdirectory("rapidcheck")
+  add_subdirectory(testbech32)
 endif()
-
-add_subdirectory(testbech32)
