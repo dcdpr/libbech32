@@ -10,14 +10,26 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
   set(DCD_CXX_FLAGS -Weverything -Wno-c++98-compat -Wno-padded -Wno-missing-prototypes)
 endif()
 
+# Set option to build tests or not. Other projects that embed libbech32
+# may want to set this to OFF
+set(LIBBECH32_BUILD_TESTS ON CACHE BOOL "LIBBECH32_BUILD_TESTS")
+
+# Set option to build examples or not. Other projects that embed libbech32
+# may want to set this to OFF
+set(LIBBECH32_BUILD_EXAMPLES ON CACHE BOOL "LIBBECH32_BUILD_EXAMPLES")
+
 add_subdirectory(libbech32)
 
-enable_testing()
+if(LIBBECH32_BUILD_TESTS)
+  enable_testing()
+  # Set options to build googletest and rapidcheck or not. Other
+  # projects that embed libbech32 and already use googletest and/or
+  # rapidcheck should set these options to OFF
+  option(LIBBECH32_BUILD_GOOGLETEST "Build googletest" ON)
+  option(LIBBECH32_BUILD_RAPIDCHECK "Build rapidcheck" ON)
+  add_subdirectory(test)
+endif()
 
-# Set options so we build googletest and rapidcheck. Other projects that
-# embed libbech32 should set these options to OFF
-option(LIBBECH32_BUILD_GOOGLETEST "Build googletest" ON)
-option(LIBBECH32_BUILD_RAPIDCHECK "Build rapidcheck" ON)
-add_subdirectory(test)
-
-add_subdirectory(examples)
+if(LIBBECH32_BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
