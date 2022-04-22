@@ -18,6 +18,9 @@ set(LIBBECH32_BUILD_TESTS ON CACHE BOOL "LIBBECH32_BUILD_TESTS")
 # may want to set this to OFF
 set(LIBBECH32_BUILD_EXAMPLES ON CACHE BOOL "LIBBECH32_BUILD_EXAMPLES")
 
+# Set option to install libbech32 library and header file. Other projects that embed libbech32 may want to set this to OFF
+option(INSTALL_LIBBECH32 "Enable installation of libbech32. (Projects embedding libbech32 may want to turn this OFF.)" ON)
+
 add_subdirectory(libbech32)
 
 if(LIBBECH32_BUILD_TESTS)

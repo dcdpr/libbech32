@@ -13,6 +13,7 @@ target_compile_features(bech32 PRIVATE cxx_std_11)
 target_compile_options(bech32 PRIVATE ${DCD_CXX_FLAGS})
 set_target_properties(bech32 PROPERTIES CXX_EXTENSIONS OFF)
 
-install (TARGETS bech32 DESTINATION lib)
-install (FILES ${CMAKE_CURRENT_SOURCE_DIR}/../include/libbech32/libbech32.h DESTINATION include)
-
+if(INSTALL_LIBBECH32)
+    install (TARGETS bech32 DESTINATION lib)
+    install (FILES ${CMAKE_CURRENT_SOURCE_DIR}/../include/libbech32/libbech32.h DESTINATION include)
+endif()
