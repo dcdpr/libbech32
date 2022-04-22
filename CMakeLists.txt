@@ -10,6 +10,8 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
   set(DCD_CXX_FLAGS -Weverything -Wno-c++98-compat -Wno-padded -Wno-missing-prototypes)
 endif()
 
+include(GNUInstallDirs)
+
 # Set option to build tests or not. Other projects that embed libbech32
 # may want to set this to OFF
 set(LIBBECH32_BUILD_TESTS ON CACHE BOOL "LIBBECH32_BUILD_TESTS")
