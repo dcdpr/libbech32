@@ -8,7 +8,7 @@ endif()
 
 if(LIBBECH32_BUILD_GOOGLETEST)
   option(INSTALL_GTEST "Enable installation of googletest." OFF)
-  add_subdirectory("googletest")
+  add_subdirectory("googletest" EXCLUDE_FROM_ALL)
 endif()
 
 # Turn off some warnings to silence issues coming from rapidcheck code
@@ -19,7 +19,7 @@ endif()
 
 if(LIBBECH32_BUILD_RAPIDCHECK)
   option(RC_ENABLE_GTEST "Build Google Test integration" ON)
-  add_subdirectory("rapidcheck")
+  add_subdirectory("rapidcheck" EXCLUDE_FROM_ALL)
 endif()
 
 add_subdirectory(testbech32)
