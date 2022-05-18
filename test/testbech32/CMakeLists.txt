@@ -2,7 +2,6 @@
 add_executable(UnitTests_bech32 main.cpp test_Bech32.cpp)
 
 target_compile_features(UnitTests_bech32 PRIVATE cxx_std_11)
-target_compile_options(UnitTests_bech32 PRIVATE ${DCD_CXX_FLAGS})
 set_target_properties(UnitTests_bech32 PROPERTIES CXX_EXTENSIONS OFF)
 
 target_include_directories(UnitTests_bech32
@@ -34,7 +33,6 @@ add_executable(bech32_api_tests
         )
 
 target_compile_features(bech32_api_tests PRIVATE cxx_std_11)
-target_compile_options(bech32_api_tests PRIVATE ${DCD_CXX_FLAGS})
 set_target_properties(bech32_api_tests PROPERTIES CXX_EXTENSIONS OFF)
 
 target_link_libraries(bech32_api_tests PUBLIC bech32)
