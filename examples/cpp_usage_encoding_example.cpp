@@ -1,4 +1,4 @@
-#include "libbech32.h"
+#include "bech32.h"
 #include <iostream>
 
 

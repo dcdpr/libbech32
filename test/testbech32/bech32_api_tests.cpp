@@ -1,6 +1,6 @@
 // test program calling bech32 library from C++
 
-#include "libbech32.h"
+#include "bech32.h"
 #include <stdexcept>
 
 // make sure we can run these tests even when building a release version

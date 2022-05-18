@@ -1,4 +1,4 @@
-#include "libbech32.h"
+#include "bech32.h"
 
 // make sure we can check these examples even when building a release version
 #undef NDEBUG

@@ -2,7 +2,7 @@
 # Define library target
 
 set(LIB_HEADER_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/../include/libbech32/libbech32.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../include/libbech32/bech32.h
 )
 
 set(LIB_SOURCE_FILES
