@@ -1,6 +1,6 @@
 // test program calling bech32 library from C
 
-#include "libbech32.h"
+#include "bech32.h"
 #include <string.h>
 #include <stdlib.h>
 
