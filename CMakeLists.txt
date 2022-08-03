@@ -38,6 +38,13 @@ set(LIBBECH32_BUILD_EXAMPLES ON CACHE BOOL "Build example executables")
 
 set(INSTALL_LIBBECH32 ON CACHE BOOL "Enable installation")
 
+# Set default install prefix if we are top-level project, but only
+# if it hasn't been set on the command line
+if(NOT DEFINED CMAKE_INSTALL_PREFIX)
+  if(NOT WIN32 AND CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    set(CMAKE_INSTALL_PREFIX "/opt/contract.design/libbech32" CACHE PATH "..." FORCE)
+  endif()
+endif()
 
 # Project
 
@@ -61,11 +68,6 @@ message(STATUS "----------------------------------------------------")
 
 
 include(GNUInstallDirs)
-
-# set default install prefix if we are top-level project
-if(NOT WIN32 AND CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-  set(CMAKE_INSTALL_PREFIX "/opt/contract.design/libbech32")
-endif()
 
 add_subdirectory(libbech32)
 
