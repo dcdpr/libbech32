@@ -5,6 +5,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
 
 
 namespace bech32 {
@@ -75,6 +76,7 @@ namespace bech32 {
 
 #ifndef __cplusplus
 #include <stddef.h>
+#include <stdint.h>
 #endif
 
 #ifdef __cplusplus
