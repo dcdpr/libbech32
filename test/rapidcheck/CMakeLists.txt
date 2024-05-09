@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.16)
 project(rapidcheck CXX)
 
 # Don't warn about symbol visibility for static libraries with CMake 3.3 and later.
@@ -102,11 +102,6 @@ if(MINGW)
   target_compile_definitions(rapidcheck PRIVATE RC_SEED_SYSTEM_TIME)
 endif()
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "^MSVC$")
-  # To reflect the language level (cf. https://docs.microsoft.com/en-us/cpp/build/reference/zc-cplusplus?view=msvc-160)
-  target_compile_options(rapidcheck PUBLIC /Zc:__cplusplus)
-endif ()
-
 if(NOT RC_ENABLE_RTTI)
   target_compile_definitions(rapidcheck PUBLIC RC_DONT_USE_RTTI)
 endif()
@@ -127,3 +122,20 @@ add_subdirectory(extras)
 # Install the export file specifying all the targets for RapidCheck
 install(EXPORT rapidcheckConfig DESTINATION share/rapidcheck/cmake)
 export(EXPORT rapidcheckConfig FILE rapidcheckConfig.cmake)
+
+set(PKG_CONFIG_REQUIRES)
+set(PKG_CONFIG_DESCRIPTION_SUMMARY "C++ framework for property based testing inspired by QuickCheck and other similar frameworks")
+set(PKG_CONFIG_VERSION)
+set(PKG_CONFIG_LIBDIR "\${prefix}/lib")
+set(PKG_CONFIG_INCLUDEDIR "\${prefix}/include")
+set(PKG_CONFIG_LIBS)
+set(PKG_CONFIG_CFLAGS "-I\${includedir}")
+
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/pkg-config.pc.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc"
+  )
+
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc"
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+  )

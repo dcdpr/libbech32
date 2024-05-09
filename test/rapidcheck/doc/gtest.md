@@ -4,7 +4,7 @@ RapidCheck comes with support for integrating with Google Test and allows you to
 
 ## Usage
 
-This support is available through the `extras/gtest` module. You can either directly add the `extras/gtest/include` directory to your include path or link against the `rapidcheck_gtest` target in your `CMakeLists.txt`. You can then simply `#include <rapidcheck/gtest.h>`. Note that `rapidcheck/gtest.h` needs to be included after `gtest/gtest.h`.
+This support is available through the `extras/gtest` module. In order to enable it, pass `-DRC_ENABLE_GTEST=ON` to your `CMake` flags while building RapidCheck. Then you can either directly add the `extras/gtest/include` directory to your include path or link against the `rapidcheck_gtest` target in your `CMakeLists.txt`. You can then simply `#include <rapidcheck/gtest.h>`. Note that `rapidcheck/gtest.h` needs to be included after `gtest/gtest.h`.
 
 ## Reference
 
@@ -38,6 +38,20 @@ RC_GTEST_PROP(MyTestCase, inRangeValueIsInRange, ()) {
 Analogous to the Google Test `TEST_F` macro, defines a RapidCheck property as a Google Test fixture based test. `Fixture` names the test fixture class. The fixture will be reinstantiated for every test case that is run. Otherwise, this macro works the same as `RC_GTEST_PROP`.
 
 Since this macro is implemented in terms of Google Test's `TEST` macro and Google Test does not allow mixing of `TEST` and `TEST_F` for the same test case, test cases, a property tied to a fixture named `Fixture` will be registered under a test case named `Fixed_RapidCheck`. This is usually not a big issue but is something to be aware of, in particular when filtering Google Test case names from the command line.
+
+### `RC_GTEST_TYPED_FIXTURE_PROP(Fixture, Name, (args...))`
+
+Analogous to the Google Test `TYPED_TEST` macro, defines a RapidCheck property as a Google Test typed (or type-parameterized) fixture based test. `Fixture` names the test fixture class, which must take a template parameter and is reinstantiated for every test case that is run.
+
+Similarly to `TYPED_TEST`, the type parameter can be accessed as `TypeParam` from both the argument list and the body of the property:
+```C++
+RC_GTEST_TYPED_FIXTURE_PROP(MyTypedFixture,
+                            genericSum,
+                            (TypeParam a, TypeParam b)) {
+  const TypeParam result = std::plus<TypeParam>{}(a, b);
+  RC_ASSERT(result == (a + b));
+}
+```
 
 ## Assertions
 
