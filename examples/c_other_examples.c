@@ -11,7 +11,7 @@
  * Illustrates encoding a "human readable part" and a "data part" to a bech32 string, then
  * decoding that bech32 string and comparing the results.
  */
-void encodeAndDecode() {
+void encodeAndDecode(void) {
 
     // hrp and data to encode
     char hrp[] = "example";
@@ -32,7 +32,7 @@ void encodeAndDecode() {
     if(err != E_BECH32_SUCCESS) {
         printf("%s\n", bech32_strerror(err));
         bech32_free_bstring(bstring);
-        exit(err);
+        exit((int)err);
     }
 
     if(strcmp(expected, bstring->string) != 0) {
@@ -54,7 +54,7 @@ void encodeAndDecode() {
     if(err != E_BECH32_SUCCESS) {
         printf("%s\n", bech32_strerror(err));
         bech32_free_DecodedResult(decodedResult);
-        exit(err);
+        exit((int)err);
     }
 
     // check for expected values
@@ -73,7 +73,7 @@ void encodeAndDecode() {
  * readable part" and "data part". Then encodes that data to another bech32 string and compares
  * the results.
  */
-void decodeAndEncode() {
+void decodeAndEncode(void) {
 
     // bech32 string with extra invalid characters
     char input_bstr[] = " example1:qpz!r--y9#x8&%&%ge-8-sqgv ";
@@ -85,7 +85,7 @@ void decodeAndEncode() {
     bech32_error err = bech32_stripUnknownChars(input_bstr, sizeof(input_bstr), input_bstr, sizeof(input_bstr));
     if(err != E_BECH32_SUCCESS) {
         printf("%s\n", bech32_strerror(err));
-        exit(err);
+        exit((int)err);
     }
 
     // create storage for decoded bech32 data
@@ -100,7 +100,7 @@ void decodeAndEncode() {
     if(err != E_BECH32_SUCCESS) {
         printf("%s\n", bech32_strerror(err));
         bech32_free_DecodedResult(decodedResult);
-        exit(err);
+        exit((int)err);
     }
 
     // create storage for bech32 string
@@ -117,7 +117,7 @@ void decodeAndEncode() {
         printf("%s\n", bech32_strerror(err));
         bech32_free_bstring(bstring);
         bech32_free_DecodedResult(decodedResult);
-        exit(err);
+        exit((int)err);
     }
 
     // encoding of "cleaned" decoded data should match expected_bstr string
@@ -132,7 +132,7 @@ void decodeAndEncode() {
  * Illustrates the error returned when attempting to encode bad data--in this case, "33" is not in the
  * range of allowed data values (0-31).
  */
-void badEncoding() {
+void badEncoding(void) {
 
     // hrp and data to encode
     char hrp[] = "example";
@@ -150,7 +150,7 @@ void badEncoding() {
     if(err != E_BECH32_UNKNOWN_ERROR) {
         printf("%s\n", bech32_strerror(err));
         bech32_free_bstring(bstring);
-        exit(err);
+        exit((int)err);
     }
 
     // free memory
@@ -162,7 +162,7 @@ void badEncoding() {
  * character from the bech32 string has been corrupted and changed to a "x". This will cause
  * the checksum verification to fail.
  */
-void badDecoding_corruptData() {
+void badDecoding_corruptData(void) {
 
     // bech32 string
     char bstr[] = "example1qpzry9x8ge8sqgv";
@@ -181,7 +181,7 @@ void badDecoding_corruptData() {
     if(err != E_BECH32_INVALID_CHECKSUM) {
         printf("%s\n", bech32_strerror(err));
         bech32_free_DecodedResult(decodedResult);
-        exit(err);
+        exit((int)err);
     }
 
     // free memory
@@ -193,7 +193,7 @@ void badDecoding_corruptData() {
  * character from the bech32 string's checksum has been corrupted and changed to a "q". This
  * will cause the checksum verification to fail.
  */
-void badDecoding_corruptChecksum() {
+void badDecoding_corruptChecksum(void) {
 
     // bech32 string
     char bstr[] = "example1qpzry9x8ge8sqgv";
@@ -212,14 +212,14 @@ void badDecoding_corruptChecksum() {
     if(err != E_BECH32_INVALID_CHECKSUM) {
         printf("%s\n", bech32_strerror(err));
         bech32_free_DecodedResult(decodedResult);
-        exit(err);
+        exit((int)err);
     }
 
     // free memory
     bech32_free_DecodedResult(decodedResult);
 }
 
-int main() {
+int main(void) {
     encodeAndDecode();
     decodeAndEncode();
     badEncoding();
