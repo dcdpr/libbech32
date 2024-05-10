@@ -6,7 +6,7 @@
 #undef NDEBUG
 #include <assert.h>
 
-int main() {
+int main(void) {
 
     char str[] = "hello1w0rldjn365x";
 
@@ -22,7 +22,7 @@ int main() {
     if(err != E_BECH32_SUCCESS) {
         printf("%s\n", bech32_strerror(err));
         bech32_free_DecodedResult(decodedResult);
-        return err;
+        return (int)err;
     }
 
     // check for expected values (see c_usage_encoding_example.c)
@@ -33,4 +33,6 @@ int main() {
 
     // free memory
     bech32_free_DecodedResult(decodedResult);
+
+    return E_BECH32_SUCCESS;
 }

@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 
-int main() {
+int main(void) {
     // simple human readable part with some data
     char hrp[] = "hello";
     unsigned char dp[] = {14, 15, 3, 31, 13};
@@ -20,7 +20,7 @@ int main() {
     if(err != E_BECH32_SUCCESS) {
         printf("%s\n", bech32_strerror(err));
         bech32_free_bstring(bstring);
-        return err;
+        return (int)err;
     }
 
     printf("bech32 encoding of human-readable part \'hello\' and data part \'[14, 15, 3, 31, 13]\' is:\n");
