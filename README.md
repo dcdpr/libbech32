@@ -29,26 +29,11 @@ make test
 ### Installing prerequisites
 
 If the above doesn't work, you probably need to install some
-prerequisites. For example, on a fresh Debian 10 ("buster") system:
+prerequisites. For example, on a fresh Debian 12 ("bookworm") system:
 
 ```
 sudo apt-get update
-sudo apt-get install make gcc g++
-```
-
-It is worth getting the latest cmake (check [cmake.org](https://cmake.org/download/) for 
-the latest release), so install that the hard way:
-
-```
-sudo apt-get install libssl-dev # recent cmake needs ssl
-wget https://github.com/Kitware/CMake/releases/download/v3.20.1/cmake-3.20.1.tar.gz
-wget https://github.com/Kitware/CMake/releases/download/v3.20.1/cmake-3.20.1-SHA-256.txt
-shasum -a 256 --ignore-missing -c cmake-3.20.1-SHA-256.txt # make sure this says "OK"
-tar xzf cmake-3.20.1.tar.gz
-cd cmake-3.20.1
-./configure
-make 
-sudo make install
+sudo apt-get install make cmake git g++
 ```
 
 Now you can again try to build libbech32.
